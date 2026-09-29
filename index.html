@@ -1,32 +1,220 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-    <meta name="theme-color" content="#0f172a">
+    <meta
+        name="theme-color"
+        content="#0f172a">
 
-    <meta name="description"
-          content="Ahmed AI - مساعدك الذكي للمذاكرة و GIS والبرمجة">
+    <meta
+        name="description"
+        content="Ahmed AI - مساعدك الذكي للمذاكرة و GIS والبرمجة">
 
     <title>Ahmed AI | المساعد الذكي</title>
 
+
     <!-- الخط -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet">
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
 
-    <!-- ملف التصميم -->
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+
+    <!-- التصميم -->
+
+    <link
+        rel="stylesheet"
+        href="style.css">
+
+
+    <!-- ==========================================
+         حماية الصفحة أثناء التحقق من تسجيل الدخول
+    =========================================== -->
+
+    <style>
+
+        body.auth-loading .app,
+        body.auth-loading #notification,
+        body.auth-loading #introScreen {
+            visibility: hidden;
+        }
+
+        #authLoadingScreen {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 999999;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                #07111f;
+
+            color: white;
+
+            font-family:
+                "Cairo",
+                Tahoma,
+                Arial,
+                sans-serif;
+
+            transition:
+                opacity 0.3s ease;
+
+        }
+
+        #authLoadingScreen.hidden {
+
+            opacity: 0;
+
+            pointer-events: none;
+
+        }
+
+        .auth-loading-content {
+
+            text-align: center;
+
+        }
+
+        .auth-loading-logo {
+
+            width: 70px;
+
+            height: 70px;
+
+            margin: 0 auto 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 20px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #087cff,
+                    #00c6ff
+                );
+
+            font-size: 28px;
+
+            font-weight: 800;
+
+            box-shadow:
+                0 15px 40px
+                rgba(0,140,255,0.25);
+
+        }
+
+        .auth-loading-content h2 {
+
+            margin-bottom: 8px;
+
+            font-size: 23px;
+
+        }
+
+        .auth-loading-content p {
+
+            color: #8fa0b4;
+
+            font-size: 13px;
+
+        }
+
+        .auth-loader {
+
+            width: 32px;
+
+            height: 32px;
+
+            margin:
+                20px auto 0;
+
+            border:
+                3px solid
+                rgba(255,255,255,0.15);
+
+            border-top-color:
+                #1aa7ff;
+
+            border-radius: 50%;
+
+            animation:
+                authSpin 0.8s linear infinite;
+
+        }
+
+        @keyframes authSpin {
+
+            to {
+                transform:
+                    rotate(360deg);
+            }
+
+        }
+
+    </style>
+
 </head>
 
-<body>
+
+<body class="auth-loading">
+
+
+    <!-- ==========================================
+         شاشة التحقق من تسجيل الدخول
+    =========================================== -->
+
+    <div id="authLoadingScreen">
+
+        <div class="auth-loading-content">
+
+            <div class="auth-loading-logo">
+                AI
+            </div>
+
+            <h2>
+                Ahmed AI
+            </h2>
+
+            <p>
+                جاري التحقق من تسجيل الدخول...
+            </p>
+
+            <div class="auth-loader"></div>
+
+        </div>
+
+    </div>
+
+
 
     <!-- =========================
          APP
@@ -34,13 +222,18 @@
 
     <div class="app">
 
+
         <!-- =========================
              SIDEBAR
         ========================== -->
 
-        <aside class="sidebar" id="sidebar">
+        <aside
+            class="sidebar"
+            id="sidebar">
+
 
             <!-- Logo -->
+
             <div class="logo">
 
                 <div class="logo-icon">
@@ -48,17 +241,30 @@
                 </div>
 
                 <div class="logo-text">
-                    <h1>Ahmed AI</h1>
-                    <span>GIS • Study • Coding</span>
+
+                    <h1>
+                        Ahmed AI
+                    </h1>
+
+                    <span>
+                        GIS • Study • Coding
+                    </span>
+
                 </div>
 
             </div>
 
 
-            <!-- زر محادثة جديدة -->
-            <button class="new-chat-btn" id="newChatBtn">
 
-                <span class="icon">＋</span>
+            <!-- زر محادثة جديدة -->
+
+            <button
+                class="new-chat-btn"
+                id="newChatBtn">
+
+                <span class="icon">
+                    ＋
+                </span>
 
                 <span>
                     محادثة جديدة
@@ -67,13 +273,19 @@
             </button>
 
 
+
             <!-- القائمة -->
+
             <nav class="main-menu">
 
-                <button class="menu-item active"
-                        data-section="home">
 
-                    <span class="menu-icon">🏠</span>
+                <button
+                    class="menu-item active"
+                    data-section="home">
+
+                    <span class="menu-icon">
+                        🏠
+                    </span>
 
                     <span>
                         الرئيسية
@@ -82,10 +294,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="chat">
 
-                    <span class="menu-icon">🤖</span>
+                <button
+                    class="menu-item"
+                    data-section="chat">
+
+                    <span class="menu-icon">
+                        🤖
+                    </span>
 
                     <span>
                         AI Chat
@@ -94,10 +310,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="study">
 
-                    <span class="menu-icon">📚</span>
+                <button
+                    class="menu-item"
+                    data-section="study">
+
+                    <span class="menu-icon">
+                        📚
+                    </span>
 
                     <span>
                         المذاكرة
@@ -106,10 +326,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="gis">
 
-                    <span class="menu-icon">🗺️</span>
+                <button
+                    class="menu-item"
+                    data-section="gis">
+
+                    <span class="menu-icon">
+                        🗺️
+                    </span>
 
                     <span>
                         GIS
@@ -118,10 +342,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="coding">
 
-                    <span class="menu-icon">💻</span>
+                <button
+                    class="menu-item"
+                    data-section="coding">
+
+                    <span class="menu-icon">
+                        💻
+                    </span>
 
                     <span>
                         البرمجة
@@ -130,10 +358,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="files">
 
-                    <span class="menu-icon">📂</span>
+                <button
+                    class="menu-item"
+                    data-section="files">
+
+                    <span class="menu-icon">
+                        📂
+                    </span>
 
                     <span>
                         ملفاتي
@@ -142,10 +374,14 @@
                 </button>
 
 
-                <button class="menu-item"
-                        data-section="tests">
 
-                    <span class="menu-icon">📝</span>
+                <button
+                    class="menu-item"
+                    data-section="tests">
+
+                    <span class="menu-icon">
+                        📝
+                    </span>
 
                     <span>
                         الاختبارات
@@ -156,13 +392,19 @@
             </nav>
 
 
+
             <!-- معلومات المستخدم -->
+
             <div class="sidebar-bottom">
 
-                <button class="menu-item"
-                        data-section="settings">
 
-                    <span class="menu-icon">⚙️</span>
+                <button
+                    class="menu-item"
+                    data-section="settings">
+
+                    <span class="menu-icon">
+                        ⚙️
+                    </span>
 
                     <span>
                         الإعدادات
@@ -171,19 +413,24 @@
                 </button>
 
 
+
                 <div class="user-card">
 
-                    <div class="user-avatar">
+                    <div
+                        class="user-avatar"
+                        id="userAvatar">
+
                         أ
+
                     </div>
 
                     <div class="user-info">
 
-                        <strong>
+                        <strong id="userName">
                             أحمد سمير
                         </strong>
 
-                        <small>
+                        <small id="userEmail">
                             GIS Student
                         </small>
 
@@ -196,21 +443,27 @@
         </aside>
 
 
+
         <!-- =========================
              MAIN
         ========================== -->
 
         <main class="main">
 
+
             <!-- Header -->
+
             <header class="topbar">
 
-                <button class="mobile-menu-btn"
-                        id="mobileMenuBtn">
+
+                <button
+                    class="mobile-menu-btn"
+                    id="mobileMenuBtn">
 
                     ☰
 
                 </button>
+
 
 
                 <div class="page-title">
@@ -226,22 +479,29 @@
                 </div>
 
 
+
                 <div class="top-actions">
 
+
                     <!-- Dark Mode -->
-                    <button class="icon-btn"
-                            id="themeBtn"
-                            title="الوضع الليلي">
+
+                    <button
+                        class="icon-btn"
+                        id="themeBtn"
+                        title="الوضع الليلي">
 
                         🌙
 
                     </button>
 
 
+
                     <!-- Notifications -->
-                    <button class="icon-btn"
-                            id="notificationBtn"
-                            title="الإشعارات">
+
+                    <button
+                        class="icon-btn"
+                        id="notificationBtn"
+                        title="الإشعارات">
 
                         🔔
 
@@ -252,6 +512,7 @@
             </header>
 
 
+
             <!-- =========================
                  CONTENT
             ========================== -->
@@ -259,12 +520,15 @@
             <div class="content">
 
 
+
                 <!-- =====================
                      HOME
                 ====================== -->
 
-                <section class="page-section active"
-                         id="homeSection">
+                <section
+                    class="page-section active"
+                    id="homeSection">
+
 
                     <div class="welcome">
 
@@ -288,12 +552,15 @@
                     </div>
 
 
+
                     <!-- Quick Actions -->
 
                     <div class="quick-actions">
 
-                        <button class="quick-card"
-                                data-action="chat">
+
+                        <button
+                            class="quick-card"
+                            data-action="chat">
 
                             <div class="quick-icon">
                                 🤖
@@ -314,8 +581,10 @@
                         </button>
 
 
-                        <button class="quick-card"
-                                data-action="study">
+
+                        <button
+                            class="quick-card"
+                            data-action="study">
 
                             <div class="quick-icon">
                                 📚
@@ -336,8 +605,10 @@
                         </button>
 
 
-                        <button class="quick-card"
-                                data-action="gis">
+
+                        <button
+                            class="quick-card"
+                            data-action="gis">
 
                             <div class="quick-icon">
                                 🗺️
@@ -358,8 +629,10 @@
                         </button>
 
 
-                        <button class="quick-card"
-                                data-action="coding">
+
+                        <button
+                            class="quick-card"
+                            data-action="coding">
 
                             <div class="quick-icon">
                                 💻
@@ -382,9 +655,11 @@
                     </div>
 
 
+
                     <!-- Chat shortcut -->
 
                     <div class="home-chat">
+
 
                         <div class="section-heading">
 
@@ -400,15 +675,21 @@
 
                             </div>
 
+
                             <span class="online-status">
+
                                 <span></span>
+
                                 متصل
+
                             </span>
 
                         </div>
 
 
+
                         <div class="chat-input-wrapper">
+
 
                             <textarea
                                 id="homeChatInput"
@@ -416,13 +697,18 @@
                                 rows="3"></textarea>
 
 
+
                             <div class="input-actions">
+
 
                                 <div>
 
-                                    <!-- رفع صورة -->
-                                    <label class="attach-btn"
-                                           title="رفع صورة">
+
+                                    <!-- صورة -->
+
+                                    <label
+                                        class="attach-btn"
+                                        title="رفع صورة">
 
                                         📷
 
@@ -435,9 +721,12 @@
                                     </label>
 
 
-                                    <!-- رفع ملف -->
-                                    <label class="attach-btn"
-                                           title="رفع ملف">
+
+                                    <!-- ملف -->
+
+                                    <label
+                                        class="attach-btn"
+                                        title="رفع ملف">
 
                                         📎
 
@@ -452,12 +741,16 @@
                                 </div>
 
 
+
                                 <button
                                     class="send-btn"
                                     id="homeSendBtn">
 
                                     إرسال
-                                    <span>➤</span>
+
+                                    <span>
+                                        ➤
+                                    </span>
 
                                 </button>
 
@@ -468,9 +761,11 @@
                     </div>
 
 
+
                     <!-- Progress -->
 
                     <div class="progress-section">
+
 
                         <div class="section-heading">
 
@@ -487,6 +782,7 @@
                             </div>
 
                         </div>
+
 
 
                         <div class="progress-grid">
@@ -508,12 +804,14 @@
 
                                 <div class="progress-bar">
 
-                                    <span style="width:80%">
+                                    <span
+                                        style="width:80%">
                                     </span>
 
                                 </div>
 
                             </div>
+
 
 
                             <div class="progress-card">
@@ -532,12 +830,14 @@
 
                                 <div class="progress-bar">
 
-                                    <span style="width:50%">
+                                    <span
+                                        style="width:50%">
                                     </span>
 
                                 </div>
 
                             </div>
+
 
 
                             <div class="progress-card">
@@ -556,12 +856,14 @@
 
                                 <div class="progress-bar">
 
-                                    <span style="width:70%">
+                                    <span
+                                        style="width:70%">
                                     </span>
 
                                 </div>
 
                             </div>
+
 
 
                             <div class="progress-card">
@@ -580,7 +882,8 @@
 
                                 <div class="progress-bar">
 
-                                    <span style="width:40%">
+                                    <span
+                                        style="width:40%">
                                     </span>
 
                                 </div>
@@ -599,13 +902,18 @@
                      CHAT
                 ====================== -->
 
-                <section class="page-section"
-                         id="chatSection">
+                <section
+                    class="page-section"
+                    id="chatSection">
+
 
                     <div class="chat-page">
 
-                        <div class="chat-messages"
-                             id="chatMessages">
+
+                        <div
+                            class="chat-messages"
+                            id="chatMessages">
+
 
                             <div class="empty-chat">
 
@@ -622,15 +930,19 @@
                                     وGIS والبرمجة.
                                 </p>
 
+
                                 <div class="suggestions">
+
 
                                     <button>
                                         اشرحلي ArcGIS Pro
                                     </button>
 
+
                                     <button>
                                         علمني Python
                                     </button>
+
 
                                     <button>
                                         اشرحلي Remote Sensing
@@ -643,7 +955,9 @@
                         </div>
 
 
+
                         <div class="chat-box">
+
 
                             <textarea
                                 id="chatInput"
@@ -651,9 +965,12 @@
                                 rows="2"></textarea>
 
 
+
                             <div class="chat-box-bottom">
 
+
                                 <div class="chat-tools">
+
 
                                     <label
                                         class="tool-btn"
@@ -668,6 +985,7 @@
                                             hidden>
 
                                     </label>
+
 
 
                                     <label
@@ -685,6 +1003,7 @@
                                     </label>
 
 
+
                                     <button
                                         class="tool-btn"
                                         title="بحث على الإنترنت"
@@ -697,12 +1016,16 @@
                                 </div>
 
 
+
                                 <button
                                     class="send-btn"
                                     id="chatSendBtn">
 
                                     إرسال
-                                    <span>➤</span>
+
+                                    <span>
+                                        ➤
+                                    </span>
 
                                 </button>
 
@@ -720,8 +1043,10 @@
                      STUDY
                 ====================== -->
 
-                <section class="page-section"
-                         id="studySection">
+                <section
+                    class="page-section"
+                    id="studySection">
+
 
                     <div class="page-header">
 
@@ -734,6 +1059,7 @@
                         </p>
 
                     </div>
+
 
 
                     <div class="feature-grid">
@@ -765,6 +1091,7 @@
                         </div>
 
 
+
                         <div class="feature-card">
 
                             <div class="feature-icon">
@@ -789,6 +1116,7 @@
                             </button>
 
                         </div>
+
 
 
                         <div class="feature-card">
@@ -817,6 +1145,7 @@
                         </div>
 
 
+
                         <div class="feature-card">
 
                             <div class="feature-icon">
@@ -843,6 +1172,7 @@
                         </div>
 
                     </div>
+
 
 
                     <div class="study-upload">
@@ -881,8 +1211,10 @@
                      GIS
                 ====================== -->
 
-                <section class="page-section"
-                         id="gisSection">
+                <section
+                    class="page-section"
+                    id="gisSection">
+
 
                     <div class="page-header">
 
@@ -897,11 +1229,13 @@
                     </div>
 
 
+
                     <div class="subject-grid">
 
 
-                        <button class="subject-card"
-                                data-topic="ArcGIS Pro">
+                        <button
+                            class="subject-card"
+                            data-topic="ArcGIS Pro">
 
                             <span>
                                 🗺️
@@ -918,8 +1252,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="Network Analyst">
+
+                        <button
+                            class="subject-card"
+                            data-topic="Network Analyst">
 
                             <span>
                                 🛣️
@@ -936,8 +1272,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="Remote Sensing">
+
+                        <button
+                            class="subject-card"
+                            data-topic="Remote Sensing">
 
                             <span>
                                 🛰️
@@ -954,8 +1292,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="Surveying">
+
+                        <button
+                            class="subject-card"
+                            data-topic="Surveying">
 
                             <span>
                                 📐
@@ -972,8 +1312,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="AutoCAD">
+
+                        <button
+                            class="subject-card"
+                            data-topic="AutoCAD">
 
                             <span>
                                 📐
@@ -990,8 +1332,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="Civil 3D">
+
+                        <button
+                            class="subject-card"
+                            data-topic="Civil 3D">
 
                             <span>
                                 🏗️
@@ -1008,8 +1352,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="QGIS">
+
+                        <button
+                            class="subject-card"
+                            data-topic="QGIS">
 
                             <span>
                                 🌍
@@ -1026,8 +1372,10 @@
                         </button>
 
 
-                        <button class="subject-card"
-                                data-topic="Google Earth">
+
+                        <button
+                            class="subject-card"
+                            data-topic="Google Earth">
 
                             <span>
                                 🌎
@@ -1044,6 +1392,7 @@
                         </button>
 
                     </div>
+
 
 
                     <div class="gis-prompt">
@@ -1074,8 +1423,10 @@
                      CODING
                 ====================== -->
 
-                <section class="page-section"
-                         id="codingSection">
+                <section
+                    class="page-section"
+                    id="codingSection">
+
 
                     <div class="page-header">
 
@@ -1090,10 +1441,13 @@
                     </div>
 
 
+
                     <div class="coding-languages">
 
-                        <button class="language-card"
-                                data-language="Python">
+
+                        <button
+                            class="language-card"
+                            data-language="Python">
 
                             🐍
 
@@ -1104,8 +1458,10 @@
                         </button>
 
 
-                        <button class="language-card"
-                                data-language="ArcPy">
+
+                        <button
+                            class="language-card"
+                            data-language="ArcPy">
 
                             🗺️
 
@@ -1116,8 +1472,10 @@
                         </button>
 
 
-                        <button class="language-card"
-                                data-language="JavaScript">
+
+                        <button
+                            class="language-card"
+                            data-language="JavaScript">
 
                             🟨
 
@@ -1128,8 +1486,10 @@
                         </button>
 
 
-                        <button class="language-card"
-                                data-language="HTML/CSS">
+
+                        <button
+                            class="language-card"
+                            data-language="HTML/CSS">
 
                             🌐
 
@@ -1140,8 +1500,10 @@
                         </button>
 
 
-                        <button class="language-card"
-                                data-language="SQL">
+
+                        <button
+                            class="language-card"
+                            data-language="SQL">
 
                             🗄️
 
@@ -1154,7 +1516,9 @@
                     </div>
 
 
+
                     <div class="code-workspace">
+
 
                         <div class="code-request">
 
@@ -1177,7 +1541,9 @@
                         </div>
 
 
+
                         <div class="code-result">
+
 
                             <div class="code-header">
 
@@ -1194,6 +1560,7 @@
 
                             </div>
 
+
                             <pre id="codeOutput"><code>سيظهر الكود هنا...</code></pre>
 
                         </div>
@@ -1208,8 +1575,10 @@
                      FILES
                 ====================== -->
 
-                <section class="page-section"
-                         id="filesSection">
+                <section
+                    class="page-section"
+                    id="filesSection">
+
 
                     <div class="page-header">
 
@@ -1222,6 +1591,7 @@
                         </p>
 
                     </div>
+
 
 
                     <div class="files-upload">
@@ -1251,8 +1621,11 @@
                     </div>
 
 
-                    <div class="files-list"
-                         id="filesList">
+
+                    <div
+                        class="files-list"
+                        id="filesList">
+
 
                         <div class="empty-files">
 
@@ -1274,8 +1647,10 @@
                      TESTS
                 ====================== -->
 
-                <section class="page-section"
-                         id="testsSection">
+                <section
+                    class="page-section"
+                    id="testsSection">
+
 
                     <div class="page-header">
 
@@ -1290,7 +1665,9 @@
                     </div>
 
 
+
                     <div class="test-builder">
+
 
                         <label>
                             المادة
@@ -1333,6 +1710,7 @@
                         </select>
 
 
+
                         <label>
                             عدد الأسئلة
                         </label>
@@ -1354,6 +1732,7 @@
                         </select>
 
 
+
                         <button
                             class="primary-btn"
                             id="createTestBtn">
@@ -1365,7 +1744,10 @@
                     </div>
 
 
-                    <div id="testContainer"></div>
+
+                    <div
+                        id="testContainer">
+                    </div>
 
                 </section>
 
@@ -1375,8 +1757,10 @@
                      SETTINGS
                 ====================== -->
 
-                <section class="page-section"
-                         id="settingsSection">
+                <section
+                    class="page-section"
+                    id="settingsSection">
+
 
                     <div class="page-header">
 
@@ -1391,7 +1775,9 @@
                     </div>
 
 
+
                     <div class="settings-card">
+
 
                         <div class="setting-row">
 
@@ -1407,6 +1793,7 @@
 
                             </div>
 
+
                             <label class="switch">
 
                                 <input
@@ -1418,6 +1805,7 @@
                             </label>
 
                         </div>
+
 
 
                         <div class="setting-row">
@@ -1434,6 +1822,7 @@
 
                             </div>
 
+
                             <label class="switch">
 
                                 <input
@@ -1446,6 +1835,7 @@
                             </label>
 
                         </div>
+
 
 
                         <div class="setting-row">
@@ -1461,6 +1851,7 @@
                                 </p>
 
                             </div>
+
 
                             <select id="languageSelect">
 
@@ -1487,12 +1878,14 @@
     </div>
 
 
+
     <!-- =========================
          NOTIFICATION
     ========================== -->
 
-    <div class="notification"
-         id="notification">
+    <div
+        class="notification"
+        id="notification">
 
         <span id="notificationIcon">
             ✓
@@ -1505,39 +1898,287 @@
     </div>
 
 
+
     <!-- =========================
-         JAVASCRIPT
+         INTRODUCTION
+    ========================== -->
+
+    <div
+        id="introScreen"
+        class="intro-screen">
+
+        <div class="intro-content">
+
+
+            <div class="intro-globe">
+                🌐
+            </div>
+
+
+            <h1>
+                Ahmed AI
+            </h1>
+
+
+            <p class="intro-title">
+                مساعدك الذكي للدراسة والعمل والتطوير
+            </p>
+
+
+            <p class="intro-description">
+                GIS • Study • Coding • Remote Sensing
+            </p>
+
+
+            <button
+                id="startAI"
+                class="intro-button">
+
+                ابدأ الآن 🚀
+
+            </button>
+
+
+            <div class="intro-loading">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==========================================
+         Firebase Authentication
+         يجب أن يعمل قبل تشغيل التطبيق
+    =========================================== -->
+
+    <script type="module">
+
+        import {
+            auth,
+            db
+        } from "./firebase.js";
+
+
+        import {
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+
+        import {
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+
+        const loadingScreen =
+            document.getElementById(
+                "authLoadingScreen"
+            );
+
+
+        onAuthStateChanged(
+            auth,
+            async (user) => {
+
+
+                /*
+                 * المستخدم غير مسجل دخول
+                 */
+
+                if (!user) {
+
+                    window.location.replace(
+                        "login.html"
+                    );
+
+                    return;
+
+                }
+
+
+                try {
+
+
+                    /*
+                     * جلب بيانات المستخدم
+                     */
+
+                    const userRef =
+                        doc(
+                            db,
+                            "users",
+                            user.uid
+                        );
+
+
+                    const userSnap =
+                        await getDoc(
+                            userRef
+                        );
+
+
+                    /*
+                     * لو لا توجد بيانات
+                     */
+
+                    if (!userSnap.exists()) {
+
+                        console.warn(
+                            "User document not found."
+                        );
+
+                        /*
+                         * تسجيل الدخول موجود
+                         * لكن بيانات Firestore ناقصة.
+                         * نسمح بدخول الموقع.
+                         */
+
+                    }
+
+
+                    /*
+                     * بيانات المستخدم
+                     */
+
+                    const userData =
+                        userSnap.exists()
+                            ? userSnap.data()
+                            : {};
+
+
+                    /*
+                     * الاسم
+                     */
+
+                    const userName =
+                        document.getElementById(
+                            "userName"
+                        );
+
+
+                    const userEmail =
+                        document.getElementById(
+                            "userEmail"
+                        );
+
+
+                    const userAvatar =
+                        document.getElementById(
+                            "userAvatar"
+                        );
+
+
+                    /*
+                     * تحديد الاسم
+                     */
+
+                    const displayName =
+                        userData.name ||
+                        user.displayName ||
+                        "أحمد سمير";
+
+
+                    /*
+                     * تحديث بطاقة المستخدم
+                     */
+
+                    if (userName) {
+
+                        userName.textContent =
+                            displayName;
+
+                    }
+
+
+                    if (userEmail) {
+
+                        userEmail.textContent =
+                            user.email ||
+                            "GIS Student";
+
+                    }
+
+
+                    if (userAvatar) {
+
+                        userAvatar.textContent =
+                            displayName
+                                .trim()
+                                .charAt(0) ||
+                            "أ";
+
+                    }
+
+
+                    /*
+                     * إظهار الموقع
+                     */
+
+                    document.body.classList.remove(
+                        "auth-loading"
+                    );
+
+
+                    if (loadingScreen) {
+
+                        loadingScreen.classList.add(
+                            "hidden"
+                        );
+
+
+                        setTimeout(
+                            () => {
+
+                                loadingScreen.remove();
+
+                            },
+                            350
+                        );
+
+                    }
+
+
+                } catch (error) {
+
+
+                    console.error(
+                        "Authentication error:",
+                        error
+                    );
+
+
+                    /*
+                     * في حالة وجود خطأ في قراءة
+                     * بيانات المستخدم
+                     */
+
+                    window.location.replace(
+                        "login.html"
+                    );
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+
+    <!-- =========================
+         التطبيق الرئيسي
     ========================== -->
 
     <script src="app.js"></script>
 
+
 </body>
-    <!-- Ahmed AI Introduction -->
-<div id="introScreen" class="intro-screen">
-    <div class="intro-content">
 
-        <div class="intro-globe">🌐</div>
-
-        <h1>Ahmed AI</h1>
-
-        <p class="intro-title">
-            مساعدك الذكي للدراسة والعمل والتطوير
-        </p>
-
-        <p class="intro-description">
-            GIS • Study • Coding • Remote Sensing
-        </p>
-
-        <button id="startAI" class="intro-button">
-            ابدأ الآن 🚀
-        </button>
-
-        <div class="intro-loading">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-
-    </div>
-</div>
-</html>
+                            </html>
