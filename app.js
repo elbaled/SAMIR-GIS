@@ -1,5 +1,5 @@
 /* =========================================================
-   Ahmed AI - Main Application
+   GEO AI - Main Application 
    ========================================================= */
 
 "use strict";
@@ -12,6 +12,15 @@
 // رابط Ahmed AI Worker
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
+
+
+/* =========================================================
+   VISION CONFIG
+   ========================================================= */
+
+// رابط GEO AI Vision Worker
+const AI_VISION_API_URL =
+    "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/vision";
 
 
 /* =========================================================
@@ -201,6 +210,21 @@ let state = {
         "Python",
 
     selectedFile:
+        null,
+
+    /*
+       الصورة الحالية التي اختارها المستخدم
+       لا يتم تخزينها في LocalStorage
+       لأنها قد تكون كبيرة الحجم.
+    */
+
+    selectedImage:
+        null,
+
+    selectedImageData:
+        null,
+
+    selectedImageName:
         null
 
 };
@@ -805,6 +829,16 @@ function newChat() {
     state.currentChat = [];
 
 
+    state.selectedImage =
+        null;
+
+    state.selectedImageData =
+        null;
+
+    state.selectedImageName =
+        null;
+
+
     localStorage.removeItem(
         "ahmed_ai_current_chat"
     );
@@ -952,6 +986,368 @@ function addMessageToUI(
 
 
 /* =========================================================
+   VISION IMAGE MESSAGE UI
+   ========================================================= */
+
+/*
+   عرض الصورة داخل المحادثة.
+
+   هذه الوظيفة لا ترسل الصورة إلى السيرفر.
+   وظيفتها فقط إظهار الصورة للمستخدم
+   داخل المحادثة قبل التحليل.
+*/
+
+function addImageMessageToUI(
+    imageData,
+    imageName = "الصورة"
+) {
+
+    const container =
+        $("chatMessages");
+
+
+    if (!container) return null;
+
+
+    const empty =
+        container.querySelector(
+            ".empty-chat"
+        );
+
+
+    if (empty) {
+
+        empty.remove();
+
+    }
+
+
+    const message =
+        document.createElement(
+            "div"
+        );
+
+
+    message.className =
+        "message user-message vision-image-message";
+
+
+    message.innerHTML = `
+
+        <div class="message-avatar">
+            أ
+        </div>
+
+        <div class="message-content">
+
+            <div
+                class="vision-image-wrapper"
+                style="
+                    max-width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                "
+            >
+
+                <img
+                    src="${imageData}"
+                    alt="${escapeHTML(imageName)}"
+                    style="
+                        max-width: 100%;
+                        max-height: 420px;
+                        object-fit: contain;
+                        border-radius: 14px;
+                        display: block;
+                    "
+                >
+
+                <small
+                    style="
+                        opacity: 0.75;
+                        display: block;
+                    "
+                >
+                    📷 ${escapeHTML(imageName)}
+                </small>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(
+        message
+    );
+
+
+    scrollChatToBottom();
+
+
+    return message;
+
+}
+
+
+/* =========================================================
+   VISION IMAGE PREVIEW
+   ========================================================= */
+
+/*
+   عرض الصورة المحددة وتجهيزها للإرسال.
+*/
+
+function prepareSelectedImage(
+    file
+) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (!file) {
+
+                reject(
+                    new Error(
+                        "لم يتم اختيار صورة."
+                    )
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !file.type ||
+                !file.type.startsWith(
+                    "image/"
+                )
+            ) {
+
+                reject(
+                    new Error(
+                        "الملف المحدد ليس صورة."
+                    )
+                );
+
+                return;
+
+            }
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload = () => {
+
+                const result =
+                    reader.result;
+
+
+                if (
+                    typeof result !==
+                    "string"
+                ) {
+
+                    reject(
+                        new Error(
+                            "تعذر قراءة الصورة."
+                        )
+                    );
+
+                    return;
+
+                }
+
+
+                resolve(result);
+
+            };
+
+
+            reader.onerror = () => {
+
+                reject(
+                    new Error(
+                        "حدث خطأ أثناء قراءة الصورة."
+                    )
+                );
+
+            };
+
+
+            reader.readAsDataURL(
+                file
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   SET SELECTED IMAGE
+   ========================================================= */
+
+/*
+   حفظ الصورة الحالية في State
+   وعرضها داخل المحادثة.
+*/
+
+async function setSelectedImage(
+    file
+) {
+
+    if (!file) return;
+
+
+    try {
+
+        const imageData =
+            await prepareSelectedImage(
+                file
+            );
+
+
+        state.selectedImage =
+            file;
+
+        state.selectedImageData =
+            imageData;
+
+        state.selectedImageName =
+            file.name;
+
+
+        /*
+           الانتقال إلى المحادثة
+           حتى يرى المستخدم الصورة.
+        */
+
+        openSection(
+            "chat"
+        );
+
+
+        /*
+           عرض الصورة داخل المحادثة
+        */
+
+        addImageMessageToUI(
+
+            imageData,
+
+            file.name
+
+        );
+
+
+        showNotification(
+
+            `تم تجهيز الصورة: ${file.name}`,
+
+            "📷"
+
+        );
+
+
+        /*
+           وضع المؤشر في خانة السؤال
+        */
+
+        const chatInput =
+            $("chatInput");
+
+
+        if (chatInput) {
+
+            setTimeout(
+                () => {
+
+                    chatInput.focus();
+
+                },
+                100
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Image preparation error:",
+            error
+        );
+
+
+        showNotification(
+
+            error.message ||
+            "تعذر تجهيز الصورة",
+
+            "!"
+
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CLEAR SELECTED IMAGE
+   ========================================================= */
+
+function clearSelectedImage() {
+
+    state.selectedImage =
+        null;
+
+    state.selectedImageData =
+        null;
+
+    state.selectedImageName =
+        null;
+
+
+    /*
+       تفريغ حقول الصور
+       حتى يمكن اختيار نفس الصورة
+       مرة أخرى إذا أراد المستخدم.
+    */
+
+    const homeImageInput =
+        $("homeImageInput");
+
+
+    const chatImageInput =
+        $("chatImageInput");
+
+
+    if (homeImageInput) {
+
+        homeImageInput.value =
+            "";
+
+    }
+
+
+    if (chatImageInput) {
+
+        chatImageInput.value =
+            "";
+
+    }
+
+}
+
+
+/* =========================================================
    AI REQUEST
    ========================================================= */
 
@@ -1046,6 +1442,121 @@ async function askAI(message) {
 
 
 /* =========================================================
+   VISION REQUEST
+   ========================================================= */
+
+/*
+   إرسال الصورة + سؤال المستخدم
+   إلى Cloudflare Worker Vision.
+*/
+
+async function askVision(
+    message,
+    imageData
+) {
+
+    if (!imageData) {
+
+        throw new Error(
+            "لم يتم تجهيز الصورة."
+        );
+
+    }
+
+
+    const response =
+        await fetch(
+
+            AI_VISION_API_URL,
+
+            {
+
+                method:
+                    "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json"
+
+                },
+
+                body:
+                    JSON.stringify({
+
+                        message:
+                            message ||
+                            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
+
+                        image:
+                            imageData
+
+                    })
+
+            }
+
+        );
+
+
+    let data;
+
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch (error) {
+
+        throw new Error(
+            "سيرفر Vision لم يرجع بيانات صحيحة."
+        );
+
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+
+            data?.error ||
+
+            "حدث خطأ أثناء الاتصال بخدمة Vision."
+
+        );
+
+    }
+
+
+    if (!data.success) {
+
+        throw new Error(
+
+            data?.error ||
+
+            "تعذر تحليل الصورة."
+
+        );
+
+    }
+
+
+    return (
+
+        data.response ||
+
+        data.answer ||
+
+        data.text ||
+
+        ""
+
+    );
+
+}
+
+
+/* =========================================================
    SEND CHAT
    ========================================================= */
 
@@ -1057,7 +1568,26 @@ async function sendChatMessage(text) {
         ).trim();
 
 
-    if (!text) return;
+    /*
+       معرفة هل هناك صورة معلقة
+    */
+
+    const hasImage =
+        !!state.selectedImageData;
+
+
+    /*
+       إذا لم يوجد نص ولا صورة
+    */
+
+    if (
+        !text &&
+        !hasImage
+    ) {
+
+        return;
+
+    }
 
 
     const input =
@@ -1072,16 +1602,38 @@ async function sendChatMessage(text) {
 
 
     /*
-       إضافة سؤال المستخدم
+       إذا كانت هناك صورة
+       ولم يكتب المستخدم سؤالًا
+       نستخدم سؤالًا افتراضيًا.
     */
 
-    addMessageToUI(
+    if (
+        hasImage &&
+        !text
+    ) {
 
-        "user",
+        text =
+            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.";
 
-        text
+    }
 
-    );
+
+    /*
+       إضافة سؤال المستخدم
+       فقط إذا كتب نصًا.
+    */
+
+    if (text) {
+
+        addMessageToUI(
+
+            "user",
+
+            text
+
+        );
+
+    }
 
 
     /*
@@ -1093,23 +1645,74 @@ async function sendChatMessage(text) {
 
             "assistant",
 
-            "🤖 جاري التفكير...",
+            hasImage
+                ? "🖼️ جاري تحليل الصورة..."
+                : "🤖 جاري التفكير...",
 
             false
 
         );
 
 
+    /*
+       حفظ نسخة من الصورة
+       قبل تنفيذ الطلب.
+    */
+
+    const imageDataToSend =
+        state.selectedImageData;
+
+
+    /*
+       اسم الصورة الحالي
+    */
+
+    const imageNameToSend =
+        state.selectedImageName;
+
+
     try {
 
+        let answer;
+
+
         /*
-           طلب الرد من Worker
+           =========================================
+           VISION
+           =========================================
         */
 
-        const answer =
-            await askAI(
-                text
-            );
+        if (hasImage) {
+
+            answer =
+                await askVision(
+
+                    text,
+
+                    imageDataToSend
+
+                );
+
+        }
+
+        /*
+           =========================================
+           CHAT
+           =========================================
+        */
+
+        else {
+
+            /*
+               طلب الرد من Worker
+            */
+
+            answer =
+                await askAI(
+                    text
+                );
+
+        }
 
 
         /*
@@ -1128,7 +1731,11 @@ async function sendChatMessage(text) {
 
                 content.textContent =
                     answer ||
-                    "لم تصل إجابة.";
+                    (
+                        hasImage
+                            ? "لم يصل تحليل للصورة."
+                            : "لم تصل إجابة."
+                    );
 
             }
 
@@ -1146,7 +1753,11 @@ async function sendChatMessage(text) {
 
             content:
                 answer ||
-                "لم تصل إجابة."
+                (
+                    hasImage
+                        ? "لم يصل تحليل للصورة."
+                        : "لم تصل إجابة."
+                )
 
         });
 
@@ -1162,21 +1773,42 @@ async function sendChatMessage(text) {
            حفظ المحادثة في Firebase
            =========================================
 
-           السؤال:
-           text
-
-           الرد:
-           answer
+           بالنسبة للـVision:
+           نحفظ السؤال والرد فقط.
+           الصورة نفسها لا يتم تخزينها في Firestore
+           هنا حتى لا نضع Data URL كبيرة داخل قاعدة
+           البيانات.
         */
 
         await saveChatToFirebase(
 
-            text,
+            hasImage
+                ? (
+                    `📷 ${imageNameToSend || "صورة"}\n\n` +
+                    text
+                )
+                : text,
 
             answer ||
-            "لم تصل إجابة."
+            (
+                hasImage
+                    ? "لم يصل تحليل للصورة."
+                    : "لم تصل إجابة."
+            )
 
         );
+
+
+        /*
+           بعد انتهاء التحليل
+           نلغي الصورة المعلقة.
+        */
+
+        if (hasImage) {
+
+            clearSelectedImage();
+
+        }
 
 
     } catch (error) {
@@ -1290,6 +1922,35 @@ function setupChat() {
                     homeInput.value.trim();
 
 
+                /*
+                   لو توجد صورة مختارة
+                   ننتقل للمحادثة ونرسلها
+                   مع السؤال.
+                */
+
+                if (
+                    state.selectedImageData
+                ) {
+
+                    homeInput.value =
+                        "";
+
+
+                    openSection(
+                        "chat"
+                    );
+
+
+                    sendChatMessage(
+                        text
+                    );
+
+
+                    return;
+
+                }
+
+
                 if (!text) return;
 
 
@@ -1328,6 +1989,33 @@ function setupChat() {
 
                     const text =
                         homeInput.value.trim();
+
+
+                    /*
+                       لو توجد صورة مختارة
+                    */
+
+                    if (
+                        state.selectedImageData
+                    ) {
+
+                        homeInput.value =
+                            "";
+
+
+                        openSection(
+                            "chat"
+                        );
+
+
+                        sendChatMessage(
+                            text
+                        );
+
+
+                        return;
+
+                    }
 
 
                     if (!text) return;
@@ -2203,7 +2891,7 @@ function setupImages() {
 
             input.addEventListener(
                 "change",
-                () => {
+                async () => {
 
                     const file =
                         input.files?.[0];
@@ -2212,19 +2900,42 @@ function setupImages() {
                     if (!file) return;
 
 
-                    showNotification(
+                    /*
+                       التأكد أن الملف صورة
+                    */
 
-                        `تم اختيار الصورة: ${file.name}`,
+                    if (
+                        !file.type ||
+                        !file.type.startsWith(
+                            "image/"
+                        )
+                    ) {
 
-                        "📷"
+                        showNotification(
 
-                    );
+                            "الملف المحدد ليس صورة",
+
+                            "!"
+
+                        );
+
+
+                        input.value =
+                            "";
+
+
+                        return;
+
+                    }
 
 
                     /*
-                       إرسال الصور للـAI سيتم تفعيله
-                       في مرحلة Vision القادمة.
+                       تجهيز الصورة
                     */
+
+                    await setSelectedImage(
+                        file
+                    );
 
                 }
             );
