@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Ahmed AI - تسجيل الدخول</title>
+
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+    <!-- خلفية -->
+    <div class="background">
+
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+
+        <div class="grid"></div>
+
+    </div>
+
+
+    <!-- صفحة تسجيل الدخول -->
+    <main class="login-container">
+
+        <div class="login-card">
+
+            <!-- الشعار -->
+            <div class="logo">
+
+                <div class="logo-icon">
+                    🤖
+                </div>
+
+                <div class="logo-text">
+
+                    <h1>
+                        Ahmed AI
+                    </h1>
+
+                    <span>
+                        GIS • Study • Coding
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- العنوان -->
+            <div class="login-header">
+
+                <h2>
+                    تسجيل الدخول
+                </h2>
+
+                <p>
+                    سجّل الدخول للوصول إلى Ahmed AI
+                </p>
+
+            </div>
+
+
+            <!-- النموذج -->
+            <form id="loginForm">
+
+                <!-- البريد -->
+                <div class="input-group">
+
+                    <label for="email">
+                        البريد الإلكتروني
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            📧
+                        </span>
+
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="example@email.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- كلمة المرور -->
+                <div class="input-group">
+
+                    <label for="password">
+                        كلمة المرور
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            🔒
+                        </span>
+
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="أدخل كلمة المرور"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            class="toggle-password"
+                            aria-label="إظهار كلمة المرور"
+                        >
+                            👁️
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- رسالة الخطأ -->
+                <div
+                    id="loginMessage"
+                    class="login-message"
+                ></div>
+
+
+                <!-- زر الدخول -->
+                <button
+                    type="submit"
+                    id="loginBtn"
+                    class="login-btn"
+                >
+
+                    <span id="loginBtnText">
+                        تسجيل الدخول
+                    </span>
+
+                    <span
+                        id="loginLoader"
+                        class="loader"
+                    ></span>
+
+                </button>
+
+            </form>
+
+
+            <!-- معلومات -->
+            <div class="login-info">
+
+                <span>
+                    🔐
+                </span>
+
+                <p>
+                    تسجيل الدخول محمي بواسطة Firebase
+                </p>
+
+            </div>
+
+
+            <!-- العودة للموقع -->
+            <a
+                href="index.html"
+                class="back-link"
+            >
+                ← العودة إلى Ahmed AI
+            </a>
+
+
+            <!-- الفوتر -->
+            <footer>
+
+                <p>
+                    Ahmed AI © 2026
+                </p>
+
+                <span>
+                    GIS • Study • Coding • AI
+                </span>
+
+            </footer>
+
+        </div>
+
+    </main>
+
+
+    <script
+        type="module"
+        src="login.js"
+    ></script>
+
+</body>
+
+</html>
