@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#0f172a">
+
+    <meta name="description"
+          content="Ahmed AI - مساعدك الذكي للمذاكرة و GIS والبرمجة">
+
+    <title>Ahmed AI | المساعد الذكي</title>
+
+    <!-- الخط -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- ملف التصميم -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         APP
+    ========================== -->
+
+    <div class="app">
+
+        <!-- =========================
+             SIDEBAR
+        ========================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Logo -->
+            <div class="logo">
+
+                <div class="logo-icon">
+                    AI
+                </div>
+
+                <div class="logo-text">
+                    <h1>Ahmed AI</h1>
+                    <span>GIS • Study • Coding</span>
+                </div>
+
+            </div>
+
+
+            <!-- زر محادثة جديدة -->
+            <button class="new-chat-btn" id="newChatBtn">
+
+                <span class="icon">＋</span>
+
+                <span>
+                    محادثة جديدة
+                </span>
+
+            </button>
+
+
+            <!-- القائمة -->
+            <nav class="main-menu">
+
+                <button class="menu-item active"
+                        data-section="home">
+
+                    <span class="menu-icon">🏠</span>
+
+                    <span>
+                        الرئيسية
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="chat">
+
+                    <span class="menu-icon">🤖</span>
+
+                    <span>
+                        AI Chat
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="study">
+
+                    <span class="menu-icon">📚</span>
+
+                    <span>
+                        المذاكرة
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="gis">
+
+                    <span class="menu-icon">🗺️</span>
+
+                    <span>
+                        GIS
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="coding">
+
+                    <span class="menu-icon">💻</span>
+
+                    <span>
+                        البرمجة
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="files">
+
+                    <span class="menu-icon">📂</span>
+
+                    <span>
+                        ملفاتي
+                    </span>
+
+                </button>
+
+
+                <button class="menu-item"
+                        data-section="tests">
+
+                    <span class="menu-icon">📝</span>
+
+                    <span>
+                        الاختبارات
+                    </span>
+
+                </button>
+
+            </nav>
+
+
+            <!-- معلومات المستخدم -->
+            <div class="sidebar-bottom">
+
+                <button class="menu-item"
+                        data-section="settings">
+
+                    <span class="menu-icon">⚙️</span>
+
+                    <span>
+                        الإعدادات
+                    </span>
+
+                </button>
+
+
+                <div class="user-card">
+
+                    <div class="user-avatar">
+                        أ
+                    </div>
+
+                    <div class="user-info">
+
+                        <strong>
+                            أحمد سمير
+                        </strong>
+
+                        <small>
+                            GIS Student
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             MAIN
+        ========================== -->
+
+        <main class="main">
+
+            <!-- Header -->
+            <header class="topbar">
+
+                <button class="mobile-menu-btn"
+                        id="mobileMenuBtn">
+
+                    ☰
+
+                </button>
+
+
+                <div class="page-title">
+
+                    <h2 id="pageTitle">
+                        الرئيسية
+                    </h2>
+
+                    <p id="pageSubtitle">
+                        مساعدك الذكي للمذاكرة والعمل
+                    </p>
+
+                </div>
+
+
+                <div class="top-actions">
+
+                    <!-- Dark Mode -->
+                    <button class="icon-btn"
+                            id="themeBtn"
+                            title="الوضع الليلي">
+
+                        🌙
+
+                    </button>
+
+
+                    <!-- Notifications -->
+                    <button class="icon-btn"
+                            id="notificationBtn"
+                            title="الإشعارات">
+
+                        🔔
+
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =========================
+                 CONTENT
+            ========================== -->
+
+            <div class="content">
+
+
+                <!-- =====================
+                     HOME
+                ====================== -->
+
+                <section class="page-section active"
+                         id="homeSection">
+
+                    <div class="welcome">
+
+                        <div>
+
+                            <span class="welcome-label">
+                                أهلاً يا أحمد 👋
+                            </span>
+
+                            <h1>
+                                ماذا تريد أن تتعلم اليوم؟
+                            </h1>
+
+                            <p>
+                                استخدم Ahmed AI لمساعدتك في
+                                المذاكرة و GIS والبرمجة.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Quick Actions -->
+
+                    <div class="quick-actions">
+
+                        <button class="quick-card"
+                                data-action="chat">
+
+                            <div class="quick-icon">
+                                🤖
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    اسأل AI
+                                </h3>
+
+                                <p>
+                                    اسأل أي سؤال
+                                </p>
+
+                            </div>
+
+                        </button>
+
+
+                        <button class="quick-card"
+                                data-action="study">
+
+                            <div class="quick-icon">
+                                📚
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    ابدأ المذاكرة
+                                </h3>
+
+                                <p>
+                                    شرح وتلخيص وأسئلة
+                                </p>
+
+                            </div>
+
+                        </button>
+
+
+                        <button class="quick-card"
+                                data-action="gis">
+
+                            <div class="quick-icon">
+                                🗺️
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    مساعد GIS
+                                </h3>
+
+                                <p>
+                                    ArcGIS و Remote Sensing
+                                </p>
+
+                            </div>
+
+                        </button>
+
+
+                        <button class="quick-card"
+                                data-action="coding">
+
+                            <div class="quick-icon">
+                                💻
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    البرمجة
+                                </h3>
+
+                                <p>
+                                    Python و ArcPy
+                                </p>
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- Chat shortcut -->
+
+                    <div class="home-chat">
+
+                        <div class="section-heading">
+
+                            <div>
+
+                                <h2>
+                                    تحدث مع Ahmed AI
+                                </h2>
+
+                                <p>
+                                    اكتب سؤالك وسنبدأ معًا
+                                </p>
+
+                            </div>
+
+                            <span class="online-status">
+                                <span></span>
+                                متصل
+                            </span>
+
+                        </div>
+
+
+                        <div class="chat-input-wrapper">
+
+                            <textarea
+                                id="homeChatInput"
+                                placeholder="اكتب سؤالك هنا... مثال: اشرحلي Network Analyst في ArcGIS Pro"
+                                rows="3"></textarea>
+
+
+                            <div class="input-actions">
+
+                                <div>
+
+                                    <!-- رفع صورة -->
+                                    <label class="attach-btn"
+                                           title="رفع صورة">
+
+                                        📷
+
+                                        <input
+                                            type="file"
+                                            id="homeImageInput"
+                                            accept="image/*"
+                                            hidden>
+
+                                    </label>
+
+
+                                    <!-- رفع ملف -->
+                                    <label class="attach-btn"
+                                           title="رفع ملف">
+
+                                        📎
+
+                                        <input
+                                            type="file"
+                                            id="homeFileInput"
+                                            accept=".pdf,.doc,.docx,.txt"
+                                            hidden>
+
+                                    </label>
+
+                                </div>
+
+
+                                <button
+                                    class="send-btn"
+                                    id="homeSendBtn">
+
+                                    إرسال
+                                    <span>➤</span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Progress -->
+
+                    <div class="progress-section">
+
+                        <div class="section-heading">
+
+                            <div>
+
+                                <h2>
+                                    تقدمك في التعلم
+                                </h2>
+
+                                <p>
+                                    تابع تطور مهاراتك
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="progress-grid">
+
+
+                            <div class="progress-card">
+
+                                <div class="progress-card-top">
+
+                                    <span>
+                                        🗺️ ArcGIS Pro
+                                    </span>
+
+                                    <strong>
+                                        80%
+                                    </strong>
+
+                                </div>
+
+                                <div class="progress-bar">
+
+                                    <span style="width:80%">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="progress-card">
+
+                                <div class="progress-card-top">
+
+                                    <span>
+                                        🐍 Python
+                                    </span>
+
+                                    <strong>
+                                        50%
+                                    </strong>
+
+                                </div>
+
+                                <div class="progress-bar">
+
+                                    <span style="width:50%">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="progress-card">
+
+                                <div class="progress-card-top">
+
+                                    <span>
+                                        📐 AutoCAD
+                                    </span>
+
+                                    <strong>
+                                        70%
+                                    </strong>
+
+                                </div>
+
+                                <div class="progress-bar">
+
+                                    <span style="width:70%">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="progress-card">
+
+                                <div class="progress-card-top">
+
+                                    <span>
+                                        🛰️ Remote Sensing
+                                    </span>
+
+                                    <strong>
+                                        40%
+                                    </strong>
+
+                                </div>
+
+                                <div class="progress-bar">
+
+                                    <span style="width:40%">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     CHAT
+                ====================== -->
+
+                <section class="page-section"
+                         id="chatSection">
+
+                    <div class="chat-page">
+
+                        <div class="chat-messages"
+                             id="chatMessages">
+
+                            <div class="empty-chat">
+
+                                <div class="empty-icon">
+                                    🤖
+                                </div>
+
+                                <h2>
+                                    Ahmed AI
+                                </h2>
+
+                                <p>
+                                    أنا جاهز أساعدك في المذاكرة
+                                    وGIS والبرمجة.
+                                </p>
+
+                                <div class="suggestions">
+
+                                    <button>
+                                        اشرحلي ArcGIS Pro
+                                    </button>
+
+                                    <button>
+                                        علمني Python
+                                    </button>
+
+                                    <button>
+                                        اشرحلي Remote Sensing
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="chat-box">
+
+                            <textarea
+                                id="chatInput"
+                                placeholder="اكتب رسالتك هنا..."
+                                rows="2"></textarea>
+
+
+                            <div class="chat-box-bottom">
+
+                                <div class="chat-tools">
+
+                                    <label
+                                        class="tool-btn"
+                                        title="رفع صورة">
+
+                                        📷
+
+                                        <input
+                                            type="file"
+                                            id="chatImageInput"
+                                            accept="image/*"
+                                            hidden>
+
+                                    </label>
+
+
+                                    <label
+                                        class="tool-btn"
+                                        title="رفع ملف">
+
+                                        📎
+
+                                        <input
+                                            type="file"
+                                            id="chatFileInput"
+                                            accept=".pdf,.doc,.docx,.txt"
+                                            hidden>
+
+                                    </label>
+
+
+                                    <button
+                                        class="tool-btn"
+                                        title="بحث على الإنترنت"
+                                        id="webSearchBtn">
+
+                                        🌐
+
+                                    </button>
+
+                                </div>
+
+
+                                <button
+                                    class="send-btn"
+                                    id="chatSendBtn">
+
+                                    إرسال
+                                    <span>➤</span>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     STUDY
+                ====================== -->
+
+                <section class="page-section"
+                         id="studySection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            📚 المذاكرة
+                        </h1>
+
+                        <p>
+                            حول Ahmed AI إلى مدرسك الشخصي.
+                        </p>
+
+                    </div>
+
+
+                    <div class="feature-grid">
+
+
+                        <div class="feature-card">
+
+                            <div class="feature-icon">
+                                📖
+                            </div>
+
+                            <h3>
+                                شرح الدرس
+                            </h3>
+
+                            <p>
+                                ارفع المحاضرة أو اكتب الموضوع
+                                وسأشرحه لك بطريقة بسيطة.
+                            </p>
+
+                            <button
+                                class="primary-btn"
+                                data-study-action="explain">
+
+                                ابدأ الشرح
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="feature-card">
+
+                            <div class="feature-icon">
+                                📝
+                            </div>
+
+                            <h3>
+                                تلخيص
+                            </h3>
+
+                            <p>
+                                حول ملفاتك ومحاضراتك إلى
+                                ملخصات منظمة.
+                            </p>
+
+                            <button
+                                class="primary-btn"
+                                data-study-action="summary">
+
+                                عمل ملخص
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="feature-card">
+
+                            <div class="feature-icon">
+                                ❓
+                            </div>
+
+                            <h3>
+                                أسئلة
+                            </h3>
+
+                            <p>
+                                أنشئ أسئلة تدريبية من
+                                المحاضرات.
+                            </p>
+
+                            <button
+                                class="primary-btn"
+                                data-study-action="questions">
+
+                                إنشاء أسئلة
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="feature-card">
+
+                            <div class="feature-icon">
+                                🎯
+                            </div>
+
+                            <h3>
+                                امتحان
+                            </h3>
+
+                            <p>
+                                اختبر نفسك في أي موضوع
+                                تدرسه.
+                            </p>
+
+                            <button
+                                class="primary-btn"
+                                data-study-action="exam">
+
+                                ابدأ اختبار
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="study-upload">
+
+                        <div class="upload-icon">
+                            📄
+                        </div>
+
+                        <h2>
+                            ارفع ملف للمذاكرة
+                        </h2>
+
+                        <p>
+                            PDF أو Word أو ملف نصي
+                        </p>
+
+                        <label class="upload-btn">
+
+                            اختيار ملف
+
+                            <input
+                                type="file"
+                                id="studyFileInput"
+                                accept=".pdf,.doc,.docx,.txt"
+                                hidden>
+
+                        </label>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     GIS
+                ====================== -->
+
+                <section class="page-section"
+                         id="gisSection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            🗺️ مساعد GIS
+                        </h1>
+
+                        <p>
+                            مساعد متخصص في GIS والاستشعار عن بعد والمساحة.
+                        </p>
+
+                    </div>
+
+
+                    <div class="subject-grid">
+
+
+                        <button class="subject-card"
+                                data-topic="ArcGIS Pro">
+
+                            <span>
+                                🗺️
+                            </span>
+
+                            <strong>
+                                ArcGIS Pro
+                            </strong>
+
+                            <small>
+                                Analysis • Mapping • Tools
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="Network Analyst">
+
+                            <span>
+                                🛣️
+                            </span>
+
+                            <strong>
+                                Network Analyst
+                            </strong>
+
+                            <small>
+                                Routes • Network
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="Remote Sensing">
+
+                            <span>
+                                🛰️
+                            </span>
+
+                            <strong>
+                                Remote Sensing
+                            </strong>
+
+                            <small>
+                                Landsat • Sentinel
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="Surveying">
+
+                            <span>
+                                📐
+                            </span>
+
+                            <strong>
+                                Surveying
+                            </strong>
+
+                            <small>
+                                Surveying • Measurements
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="AutoCAD">
+
+                            <span>
+                                📐
+                            </span>
+
+                            <strong>
+                                AutoCAD
+                            </strong>
+
+                            <small>
+                                CAD • Drafting
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="Civil 3D">
+
+                            <span>
+                                🏗️
+                            </span>
+
+                            <strong>
+                                Civil 3D
+                            </strong>
+
+                            <small>
+                                Civil Engineering
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="QGIS">
+
+                            <span>
+                                🌍
+                            </span>
+
+                            <strong>
+                                QGIS
+                            </strong>
+
+                            <small>
+                                Open Source GIS
+                            </small>
+
+                        </button>
+
+
+                        <button class="subject-card"
+                                data-topic="Google Earth">
+
+                            <span>
+                                🌎
+                            </span>
+
+                            <strong>
+                                Google Earth
+                            </strong>
+
+                            <small>
+                                Earth Visualization
+                            </small>
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="gis-prompt">
+
+                        <h2>
+                            اسأل مساعد GIS
+                        </h2>
+
+                        <textarea
+                            id="gisInput"
+                            placeholder="مثال: اشرحلي إزاي أعمل Network Analysis في ArcGIS Pro"></textarea>
+
+                        <button
+                            class="primary-btn"
+                            id="gisSendBtn">
+
+                            اسأل مساعد GIS
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     CODING
+                ====================== -->
+
+                <section class="page-section"
+                         id="codingSection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            💻 مساعد البرمجة
+                        </h1>
+
+                        <p>
+                            اكتب الكود أو اطلب من AI إنشاء كود لك.
+                        </p>
+
+                    </div>
+
+
+                    <div class="coding-languages">
+
+                        <button class="language-card"
+                                data-language="Python">
+
+                            🐍
+
+                            <strong>
+                                Python
+                            </strong>
+
+                        </button>
+
+
+                        <button class="language-card"
+                                data-language="ArcPy">
+
+                            🗺️
+
+                            <strong>
+                                ArcPy
+                            </strong>
+
+                        </button>
+
+
+                        <button class="language-card"
+                                data-language="JavaScript">
+
+                            🟨
+
+                            <strong>
+                                JavaScript
+                            </strong>
+
+                        </button>
+
+
+                        <button class="language-card"
+                                data-language="HTML/CSS">
+
+                            🌐
+
+                            <strong>
+                                HTML / CSS
+                            </strong>
+
+                        </button>
+
+
+                        <button class="language-card"
+                                data-language="SQL">
+
+                            🗄️
+
+                            <strong>
+                                SQL
+                            </strong>
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="code-workspace">
+
+                        <div class="code-request">
+
+                            <label>
+                                ماذا تريد من AI؟
+                            </label>
+
+                            <textarea
+                                id="codeInput"
+                                placeholder="مثال: اكتبلي Python code يقرأ كل Shapefiles من فولدر..."></textarea>
+
+                            <button
+                                class="primary-btn"
+                                id="codeSendBtn">
+
+                                إنشاء الكود
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="code-result">
+
+                            <div class="code-header">
+
+                                <span>
+                                    النتيجة
+                                </span>
+
+                                <button
+                                    id="copyCodeBtn">
+
+                                    📋 نسخ
+
+                                </button>
+
+                            </div>
+
+                            <pre id="codeOutput"><code>سيظهر الكود هنا...</code></pre>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     FILES
+                ====================== -->
+
+                <section class="page-section"
+                         id="filesSection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            📂 ملفاتي
+                        </h1>
+
+                        <p>
+                            ملفاتك المستخدمة في المذاكرة.
+                        </p>
+
+                    </div>
+
+
+                    <div class="files-upload">
+
+                        <label class="big-upload">
+
+                            <div>
+                                📤
+                            </div>
+
+                            <strong>
+                                ارفع ملف
+                            </strong>
+
+                            <span>
+                                PDF • Word • TXT
+                            </span>
+
+                            <input
+                                type="file"
+                                id="mainFileInput"
+                                accept=".pdf,.doc,.docx,.txt"
+                                hidden>
+
+                        </label>
+
+                    </div>
+
+
+                    <div class="files-list"
+                         id="filesList">
+
+                        <div class="empty-files">
+
+                            📂
+
+                            <p>
+                                لا توجد ملفات حتى الآن
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     TESTS
+                ====================== -->
+
+                <section class="page-section"
+                         id="testsSection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            📝 الاختبارات
+                        </h1>
+
+                        <p>
+                            اختبر معلوماتك وطوّر مستواك.
+                        </p>
+
+                    </div>
+
+
+                    <div class="test-builder">
+
+                        <label>
+                            المادة
+                        </label>
+
+                        <select id="testSubject">
+
+                            <option>
+                                GIS
+                            </option>
+
+                            <option>
+                                ArcGIS Pro
+                            </option>
+
+                            <option>
+                                Remote Sensing
+                            </option>
+
+                            <option>
+                                Python
+                            </option>
+
+                            <option>
+                                AutoCAD
+                            </option>
+
+                            <option>
+                                Surveying
+                            </option>
+
+                            <option>
+                                Geography
+                            </option>
+
+                            <option>
+                                English
+                            </option>
+
+                        </select>
+
+
+                        <label>
+                            عدد الأسئلة
+                        </label>
+
+                        <select id="testCount">
+
+                            <option>
+                                5
+                            </option>
+
+                            <option>
+                                10
+                            </option>
+
+                            <option>
+                                20
+                            </option>
+
+                        </select>
+
+
+                        <button
+                            class="primary-btn"
+                            id="createTestBtn">
+
+                            إنشاء الاختبار
+
+                        </button>
+
+                    </div>
+
+
+                    <div id="testContainer"></div>
+
+                </section>
+
+
+
+                <!-- =====================
+                     SETTINGS
+                ====================== -->
+
+                <section class="page-section"
+                         id="settingsSection">
+
+                    <div class="page-header">
+
+                        <h1>
+                            ⚙️ الإعدادات
+                        </h1>
+
+                        <p>
+                            إعدادات Ahmed AI.
+                        </p>
+
+                    </div>
+
+
+                    <div class="settings-card">
+
+                        <div class="setting-row">
+
+                            <div>
+
+                                <strong>
+                                    الوضع الليلي
+                                </strong>
+
+                                <p>
+                                    تغيير مظهر الموقع
+                                </p>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="darkModeToggle">
+
+                                <span></span>
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="setting-row">
+
+                            <div>
+
+                                <strong>
+                                    حفظ المحادثات
+                                </strong>
+
+                                <p>
+                                    حفظ المحادثات على الجهاز
+                                </p>
+
+                            </div>
+
+                            <label class="switch">
+
+                                <input
+                                    type="checkbox"
+                                    id="saveChatsToggle"
+                                    checked>
+
+                                <span></span>
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="setting-row">
+
+                            <div>
+
+                                <strong>
+                                    اللغة
+                                </strong>
+
+                                <p>
+                                    لغة واجهة الموقع
+                                </p>
+
+                            </div>
+
+                            <select id="languageSelect">
+
+                                <option value="ar">
+                                    العربية
+                                </option>
+
+                                <option value="en">
+                                    English
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================
+         NOTIFICATION
+    ========================== -->
+
+    <div class="notification"
+         id="notification">
+
+        <span id="notificationIcon">
+            ✓
+        </span>
+
+        <span id="notificationText">
+            تم تنفيذ العملية
+        </span>
+
+    </div>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script src="app.js"></script>
+
+</body>
+</html>
