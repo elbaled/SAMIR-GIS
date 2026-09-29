@@ -1,6 +1,6 @@
-// ==========================================
-// Ahmed AI - Admin Dashboard
-// ==========================================
+// ======================================================
+// AHMED AI - ADMIN DASHBOARD
+// ======================================================
 
 import { auth, db } from "./firebase.js";
 
@@ -13,83 +13,175 @@ import {
     doc,
     getDoc,
     collection,
+    getDocs,
     getCountFromServer
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 
-// ==========================================
-// عناصر الصفحة
-// ==========================================
+// ======================================================
+// ELEMENTS
+// ======================================================
 
-const usersCount = document.getElementById("usersCount");
-const chatsCount = document.getElementById("chatsCount");
-const contentCount = document.getElementById("contentCount");
-const testsCount = document.getElementById("testsCount");
+const authLoading =
+    document.getElementById("authLoading");
 
-const logoutBtn = document.getElementById("logoutBtn");
+const adminApp =
+    document.getElementById("adminApp");
+
+const adminName =
+    document.getElementById("adminName");
+
+const adminEmail =
+    document.getElementById("adminEmail");
+
+const adminAvatar =
+    document.getElementById("adminAvatar");
+
+const pageTitle =
+    document.getElementById("pageTitle");
+
+const pageSubtitle =
+    document.getElementById("pageSubtitle");
+
+const logoutBtn =
+    document.getElementById("logoutBtn");
+
+const backToSiteBtn =
+    document.getElementById("backToSiteBtn");
+
+const usersTableBody =
+    document.getElementById("usersTableBody");
+
+const usersEmpty =
+    document.getElementById("usersEmpty");
+
+const userSearch =
+    document.getElementById("userSearch");
+
+const refreshUsersBtn =
+    document.getElementById("refreshUsersBtn");
 
 
-// ==========================================
-// التحقق من تسجيل الدخول وصلاحية Admin
-// ==========================================
+// ======================================================
+// GLOBAL DATA
+// ======================================================
+
+let allUsers = [];
+
+let currentAdmin = null;
+
+
+// ======================================================
+// AUTH CHECK
+// ======================================================
 
 onAuthStateChanged(auth, async (user) => {
 
-    // لو مفيش مستخدم مسجل دخول
+    // ------------------------------------------
+    // NO USER
+    // ------------------------------------------
+
     if (!user) {
-        window.location.href = "index.html";
+
+        window.location.replace("login.html");
+
         return;
     }
 
+
     try {
 
-        // جلب بيانات المستخدم من Firestore
-        const userRef = doc(
-            db,
-            "users",
-            user.uid
-        );
+        // ------------------------------------------
+        // GET ADMIN DATA
+        // ------------------------------------------
 
-        const userSnap = await getDoc(userRef);
+        const userRef =
+            doc(db, "users", user.uid);
+
+        const userSnapshot =
+            await getDoc(userRef);
 
 
-        // لو بيانات المستخدم غير موجودة
-        if (!userSnap.exists()) {
+        // ------------------------------------------
+        // USER DOCUMENT NOT FOUND
+        // ------------------------------------------
 
-            alert("ليس لديك صلاحية دخول لوحة التحكم.");
+        if (!userSnapshot.exists()) {
+
+            alert(
+                "لا توجد بيانات لهذا الحساب في النظام."
+            );
 
             await signOut(auth);
 
-            window.location.href = "login.html";
+            window.location.replace("login.html");
 
             return;
         }
 
 
-        // بيانات المستخدم
-        const userData = userSnap.data();
+        const userData =
+            userSnapshot.data();
 
 
-        // التحقق من role
+        // ------------------------------------------
+        // CHECK ROLE
+        // ------------------------------------------
+
         if (userData.role !== "admin") {
 
-            alert("هذه الصفحة مخصصة للأدمن فقط.");
+            alert(
+                "ليس لديك صلاحية الدخول إلى لوحة التحكم."
+            );
 
-            window.location.href = "index.html";
+            window.location.replace("index.html");
 
             return;
         }
 
 
-        // ======================================
-        // تم التحقق من الأدمن
-        // ======================================
+        // ------------------------------------------
+        // SAVE ADMIN
+        // ------------------------------------------
 
-        console.log("Ahmed AI Admin authenticated 👑");
+        currentAdmin = {
+            ...userData,
+            uid: user.uid
+        };
 
 
-        // تحميل الإحصائيات
+        // ------------------------------------------
+        // SHOW ADMIN DATA
+        // ------------------------------------------
+
+        adminName.textContent =
+            userData.name || "Ahmed Samir";
+
+        adminEmail.textContent =
+            userData.email || user.email || "";
+
+        adminAvatar.textContent =
+            getInitial(
+                userData.name || user.email || "A"
+            );
+
+
+        // ------------------------------------------
+        // SHOW APP
+        // ------------------------------------------
+
+        authLoading.style.display = "none";
+
+        adminApp.style.display = "flex";
+
+
+        // ------------------------------------------
+        // LOAD DASHBOARD
+        // ------------------------------------------
+
         await loadStatistics();
+
+        await loadUsers();
 
 
     } catch (error) {
@@ -103,79 +195,849 @@ onAuthStateChanged(auth, async (user) => {
             "حدث خطأ أثناء التحقق من صلاحيات الأدمن."
         );
 
-        window.location.href = "index.html";
+        window.location.replace("login.html");
     }
 
 });
 
 
-// ==========================================
-// تحميل الإحصائيات
-// ==========================================
+// ======================================================
+// GET INITIAL
+// ======================================================
+
+function getInitial(value) {
+
+    if (!value) {
+        return "A";
+    }
+
+    return value
+        .trim()
+        .charAt(0)
+        .toUpperCase();
+}
+
+
+// ======================================================
+// NAVIGATION
+// ======================================================
+
+const navItems =
+    document.querySelectorAll(".admin-nav-item");
+
+const sections =
+    document.querySelectorAll(".admin-section");
+
+
+navItems.forEach((button) => {
+
+    button.addEventListener("click", () => {
+
+        const sectionName =
+            button.dataset.section;
+
+        openSection(sectionName);
+
+    });
+
+});
+
+
+// ======================================================
+// OPEN SECTION
+// ======================================================
+
+function openSection(sectionName) {
+
+    // ------------------------------------------
+    // REMOVE ACTIVE FROM NAV
+    // ------------------------------------------
+
+    navItems.forEach((item) => {
+
+        item.classList.remove("active");
+
+    });
+
+
+    // ------------------------------------------
+    // ACTIVATE CURRENT NAV
+    // ------------------------------------------
+
+    const activeNav =
+        document.querySelector(
+            `.admin-nav-item[data-section="${sectionName}"]`
+        );
+
+    if (activeNav) {
+
+        activeNav.classList.add("active");
+
+    }
+
+
+    // ------------------------------------------
+    // HIDE ALL SECTIONS
+    // ------------------------------------------
+
+    sections.forEach((section) => {
+
+        section.classList.remove("active");
+
+    });
+
+
+    // ------------------------------------------
+    // SHOW CURRENT SECTION
+    // ------------------------------------------
+
+    const currentSection =
+        document.getElementById(
+            `section-${sectionName}`
+        );
+
+    if (currentSection) {
+
+        currentSection.classList.add("active");
+
+    }
+
+
+    // ------------------------------------------
+    // PAGE TITLE
+    // ------------------------------------------
+
+    const titles = {
+
+        dashboard: [
+            "لوحة التحكم",
+            "إدارة منصة Ahmed AI"
+        ],
+
+        users: [
+            "المستخدمين",
+            "إدارة المستخدمين المسجلين"
+        ],
+
+        chats: [
+            "المحادثات",
+            "متابعة محادثات المستخدمين"
+        ],
+
+        content: [
+            "المحتوى",
+            "إدارة المحتوى التعليمي"
+        ],
+
+        tests: [
+            "الاختبارات",
+            "إدارة الاختبارات"
+        ],
+
+        statistics: [
+            "الإحصائيات",
+            "إحصائيات منصة Ahmed AI"
+        ]
+
+    };
+
+
+    const selected =
+        titles[sectionName] ||
+        titles.dashboard;
+
+
+    pageTitle.textContent =
+        selected[0];
+
+    pageSubtitle.textContent =
+        selected[1];
+
+
+    // ------------------------------------------
+    // LOAD USERS WHEN OPENING USERS
+    // ------------------------------------------
+
+    if (sectionName === "users") {
+
+        loadUsers();
+
+    }
+
+
+    // ------------------------------------------
+    // LOAD STATISTICS
+    // ------------------------------------------
+
+    if (sectionName === "statistics") {
+
+        loadStatistics();
+
+    }
+
+}
+
+
+// ======================================================
+// QUICK ACTIONS
+// ======================================================
+
+const quickActions =
+    document.querySelectorAll(
+        "[data-open-section]"
+    );
+
+
+quickActions.forEach((button) => {
+
+    button.addEventListener("click", () => {
+
+        const section =
+            button.dataset.openSection;
+
+        openSection(section);
+
+    });
+
+});
+
+
+// ======================================================
+// LOAD STATISTICS
+// ======================================================
 
 async function loadStatistics() {
 
     try {
 
-        // عدد المستخدمين
+        // ------------------------------------------
+        // USERS
+        // ------------------------------------------
+
         const usersSnapshot =
             await getCountFromServer(
                 collection(db, "users")
             );
 
-        usersCount.textContent =
+        const usersCount =
             usersSnapshot.data().count;
 
 
-        // عدد المحادثات
+        // ------------------------------------------
+        // CHATS
+        // ------------------------------------------
+
         const chatsSnapshot =
             await getCountFromServer(
                 collection(db, "chats")
             );
 
-        chatsCount.textContent =
+        const chatsCount =
             chatsSnapshot.data().count;
 
 
-        // عدد المحتوى
+        // ------------------------------------------
+        // CONTENT
+        // ------------------------------------------
+
         const contentSnapshot =
             await getCountFromServer(
                 collection(db, "content")
             );
 
-        contentCount.textContent =
+        const contentCount =
             contentSnapshot.data().count;
 
 
-        // عدد الاختبارات
+        // ------------------------------------------
+        // TESTS
+        // ------------------------------------------
+
         const testsSnapshot =
             await getCountFromServer(
                 collection(db, "tests")
             );
 
-        testsCount.textContent =
+        const testsCount =
             testsSnapshot.data().count;
+
+
+        // ------------------------------------------
+        // UPDATE DASHBOARD
+        // ------------------------------------------
+
+        setText(
+            "usersCount",
+            usersCount
+        );
+
+        setText(
+            "chatsCount",
+            chatsCount
+        );
+
+        setText(
+            "contentCount",
+            contentCount
+        );
+
+        setText(
+            "testsCount",
+            testsCount
+        );
+
+
+        // ------------------------------------------
+        // UPDATE STATISTICS PAGE
+        // ------------------------------------------
+
+        setText(
+            "statisticsUsers",
+            usersCount
+        );
+
+        setText(
+            "statisticsChats",
+            chatsCount
+        );
+
+        setText(
+            "statisticsContent",
+            contentCount
+        );
+
+        setText(
+            "statisticsTests",
+            testsCount
+        );
 
 
     } catch (error) {
 
-        console.warn(
-            "Statistics are not available yet:",
+        console.error(
+            "Statistics error:",
             error
         );
 
-        // لو الـCollections لسه مش موجودة
-        usersCount.textContent = "—";
-        chatsCount.textContent = "—";
-        contentCount.textContent = "—";
-        testsCount.textContent = "—";
+
+        // ------------------------------------------
+        // FALLBACK
+        // ------------------------------------------
+
+        setText(
+            "usersCount",
+            "—"
+        );
+
+        setText(
+            "chatsCount",
+            "—"
+        );
+
+        setText(
+            "contentCount",
+            "—"
+        );
+
+        setText(
+            "testsCount",
+            "—"
+        );
+
+
+        setText(
+            "statisticsUsers",
+            "—"
+        );
+
+        setText(
+            "statisticsChats",
+            "—"
+        );
+
+        setText(
+            "statisticsContent",
+            "—"
+        );
+
+        setText(
+            "statisticsTests",
+            "—"
+        );
+
     }
+
 }
 
 
-// ==========================================
-// تسجيل الخروج
-// ==========================================
+// ======================================================
+// SET TEXT
+// ======================================================
+
+function setText(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+
+        element.textContent = value;
+
+    }
+
+}
+
+
+// ======================================================
+// LOAD USERS
+// ======================================================
+
+async function loadUsers() {
+
+    if (!usersTableBody) {
+        return;
+    }
+
+
+    // ------------------------------------------
+    // LOADING
+    // ------------------------------------------
+
+    usersTableBody.innerHTML = `
+
+        <tr>
+
+            <td
+                colspan="6"
+                class="table-loading"
+            >
+
+                جاري تحميل المستخدمين...
+
+            </td>
+
+        </tr>
+
+    `;
+
+
+    usersEmpty.style.display = "none";
+
+
+    try {
+
+        // ------------------------------------------
+        // GET USERS
+        // ------------------------------------------
+
+        const usersSnapshot =
+            await getDocs(
+                collection(db, "users")
+            );
+
+
+        allUsers = [];
+
+
+        usersSnapshot.forEach((documentSnapshot) => {
+
+            const data =
+                documentSnapshot.data();
+
+
+            allUsers.push({
+
+                id:
+                    documentSnapshot.id,
+
+                ...data
+
+            });
+
+        });
+
+
+        // ------------------------------------------
+        // SORT USERS
+        // ------------------------------------------
+
+        allUsers.sort((a, b) => {
+
+            const nameA =
+                String(
+                    a.name || a.email || ""
+                ).toLowerCase();
+
+            const nameB =
+                String(
+                    b.name || b.email || ""
+                ).toLowerCase();
+
+            return nameA.localeCompare(nameB);
+
+        });
+
+
+        // ------------------------------------------
+        // DISPLAY
+        // ------------------------------------------
+
+        renderUsers(allUsers);
+
+
+    } catch (error) {
+
+        console.error(
+            "Load users error:",
+            error
+        );
+
+
+        usersTableBody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="6"
+                    class="table-error"
+                >
+
+                    حدث خطأ أثناء تحميل المستخدمين.
+
+                    <br>
+
+                    تأكد من نشر Firestore Rules الجديدة.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+// ======================================================
+// RENDER USERS
+// ======================================================
+
+function renderUsers(users) {
+
+    usersTableBody.innerHTML = "";
+
+
+    // ------------------------------------------
+    // EMPTY
+    // ------------------------------------------
+
+    if (!users.length) {
+
+        usersEmpty.style.display =
+            "block";
+
+        return;
+    }
+
+
+    usersEmpty.style.display =
+        "none";
+
+
+    // ------------------------------------------
+    // USERS
+    // ------------------------------------------
+
+    users.forEach((user, index) => {
+
+        const row =
+            document.createElement("tr");
+
+
+        // ------------------------------------------
+        // NAME
+        // ------------------------------------------
+
+        const name =
+            user.name ||
+            "بدون اسم";
+
+
+        // ------------------------------------------
+        // EMAIL
+        // ------------------------------------------
+
+        const email =
+            user.email ||
+            "—";
+
+
+        // ------------------------------------------
+        // ROLE
+        // ------------------------------------------
+
+        const role =
+            user.role ||
+            "user";
+
+
+        // ------------------------------------------
+        // UID
+        // ------------------------------------------
+
+        const uid =
+            user.id ||
+            "—";
+
+
+        // ------------------------------------------
+        // STATUS
+        // ------------------------------------------
+
+        const status =
+            user.disabled === true
+                ? "معطل"
+                : "نشط";
+
+
+        const statusClass =
+            user.disabled === true
+                ? "status-disabled"
+                : "status-active";
+
+
+        // ------------------------------------------
+        // ROLE LABEL
+        // ------------------------------------------
+
+        const roleLabel =
+            role === "admin"
+                ? "👑 Admin"
+                : "👤 User";
+
+
+        // ------------------------------------------
+        // CREATE CELLS
+        // ------------------------------------------
+
+        row.innerHTML = `
+
+            <td>
+                ${index + 1}
+            </td>
+
+
+            <td>
+
+                <div class="user-cell">
+
+                    <div class="user-table-avatar">
+
+                        ${escapeHTML(
+                            getInitial(name)
+                        )}
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(name)}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </td>
+
+
+            <td>
+
+                <span class="user-email">
+
+                    ${escapeHTML(email)}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="role-badge">
+
+                    ${roleLabel}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <code class="uid-code">
+
+                    ${escapeHTML(uid)}
+
+                </code>
+
+            </td>
+
+
+            <td>
+
+                <span
+                    class="status-badge ${statusClass}"
+                >
+
+                    ${status}
+
+                </span>
+
+            </td>
+
+        `;
+
+
+        usersTableBody.appendChild(row);
+
+    });
+
+}
+
+
+// ======================================================
+// SEARCH USERS
+// ======================================================
+
+if (userSearch) {
+
+    userSearch.addEventListener(
+        "input",
+        () => {
+
+            const search =
+                userSearch.value
+                    .trim()
+                    .toLowerCase();
+
+
+            if (!search) {
+
+                renderUsers(allUsers);
+
+                return;
+            }
+
+
+            const filtered =
+                allUsers.filter((user) => {
+
+                    const name =
+                        String(
+                            user.name || ""
+                        ).toLowerCase();
+
+
+                    const email =
+                        String(
+                            user.email || ""
+                        ).toLowerCase();
+
+
+                    const uid =
+                        String(
+                            user.id || ""
+                        ).toLowerCase();
+
+
+                    return (
+                        name.includes(search) ||
+                        email.includes(search) ||
+                        uid.includes(search)
+                    );
+
+                });
+
+
+            renderUsers(filtered);
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// REFRESH USERS
+// ======================================================
+
+if (refreshUsersBtn) {
+
+    refreshUsersBtn.addEventListener(
+        "click",
+        async () => {
+
+            refreshUsersBtn.disabled = true;
+
+            refreshUsersBtn.textContent =
+                "⏳ جاري التحديث...";
+
+
+            await loadUsers();
+
+
+            refreshUsersBtn.disabled = false;
+
+            refreshUsersBtn.textContent =
+                "🔄 تحديث";
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// ESCAPE HTML
+// ======================================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+// ======================================================
+// BACK TO MAIN SITE
+// ======================================================
+
+if (backToSiteBtn) {
+
+    backToSiteBtn.addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "index.html";
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// LOGOUT
+// ======================================================
 
 if (logoutBtn) {
 
@@ -183,12 +1045,24 @@ if (logoutBtn) {
         "click",
         async () => {
 
+            const confirmed =
+                confirm(
+                    "هل تريد تسجيل الخروج من لوحة التحكم؟"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
             try {
 
                 await signOut(auth);
 
-                window.location.href =
-                    "index.html";
+                window.location.replace(
+                    "login.html"
+                );
 
             } catch (error) {
 
@@ -200,8 +1074,10 @@ if (logoutBtn) {
                 alert(
                     "حدث خطأ أثناء تسجيل الخروج."
                 );
+
             }
 
         }
     );
+
 }
