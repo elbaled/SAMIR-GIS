@@ -1,0 +1,762 @@
+/* =====================================================
+   AHMED AI - REGISTER PAGE
+===================================================== */
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   BODY
+===================================================== */
+
+body {
+
+    min-height: 100vh;
+
+    font-family:
+        "Cairo",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(37, 99, 235, 0.15),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            rgba(124, 58, 237, 0.15),
+            transparent 35%
+        ),
+        #050816;
+
+    color: #ffffff;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 30px 16px;
+
+    overflow-x: hidden;
+
+}
+
+
+/* =====================================================
+   BACKGROUND GRID
+===================================================== */
+
+.background-grid {
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0.25;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.035) 1px,
+            transparent 1px
+        );
+
+    background-size: 40px 40px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent
+        );
+
+}
+
+
+/* =====================================================
+   GLOW
+===================================================== */
+
+.background-glow {
+
+    position: fixed;
+
+    width: 280px;
+
+    height: 280px;
+
+    border-radius: 50%;
+
+    filter: blur(90px);
+
+    pointer-events: none;
+
+    opacity: 0.18;
+
+}
+
+
+.glow-one {
+
+    top: -80px;
+
+    right: -80px;
+
+    background: #2563eb;
+
+}
+
+
+.glow-two {
+
+    bottom: -100px;
+
+    left: -80px;
+
+    background: #7c3aed;
+
+}
+
+
+/* =====================================================
+   CONTAINER
+===================================================== */
+
+.register-container {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+
+    max-width: 470px;
+
+}
+
+
+/* =====================================================
+   CARD
+===================================================== */
+
+.register-card {
+
+    width: 100%;
+
+    padding: 35px;
+
+    border-radius: 24px;
+
+    background:
+        rgba(15, 23, 42, 0.88);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 30px 80px
+        rgba(0,0,0,0.45);
+
+    backdrop-filter: blur(20px);
+
+    -webkit-backdrop-filter: blur(20px);
+
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.logo {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 14px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.logo-icon {
+
+    width: 58px;
+
+    height: 58px;
+
+    border-radius: 17px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #7c3aed
+        );
+
+    box-shadow:
+        0 10px 30px
+        rgba(37,99,235,0.25);
+
+}
+
+
+.logo-text h1 {
+
+    font-size: 24px;
+
+    font-weight: 800;
+
+}
+
+
+.logo-text span {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.register-title {
+
+    text-align: center;
+
+    margin-bottom: 28px;
+
+}
+
+
+.register-title h2 {
+
+    font-size: 25px;
+
+    font-weight: 800;
+
+    margin-bottom: 8px;
+
+}
+
+
+.register-title p {
+
+    color: #94a3b8;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.form-group {
+
+    margin-bottom: 18px;
+
+}
+
+
+.form-group label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #e2e8f0;
+
+}
+
+
+/* =====================================================
+   INPUT WRAPPER
+===================================================== */
+
+.input-wrapper {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.input-icon {
+
+    position: absolute;
+
+    right: 15px;
+
+    font-size: 17px;
+
+    pointer-events: none;
+
+}
+
+
+.input-wrapper input {
+
+    width: 100%;
+
+    height: 52px;
+
+    padding:
+        0 48px
+        0 50px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.09);
+
+    outline: none;
+
+    background:
+        rgba(255,255,255,0.045);
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    transition: 0.25s;
+
+}
+
+
+.input-wrapper input::placeholder {
+
+    color: #64748b;
+
+}
+
+
+.input-wrapper input:focus {
+
+    border-color:
+        rgba(59,130,246,0.8);
+
+    background:
+        rgba(255,255,255,0.06);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(37,99,235,0.10);
+
+}
+
+
+/* =====================================================
+   PASSWORD TOGGLE
+===================================================== */
+
+.password-toggle {
+
+    position: absolute;
+
+    left: 12px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    width: 35px;
+
+    height: 35px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: none;
+
+    background: transparent;
+
+    color: #94a3b8;
+
+    cursor: pointer;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+
+}
+
+
+.password-toggle:hover {
+
+    background:
+        rgba(255,255,255,0.06);
+
+}
+
+
+/* =====================================================
+   MESSAGE
+===================================================== */
+
+.message {
+
+    min-height: 0;
+
+    margin-bottom: 14px;
+
+    border-radius: 12px;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+
+}
+
+
+.message:not(:empty) {
+
+    padding: 11px 13px;
+
+}
+
+
+.message.error {
+
+    color: #fecaca;
+
+    background:
+        rgba(239,68,68,0.10);
+
+    border:
+        1px solid
+        rgba(239,68,68,0.18);
+
+}
+
+
+.message.success {
+
+    color: #bbf7d0;
+
+    background:
+        rgba(34,197,94,0.10);
+
+    border:
+        1px solid
+        rgba(34,197,94,0.18);
+
+}
+
+
+/* =====================================================
+   REGISTER BUTTON
+===================================================== */
+
+.register-btn {
+
+    width: 100%;
+
+    height: 53px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #7c3aed
+        );
+
+    box-shadow:
+        0 12px 30px
+        rgba(37,99,235,0.22);
+
+    transition:
+        transform 0.2s,
+        opacity 0.2s,
+        box-shadow 0.2s;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+}
+
+
+.register-btn:hover {
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 15px 35px
+        rgba(37,99,235,0.30);
+
+}
+
+
+.register-btn:active {
+
+    transform: translateY(0);
+
+}
+
+
+.register-btn:disabled {
+
+    cursor: not-allowed;
+
+    opacity: 0.65;
+
+    transform: none;
+
+}
+
+
+/* =====================================================
+   LOADER
+===================================================== */
+
+.loader {
+
+    width: 19px;
+
+    height: 19px;
+
+    border-radius: 50%;
+
+    border:
+        3px solid
+        rgba(255,255,255,0.3);
+
+    border-top-color: #ffffff;
+
+    animation:
+        spin 0.8s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
+}
+
+
+/* =====================================================
+   LOGIN LINK
+===================================================== */
+
+.login-link {
+
+    text-align: center;
+
+    margin-top: 22px;
+
+    color: #94a3b8;
+
+    font-size: 13px;
+
+}
+
+
+.login-link a {
+
+    color: #60a5fa;
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+    margin-right: 5px;
+
+}
+
+
+.login-link a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+/* =====================================================
+   SECURITY NOTE
+===================================================== */
+
+.security-note {
+
+    margin-top: 24px;
+
+    padding: 12px;
+
+    text-align: center;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255,255,255,0.035);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.06);
+
+    color: #64748b;
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer {
+
+    text-align: center;
+
+    color: #475569;
+
+    font-size: 12px;
+
+    margin-top: 20px;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 520px) {
+
+    body {
+
+        padding: 18px 12px;
+
+    }
+
+
+    .register-card {
+
+        padding: 25px 20px;
+
+        border-radius: 20px;
+
+    }
+
+
+    .logo {
+
+        margin-bottom: 24px;
+
+    }
+
+
+    .logo-icon {
+
+        width: 52px;
+
+        height: 52px;
+
+    }
+
+
+    .logo-text h1 {
+
+        font-size: 21px;
+
+    }
+
+
+    .register-title h2 {
+
+        font-size: 22px;
+
+    }
+
+
+    .input-wrapper input {
+
+        height: 50px;
+
+    }
+
+}
