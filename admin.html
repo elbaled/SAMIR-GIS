@@ -507,7 +507,7 @@
                     <input
                         type="text"
                         id="userSearch"
-                        placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                        placeholder="ابحث بالاسم أو البريد الإلكتروني أو UID..."
                     >
 
                 </div>
@@ -549,6 +549,10 @@
                                         الحالة
                                     </th>
 
+                                    <th>
+                                        الإجراءات
+                                    </th>
+
                                 </tr>
 
                             </thead>
@@ -559,7 +563,7 @@
                                 <tr>
 
                                     <td
-                                        colspan="6"
+                                        colspan="7"
                                         class="table-loading"
                                     >
 
@@ -869,11 +873,230 @@
 
 
 
+    <!-- ======================================================
+         USER PROFILE MODAL
+    ======================================================= -->
+
+    <div
+        id="userProfileModal"
+        class="user-profile-modal"
+        style="display:none;"
+    >
+
+        <div
+            class="user-profile-overlay"
+            id="userProfileOverlay"
+        ></div>
+
+
+        <div
+            class="user-profile-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profileModalTitle"
+        >
+
+            <!-- HEADER -->
+
+            <div class="user-profile-header">
+
+                <div>
+
+                    <span class="profile-header-label">
+                        👤 ملف المستخدم
+                    </span>
+
+                    <h2 id="profileModalTitle">
+                        الملف الشخصي
+                    </h2>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="closeUserProfileBtn"
+                    class="profile-close-btn"
+                    aria-label="إغلاق"
+                >
+                    ✕
+                </button>
+
+            </div>
+
+
+            <!-- PROFILE MAIN -->
+
+            <div class="user-profile-main">
+
+                <div
+                    id="profileAvatar"
+                    class="profile-avatar"
+                >
+                    A
+                </div>
+
+
+                <div class="profile-main-info">
+
+                    <h3 id="profileName">
+                        —
+                    </h3>
+
+                    <p id="profileEmail">
+                        —
+                    </p>
+
+                    <div class="profile-badges">
+
+                        <span
+                            id="profileRole"
+                            class="profile-role-badge"
+                        >
+                            👤 User
+                        </span>
+
+                        <span
+                            id="profileStatus"
+                            class="profile-status-badge"
+                        >
+                            نشط
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROFILE DETAILS -->
+
+            <div class="profile-details-grid">
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        الاسم
+                    </span>
+
+                    <strong id="profileDetailName">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        البريد الإلكتروني
+                    </span>
+
+                    <strong id="profileDetailEmail">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        نوع الحساب
+                    </span>
+
+                    <strong id="profileDetailRole">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        الحالة
+                    </span>
+
+                    <strong id="profileDetailStatus">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-detail profile-detail-full">
+
+                    <span>
+                        UID
+                    </span>
+
+                    <code id="profileDetailUid">
+                        —
+                    </code>
+
+                </div>
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        تاريخ إنشاء الحساب
+                    </span>
+
+                    <strong id="profileCreatedAt">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="profile-detail">
+
+                    <span>
+                        عدد المحادثات
+                    </span>
+
+                    <strong id="profileChatCount">
+                        —
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- PROFILE ACTIONS -->
+
+            <div class="user-profile-actions">
+
+                <button
+                    type="button"
+                    id="closeUserProfileBtnBottom"
+                    class="profile-secondary-btn"
+                >
+                    إغلاق
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
     <!-- =========================
          ADMIN JAVASCRIPT
     ========================== -->
 
-    <script type="module" src="admin.js"></script>
+    <script
+        type="module"
+        src="admin.js"
+    ></script>
 
 </body>
 
