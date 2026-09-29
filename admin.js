@@ -60,7 +60,7 @@ onAuthStateChanged(auth, async (user) => {
 
             await signOut(auth);
 
-            window.location.href = "index.html";
+            window.location.href = "login.html";
 
             return;
         }
