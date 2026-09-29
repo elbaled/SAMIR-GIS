@@ -1624,3 +1624,41 @@ if (
     init();
 
                        }
+/* ================================
+   AHMED AI INTRODUCTION
+================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const introScreen = document.getElementById("introScreen");
+    const startAI = document.getElementById("startAI");
+
+    if (!introScreen) return;
+
+    // الدخول عند الضغط على الزر
+    if (startAI) {
+        startAI.addEventListener("click", () => {
+            introScreen.classList.add("hide");
+
+            setTimeout(() => {
+                introScreen.remove();
+            }, 800);
+        });
+    }
+
+    // الانتقال تلقائياً بعد 3 ثوانٍ
+    setTimeout(() => {
+
+        if (!introScreen.classList.contains("hide")) {
+
+            introScreen.classList.add("hide");
+
+            setTimeout(() => {
+                introScreen.remove();
+            }, 800);
+
+        }
+
+    }, 3000);
+
+});
