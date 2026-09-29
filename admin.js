@@ -14,7 +14,9 @@ import {
     getDoc,
     collection,
     getDocs,
-    getCountFromServer
+    getCountFromServer,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 
@@ -60,6 +62,61 @@ const userSearch =
 
 const refreshUsersBtn =
     document.getElementById("refreshUsersBtn");
+
+
+// ======================================================
+// USER PROFILE ELEMENTS
+// ======================================================
+
+const userProfileModal =
+    document.getElementById("userProfileModal");
+
+const userProfileOverlay =
+    document.getElementById("userProfileOverlay");
+
+const closeUserProfileBtn =
+    document.getElementById("closeUserProfileBtn");
+
+const closeUserProfileBtnBottom =
+    document.getElementById(
+        "closeUserProfileBtnBottom"
+    );
+
+const profileAvatar =
+    document.getElementById("profileAvatar");
+
+const profileName =
+    document.getElementById("profileName");
+
+const profileEmail =
+    document.getElementById("profileEmail");
+
+const profileRole =
+    document.getElementById("profileRole");
+
+const profileStatus =
+    document.getElementById("profileStatus");
+
+const profileDetailName =
+    document.getElementById("profileDetailName");
+
+const profileDetailEmail =
+    document.getElementById("profileDetailEmail");
+
+const profileDetailRole =
+    document.getElementById("profileDetailRole");
+
+const profileDetailStatus =
+    document.getElementById("profileDetailStatus");
+
+const profileDetailUid =
+    document.getElementById("profileDetailUid");
+
+const profileCreatedAt =
+    document.getElementById("profileCreatedAt");
+
+const profileChatCount =
+    document.getElementById("profileChatCount");
 
 
 // ======================================================
@@ -608,7 +665,7 @@ async function loadUsers() {
         <tr>
 
             <td
-                colspan="6"
+                colspan="7"
                 class="table-loading"
             >
 
@@ -698,7 +755,7 @@ async function loadUsers() {
             <tr>
 
                 <td
-                    colspan="6"
+                    colspan="7"
                     class="table-error"
                 >
 
@@ -842,8 +899,10 @@ function renderUsers(users) {
 
                     <div>
 
-                        <strong>
+                        <strong class="user-name">
+
                             ${escapeHTML(name)}
+
                         </strong>
 
                     </div>
@@ -866,7 +925,13 @@ function renderUsers(users) {
 
             <td>
 
-                <span class="role-badge">
+                <span
+                    class="role-badge ${
+                        role === "admin"
+                            ? "admin"
+                            : "user"
+                    }"
+                >
 
                     ${roleLabel}
 
@@ -898,6 +963,21 @@ function renderUsers(users) {
 
             </td>
 
+
+            <td>
+
+                <button
+                    type="button"
+                    class="view-profile-btn"
+                    data-user-id="${escapeHTML(uid)}"
+                >
+
+                    👤 الملف الشخصي
+
+                </button>
+
+            </td>
+
         `;
 
 
@@ -905,7 +985,417 @@ function renderUsers(users) {
 
     });
 
+
+    // ------------------------------------------
+    // PROFILE BUTTONS
+    // ------------------------------------------
+
+    const profileButtons =
+        usersTableBody.querySelectorAll(
+            ".view-profile-btn"
+        );
+
+
+    profileButtons.forEach((button) => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const userId =
+                    button.dataset.userId;
+
+                const selectedUser =
+                    allUsers.find(
+                        (user) =>
+                            user.id === userId
+                    );
+
+
+                if (!selectedUser) {
+
+                    alert(
+                        "لم يتم العثور على بيانات المستخدم."
+                    );
+
+                    return;
+                }
+
+
+                openUserProfile(
+                    selectedUser
+                );
+
+            }
+        );
+
+    });
+
 }
+
+
+// ======================================================
+// OPEN USER PROFILE
+// ======================================================
+
+async function openUserProfile(user) {
+
+    if (!userProfileModal) {
+        return;
+    }
+
+
+    // ------------------------------------------
+    // BASIC DATA
+    // ------------------------------------------
+
+    const name =
+        user.name ||
+        "بدون اسم";
+
+
+    const email =
+        user.email ||
+        "—";
+
+
+    const role =
+        user.role ||
+        "user";
+
+
+    const uid =
+        user.id ||
+        "—";
+
+
+    const disabled =
+        user.disabled === true;
+
+
+    const status =
+        disabled
+            ? "معطل"
+            : "نشط";
+
+
+    // ------------------------------------------
+    // AVATAR
+    // ------------------------------------------
+
+    profileAvatar.textContent =
+        getInitial(
+            name !== "بدون اسم"
+                ? name
+                : email
+        );
+
+
+    // ------------------------------------------
+    // MAIN PROFILE
+    // ------------------------------------------
+
+    profileName.textContent =
+        name;
+
+    profileEmail.textContent =
+        email;
+
+
+    // ------------------------------------------
+    // ROLE
+    // ------------------------------------------
+
+    if (role === "admin") {
+
+        profileRole.textContent =
+            "👑 Admin";
+
+        profileRole.className =
+            "profile-role-badge profile-role-admin";
+
+    } else {
+
+        profileRole.textContent =
+            "👤 User";
+
+        profileRole.className =
+            "profile-role-badge profile-role-user";
+
+    }
+
+
+    // ------------------------------------------
+    // STATUS
+    // ------------------------------------------
+
+    profileStatus.textContent =
+        status;
+
+
+    if (disabled) {
+
+        profileStatus.className =
+            "profile-status-badge profile-status-disabled";
+
+    } else {
+
+        profileStatus.className =
+            "profile-status-badge profile-status-active";
+
+    }
+
+
+    // ------------------------------------------
+    // DETAILS
+    // ------------------------------------------
+
+    profileDetailName.textContent =
+        name;
+
+    profileDetailEmail.textContent =
+        email;
+
+    profileDetailRole.textContent =
+        role === "admin"
+            ? "Administrator"
+            : "User";
+
+    profileDetailStatus.textContent =
+        status;
+
+    profileDetailUid.textContent =
+        uid;
+
+
+    // ------------------------------------------
+    // CREATED AT
+    // ------------------------------------------
+
+    profileCreatedAt.textContent =
+        formatCreatedAt(
+            user.createdAt
+        );
+
+
+    // ------------------------------------------
+    // CHAT COUNT
+    // ------------------------------------------
+
+    profileChatCount.textContent =
+        "جاري الحساب...";
+
+
+    // ------------------------------------------
+    // SHOW MODAL
+    // ------------------------------------------
+
+    userProfileModal.style.display =
+        "flex";
+
+
+    document.body.classList.add(
+        "profile-modal-open"
+    );
+
+
+    // ------------------------------------------
+    // GET USER CHAT COUNT
+    // ------------------------------------------
+
+    try {
+
+        const chatsQuery =
+            query(
+                collection(db, "chats"),
+                where(
+                    "uid",
+                    "==",
+                    uid
+                )
+            );
+
+
+        const chatsSnapshot =
+            await getCountFromServer(
+                chatsQuery
+            );
+
+
+        const count =
+            chatsSnapshot.data().count;
+
+
+        profileChatCount.textContent =
+            count;
+
+    } catch (error) {
+
+        console.error(
+            "User chat count error:",
+            error
+        );
+
+
+        profileChatCount.textContent =
+            "غير متاح";
+
+    }
+
+}
+
+
+// ======================================================
+// FORMAT CREATED AT
+// ======================================================
+
+function formatCreatedAt(value) {
+
+    if (!value) {
+
+        return "غير متوفر";
+
+    }
+
+
+    try {
+
+        // ------------------------------------------
+        // FIREBASE TIMESTAMP
+        // ------------------------------------------
+
+        if (
+            typeof value === "object" &&
+            typeof value.toDate === "function"
+        ) {
+
+            return value
+                .toDate()
+                .toLocaleString(
+                    "ar-EG",
+                    {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }
+                );
+
+        }
+
+
+        // ------------------------------------------
+        // STRING / DATE
+        // ------------------------------------------
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return String(value);
+
+        }
+
+
+        return date.toLocaleString(
+            "ar-EG",
+            {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    } catch (error) {
+
+        return "غير متوفر";
+
+    }
+
+}
+
+
+// ======================================================
+// CLOSE USER PROFILE
+// ======================================================
+
+function closeUserProfile() {
+
+    if (!userProfileModal) {
+        return;
+    }
+
+
+    userProfileModal.style.display =
+        "none";
+
+
+    document.body.classList.remove(
+        "profile-modal-open"
+    );
+
+}
+
+
+if (closeUserProfileBtn) {
+
+    closeUserProfileBtn.addEventListener(
+        "click",
+        closeUserProfile
+    );
+
+}
+
+
+if (closeUserProfileBtnBottom) {
+
+    closeUserProfileBtnBottom.addEventListener(
+        "click",
+        closeUserProfile
+    );
+
+}
+
+
+if (userProfileOverlay) {
+
+    userProfileOverlay.addEventListener(
+        "click",
+        closeUserProfile
+    );
+
+}
+
+
+// ======================================================
+// ESCAPE KEY - CLOSE PROFILE
+// ======================================================
+
+document.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key === "Escape" &&
+            userProfileModal &&
+            userProfileModal.style.display === "flex"
+        ) {
+
+            closeUserProfile();
+
+        }
+
+    }
+);
 
 
 // ======================================================
@@ -1080,4 +1570,4 @@ if (logoutBtn) {
         }
     );
 
-}
+                                      }
