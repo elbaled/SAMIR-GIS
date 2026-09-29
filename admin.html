@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ahmed AI - Admin</title>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- Sidebar -->
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+
+                <div>
+                    <strong>Ahmed AI</strong>
+                    <small>Admin Panel</small>
+                </div>
+            </div>
+
+
+            <nav>
+
+                <button class="nav-item active">
+                    🏠
+                    <span>الرئيسية</span>
+                </button>
+
+                <button class="nav-item">
+                    👥
+                    <span>المستخدمين</span>
+                </button>
+
+                <button class="nav-item">
+                    💬
+                    <span>المحادثات</span>
+                </button>
+
+                <button class="nav-item">
+                    📚
+                    <span>المحتوى</span>
+                </button>
+
+                <button class="nav-item">
+                    📝
+                    <span>الاختبارات</span>
+                </button>
+
+                <button class="nav-item">
+                    📊
+                    <span>الإحصائيات</span>
+                </button>
+
+            </nav>
+
+
+            <button id="logoutBtn" class="logout">
+                🚪 تسجيل الخروج
+            </button>
+
+        </aside>
+
+
+        <!-- Main -->
+
+        <main class="main">
+
+            <header class="topbar">
+
+                <div>
+                    <h1>لوحة تحكم Ahmed AI</h1>
+
+                    <p>
+                        مرحبًا بك في لوحة الإدارة 👑
+                    </p>
+                </div>
+
+                <div class="admin-badge">
+                    👑 ADMIN
+                </div>
+
+            </header>
+
+
+            <!-- Statistics -->
+
+            <section class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">👥</div>
+
+                    <div>
+                        <span>المستخدمين</span>
+                        <strong id="usersCount">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">💬</div>
+
+                    <div>
+                        <span>المحادثات</span>
+                        <strong id="chatsCount">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">📚</div>
+
+                    <div>
+                        <span>المحتوى</span>
+                        <strong id="contentCount">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">📝</div>
+
+                    <div>
+                        <span>الاختبارات</span>
+                        <strong id="testsCount">0</strong>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Welcome -->
+
+            <section class="welcome-card">
+
+                <div>
+
+                    <span class="welcome-label">
+                        Ahmed AI
+                    </span>
+
+                    <h2>
+                        مركز التحكم الرئيسي
+                    </h2>
+
+                    <p>
+                        من هنا يمكنك إدارة المستخدمين والمحتوى
+                        والاختبارات ومتابعة نشاط الموقع.
+                    </p>
+
+                </div>
+
+                <div class="welcome-icon">
+                    🌐
+                </div>
+
+            </section>
+
+
+            <!-- Quick Actions -->
+
+            <section class="section">
+
+                <h2>إجراءات سريعة</h2>
+
+                <div class="quick-grid">
+
+                    <button class="quick-card">
+                        <span>👥</span>
+                        <strong>إدارة المستخدمين</strong>
+                        <small>
+                            عرض وإدارة حسابات المستخدمين
+                        </small>
+                    </button>
+
+
+                    <button class="quick-card">
+                        <span>📚</span>
+                        <strong>إضافة محتوى</strong>
+                        <small>
+                            إضافة دروس ومواد تعليمية
+                        </small>
+                    </button>
+
+
+                    <button class="quick-card">
+                        <span>📝</span>
+                        <strong>إنشاء اختبار</strong>
+                        <small>
+                            إضافة أسئلة واختبارات
+                        </small>
+                    </button>
+
+
+                    <button class="quick-card">
+                        <span>📊</span>
+                        <strong>الإحصائيات</strong>
+                        <small>
+                            متابعة استخدام الموقع
+                        </small>
+                    </button>
+
+                </div>
+
+            </section>
+
+
+        </main>
+
+    </div>
+
+
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>
