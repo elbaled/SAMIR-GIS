@@ -4,14 +4,91 @@
 
 "use strict";
 
+
 /* =========================================================
    CONFIG
    ========================================================= */
 
-// هنضع رابط الـWorker هنا بعد ما نختبر الواجهة.
-// لا تغير أي شيء الآن.
+// رابط Ahmed AI Worker
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
+
+
+/* =========================================================
+   FIREBASE STATE
+   ========================================================= */
+
+let firebaseAuth = null;
+let firebaseDB = null;
+let currentUser = null;
+
+let firebaseReady = false;
+
+
+/* =========================================================
+   FIREBASE INITIALIZATION
+   ========================================================= */
+
+async function initializeFirebaseForChat() {
+
+    try {
+
+        const firebaseModule =
+            await import("./firebase.js");
+
+        firebaseAuth =
+            firebaseModule.auth;
+
+        firebaseDB =
+            firebaseModule.db;
+
+
+        const authModule =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js"
+            );
+
+
+        authModule.onAuthStateChanged(
+            firebaseAuth,
+            (user) => {
+
+                currentUser = user || null;
+
+                firebaseReady =
+                    !!currentUser;
+
+                if (currentUser) {
+
+                    console.log(
+                        "Ahmed AI Firebase user:",
+                        currentUser.email
+                    );
+
+                } else {
+
+                    console.log(
+                        "Ahmed AI: no authenticated user."
+                    );
+
+                }
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Firebase initialization error:",
+            error
+        );
+
+        firebaseReady = false;
+
+    }
+
+}
 
 
 /* =========================================================
@@ -20,39 +97,78 @@ const AI_API_URL =
 
 const $ = (id) => document.getElementById(id);
 
+
 function showNotification(message, icon = "✓") {
-    const notification = $("notification");
-    const text = $("notificationText");
-    const notificationIcon = $("notificationIcon");
+
+    const notification =
+        $("notification");
+
+    const text =
+        $("notificationText");
+
+    const notificationIcon =
+        $("notificationIcon");
+
 
     if (!notification) return;
 
-    text.textContent = message;
-    notificationIcon.textContent = icon;
+
+    if (text) {
+        text.textContent = message;
+    }
+
+
+    if (notificationIcon) {
+        notificationIcon.textContent = icon;
+    }
+
 
     notification.classList.add("show");
 
-    clearTimeout(window.notificationTimer);
 
-    window.notificationTimer = setTimeout(() => {
-        notification.classList.remove("show");
-    }, 2500);
+    clearTimeout(
+        window.notificationTimer
+    );
+
+
+    window.notificationTimer =
+        setTimeout(() => {
+
+            notification.classList.remove(
+                "show"
+            );
+
+        }, 2500);
+
 }
 
 
 function escapeHTML(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        text;
+
     return div.innerHTML;
+
 }
 
 
 function scrollChatToBottom() {
-    const chat = $("chatMessages");
+
+    const chat =
+        $("chatMessages");
+
 
     if (chat) {
-        chat.scrollTop = chat.scrollHeight;
+
+        chat.scrollTop =
+            chat.scrollHeight;
+
     }
+
 }
 
 
@@ -61,13 +177,32 @@ function scrollChatToBottom() {
    ========================================================= */
 
 let state = {
+
     currentSection: "home",
-    darkMode: localStorage.getItem("ahmed_ai_dark") === "true",
-    saveChats: localStorage.getItem("ahmed_ai_save_chats") !== "false",
+
+    darkMode:
+        localStorage.getItem(
+            "ahmed_ai_dark"
+        ) === "true",
+
+    saveChats:
+        localStorage.getItem(
+            "ahmed_ai_save_chats"
+        ) !== "false",
+
     currentChat: [],
-    selectedLanguage: localStorage.getItem("ahmed_ai_language") || "ar",
-    selectedCodingLanguage: "Python",
-    selectedFile: null
+
+    selectedLanguage:
+        localStorage.getItem(
+            "ahmed_ai_language"
+        ) || "ar",
+
+    selectedCodingLanguage:
+        "Python",
+
+    selectedFile:
+        null
+
 };
 
 
@@ -94,27 +229,32 @@ const pageInfo = {
 
     gis: {
         title: "مساعد GIS",
-        subtitle: "GIS • Remote Sensing • Surveying"
+        subtitle:
+            "GIS • Remote Sensing • Surveying"
     },
 
     coding: {
         title: "البرمجة",
-        subtitle: "Python • ArcPy • JavaScript • SQL"
+        subtitle:
+            "Python • ArcPy • JavaScript • SQL"
     },
 
     files: {
         title: "ملفاتي",
-        subtitle: "إدارة ملفات المذاكرة"
+        subtitle:
+            "إدارة ملفات المذاكرة"
     },
 
     tests: {
         title: "الاختبارات",
-        subtitle: "اختبر معلوماتك"
+        subtitle:
+            "اختبر معلوماتك"
     },
 
     settings: {
         title: "الإعدادات",
-        subtitle: "إعدادات Ahmed AI"
+        subtitle:
+            "إعدادات Ahmed AI"
     }
 
 };
@@ -126,49 +266,83 @@ const pageInfo = {
 
 function openSection(sectionName) {
 
-    const section = $(sectionName + "Section");
+    const section =
+        $(sectionName + "Section");
+
 
     if (!section) return;
 
-    document.querySelectorAll(".page-section")
-        .forEach((item) => {
-            item.classList.remove("active");
-        });
 
-    section.classList.add("active");
-
-    document.querySelectorAll(".menu-item[data-section]")
+    document
+        .querySelectorAll(".page-section")
         .forEach((item) => {
 
-            item.classList.toggle(
-                "active",
-                item.dataset.section === sectionName
+            item.classList.remove(
+                "active"
             );
 
         });
 
-    state.currentSection = sectionName;
 
-    const info = pageInfo[sectionName];
+    section.classList.add(
+        "active"
+    );
+
+
+    document
+        .querySelectorAll(
+            ".menu-item[data-section]"
+        )
+        .forEach((item) => {
+
+            item.classList.toggle(
+                "active",
+                item.dataset.section ===
+                sectionName
+            );
+
+        });
+
+
+    state.currentSection =
+        sectionName;
+
+
+    const info =
+        pageInfo[sectionName];
+
 
     if (info) {
 
         if ($("pageTitle")) {
-            $("pageTitle").textContent = info.title;
+
+            $("pageTitle").textContent =
+                info.title;
+
         }
 
+
         if ($("pageSubtitle")) {
-            $("pageSubtitle").textContent = info.subtitle;
+
+            $("pageSubtitle").textContent =
+                info.subtitle;
+
         }
 
     }
 
+
     closeMobileSidebar();
 
+
     window.scrollTo({
+
         top: 0,
+
         behavior: "smooth"
+
     });
+
 }
 
 
@@ -178,60 +352,95 @@ function openSection(sectionName) {
 
 function setupNavigation() {
 
-    document.querySelectorAll(".menu-item[data-section]")
+    document
+        .querySelectorAll(
+            ".menu-item[data-section]"
+        )
         .forEach((button) => {
 
-            button.addEventListener("click", () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const section = button.dataset.section;
+                    const section =
+                        button.dataset.section;
 
-                openSection(section);
+                    openSection(
+                        section
+                    );
 
-            });
+                }
+            );
 
         });
 
 
-    document.querySelectorAll(".quick-card[data-action]")
+    document
+        .querySelectorAll(
+            ".quick-card[data-action]"
+        )
         .forEach((card) => {
 
-            card.addEventListener("click", () => {
+            card.addEventListener(
+                "click",
+                () => {
 
-                openSection(card.dataset.action);
+                    openSection(
+                        card.dataset.action
+                    );
 
-            });
+                }
+            );
 
         });
 
 
-    const newChatBtn = $("newChatBtn");
+    const newChatBtn =
+        $("newChatBtn");
+
 
     if (newChatBtn) {
 
-        newChatBtn.addEventListener("click", () => {
+        newChatBtn.addEventListener(
+            "click",
+            () => {
 
-            newChat();
+                newChat();
 
-            openSection("chat");
+                openSection(
+                    "chat"
+                );
 
-        });
+            }
+        );
 
     }
 
 
-    const mobileMenuBtn = $("mobileMenuBtn");
+    const mobileMenuBtn =
+        $("mobileMenuBtn");
+
 
     if (mobileMenuBtn) {
 
-        mobileMenuBtn.addEventListener("click", () => {
+        mobileMenuBtn.addEventListener(
+            "click",
+            () => {
 
-            const sidebar = $("sidebar");
+                const sidebar =
+                    $("sidebar");
 
-            if (sidebar) {
-                sidebar.classList.toggle("open");
+
+                if (sidebar) {
+
+                    sidebar.classList.toggle(
+                        "open"
+                    );
+
+                }
+
             }
-
-        });
+        );
 
     }
 
@@ -240,10 +449,16 @@ function setupNavigation() {
 
 function closeMobileSidebar() {
 
-    const sidebar = $("sidebar");
+    const sidebar =
+        $("sidebar");
+
 
     if (sidebar) {
-        sidebar.classList.remove("open");
+
+        sidebar.classList.remove(
+            "open"
+        );
+
     }
 
 }
@@ -257,19 +472,28 @@ function applyTheme() {
 
     if (state.darkMode) {
 
-        document.body.classList.add("dark");
+        document.body.classList.add(
+            "dark"
+        );
 
     } else {
 
-        document.body.classList.remove("dark");
+        document.body.classList.remove(
+            "dark"
+        );
 
     }
 
 
-    const toggle = $("darkModeToggle");
+    const toggle =
+        $("darkModeToggle");
+
 
     if (toggle) {
-        toggle.checked = state.darkMode;
+
+        toggle.checked =
+            state.darkMode;
+
     }
 
 }
@@ -280,44 +504,62 @@ function setupTheme() {
     applyTheme();
 
 
-    const themeBtn = $("themeBtn");
+    const themeBtn =
+        $("themeBtn");
+
 
     if (themeBtn) {
 
-        themeBtn.addEventListener("click", () => {
+        themeBtn.addEventListener(
+            "click",
+            () => {
 
-            state.darkMode = !state.darkMode;
+                state.darkMode =
+                    !state.darkMode;
 
-            localStorage.setItem(
-                "ahmed_ai_dark",
-                state.darkMode
-            );
 
-            applyTheme();
+                localStorage.setItem(
+                    "ahmed_ai_dark",
+                    state.darkMode
+                );
 
-        });
+
+                applyTheme();
+
+            }
+        );
 
     }
 
 
-    const darkModeToggle = $("darkModeToggle");
+    const darkModeToggle =
+        $("darkModeToggle");
+
 
     if (darkModeToggle) {
 
-        darkModeToggle.checked = state.darkMode;
+        darkModeToggle.checked =
+            state.darkMode;
 
-        darkModeToggle.addEventListener("change", () => {
 
-            state.darkMode = darkModeToggle.checked;
+        darkModeToggle.addEventListener(
+            "change",
+            () => {
 
-            localStorage.setItem(
-                "ahmed_ai_dark",
-                state.darkMode
-            );
+                state.darkMode =
+                    darkModeToggle.checked;
 
-            applyTheme();
 
-        });
+                localStorage.setItem(
+                    "ahmed_ai_dark",
+                    state.darkMode
+                );
+
+
+                applyTheme();
+
+            }
+        );
 
     }
 
@@ -325,16 +567,22 @@ function setupTheme() {
 
 
 /* =========================================================
-   CHAT STORAGE
+   CHAT STORAGE - LOCAL
    ========================================================= */
 
 function saveCurrentChat() {
 
     if (!state.saveChats) return;
 
+
     localStorage.setItem(
+
         "ahmed_ai_current_chat",
-        JSON.stringify(state.currentChat)
+
+        JSON.stringify(
+            state.currentChat
+        )
+
     );
 
 }
@@ -344,21 +592,33 @@ function loadCurrentChat() {
 
     if (!state.saveChats) return;
 
+
     try {
 
-        const saved = localStorage.getItem(
-            "ahmed_ai_current_chat"
-        );
+        const saved =
+            localStorage.getItem(
+                "ahmed_ai_current_chat"
+            );
+
 
         if (!saved) return;
 
-        const messages = JSON.parse(saved);
 
-        if (!Array.isArray(messages)) return;
+        const messages =
+            JSON.parse(saved);
 
-        state.currentChat = messages;
+
+        if (!Array.isArray(messages)) {
+            return;
+        }
+
+
+        state.currentChat =
+            messages;
+
 
         renderSavedChat();
+
 
     } catch (error) {
 
@@ -374,25 +634,164 @@ function loadCurrentChat() {
 
 function renderSavedChat() {
 
-    const container = $("chatMessages");
+    const container =
+        $("chatMessages");
+
 
     if (!container) return;
 
-    if (!state.currentChat.length) return;
+
+    if (!state.currentChat.length) {
+        return;
+    }
+
 
     container.innerHTML = "";
 
-    state.currentChat.forEach((message) => {
 
-        addMessageToUI(
-            message.role,
-            message.content,
-            false
-        );
+    state.currentChat.forEach(
+        (message) => {
 
-    });
+            addMessageToUI(
+
+                message.role,
+
+                message.content,
+
+                false
+
+            );
+
+        }
+    );
+
 
     scrollChatToBottom();
+
+}
+
+
+/* =========================================================
+   FIREBASE CHAT SAVE
+   ========================================================= */
+
+/*
+   يحفظ سؤال المستخدم + إجابة Ahmed AI
+   في:
+
+   Firestore
+   └── chats
+       ├── uid
+       ├── email
+       ├── name
+       ├── message
+       ├── response
+       ├── createdAt
+       └── createdAtClient
+*/
+
+async function saveChatToFirebase(
+    userMessage,
+    aiResponse
+) {
+
+    if (!currentUser) {
+
+        console.log(
+            "Chat not saved to Firebase: no user."
+        );
+
+        return;
+
+    }
+
+
+    if (!firebaseDB) {
+
+        console.log(
+            "Chat not saved: Firebase DB not ready."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const firestoreModule =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
+            );
+
+
+        const {
+            collection,
+            addDoc,
+            serverTimestamp
+        } = firestoreModule;
+
+
+        const chatData = {
+
+            uid:
+                currentUser.uid,
+
+            email:
+                currentUser.email || "",
+
+            name:
+                currentUser.displayName ||
+                "مستخدم",
+
+            message:
+                userMessage,
+
+            response:
+                aiResponse,
+
+            createdAt:
+                serverTimestamp(),
+
+            createdAtClient:
+                new Date().toISOString()
+
+        };
+
+
+        const chatRef =
+            await addDoc(
+
+                collection(
+                    firebaseDB,
+                    "chats"
+                ),
+
+                chatData
+
+            );
+
+
+        console.log(
+            "Chat saved successfully:",
+            chatRef.id
+        );
+
+
+    } catch (error) {
+
+        /*
+           مهم:
+           لو Firebase فشل، لا نوقف Ahmed AI.
+           الرد سيظل ظاهرًا للمستخدم.
+        */
+
+        console.error(
+            "Firestore chat save error:",
+            error
+        );
+
+    }
 
 }
 
@@ -405,11 +804,15 @@ function newChat() {
 
     state.currentChat = [];
 
+
     localStorage.removeItem(
         "ahmed_ai_current_chat"
     );
 
-    const chatMessages = $("chatMessages");
+
+    const chatMessages =
+        $("chatMessages");
+
 
     if (chatMessages) {
 
@@ -450,9 +853,11 @@ function newChat() {
 
         `;
 
+
         setupSuggestionButtons();
 
     }
+
 
     showNotification(
         "تم إنشاء محادثة جديدة",
@@ -472,19 +877,31 @@ function addMessageToUI(
     save = true
 ) {
 
-    const container = $("chatMessages");
+    const container =
+        $("chatMessages");
+
 
     if (!container) return null;
 
 
-    const empty = container.querySelector(".empty-chat");
+    const empty =
+        container.querySelector(
+            ".empty-chat"
+        );
+
 
     if (empty) {
+
         empty.remove();
+
     }
 
 
-    const message = document.createElement("div");
+    const message =
+        document.createElement(
+            "div"
+        );
+
 
     message.className =
         role === "user"
@@ -505,7 +922,10 @@ function addMessageToUI(
     `;
 
 
-    container.appendChild(message);
+    container.appendChild(
+        message
+    );
+
 
     scrollChatToBottom();
 
@@ -513,9 +933,13 @@ function addMessageToUI(
     if (save) {
 
         state.currentChat.push({
+
             role,
+
             content
+
         });
+
 
         saveCurrentChat();
 
@@ -523,6 +947,7 @@ function addMessageToUI(
 
 
     return message;
+
 }
 
 
@@ -532,27 +957,43 @@ function addMessageToUI(
 
 async function askAI(message) {
 
-    const response = await fetch(
-        AI_API_URL,
-        {
-            method: "POST",
+    const response =
+        await fetch(
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+            AI_API_URL,
 
-            body: JSON.stringify({
-                message: message
-            })
-        }
-    );
+            {
+
+                method:
+                    "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json"
+
+                },
+
+                body:
+                    JSON.stringify({
+
+                        message:
+                            message
+
+                    })
+
+            }
+
+        );
 
 
     let data;
 
+
     try {
 
-        data = await response.json();
+        data =
+            await response.json();
 
     } catch (error) {
 
@@ -566,8 +1007,11 @@ async function askAI(message) {
     if (!response.ok) {
 
         throw new Error(
+
             data?.error ||
+
             "حدث خطأ في الاتصال بالسيرفر."
+
         );
 
     }
@@ -576,18 +1020,26 @@ async function askAI(message) {
     if (!data.success) {
 
         throw new Error(
+
             data?.error ||
+
             "تعذر الحصول على إجابة."
+
         );
 
     }
 
 
     return (
+
         data.response ||
+
         data.answer ||
+
         data.text ||
+
         ""
+
     );
 
 }
@@ -599,36 +1051,70 @@ async function askAI(message) {
 
 async function sendChatMessage(text) {
 
-    text = String(text || "").trim();
+    text =
+        String(
+            text || ""
+        ).trim();
+
 
     if (!text) return;
 
 
-    const input = $("chatInput");
+    const input =
+        $("chatInput");
+
 
     if (input) {
+
         input.value = "";
+
     }
 
 
+    /*
+       إضافة سؤال المستخدم
+    */
+
     addMessageToUI(
+
         "user",
+
         text
+
     );
 
 
+    /*
+       رسالة التحميل
+    */
+
     const loadingMessage =
         addMessageToUI(
+
             "assistant",
+
             "🤖 جاري التفكير...",
+
             false
+
         );
 
 
     try {
 
-        const answer = await askAI(text);
+        /*
+           طلب الرد من Worker
+        */
 
+        const answer =
+            await askAI(
+                text
+            );
+
+
+        /*
+           تحديث رسالة التحميل
+        */
 
         if (loadingMessage) {
 
@@ -637,24 +1123,61 @@ async function sendChatMessage(text) {
                     ".message-content"
                 );
 
+
             if (content) {
 
                 content.textContent =
-                    answer || "لم تصل إجابة.";
+                    answer ||
+                    "لم تصل إجابة.";
 
             }
 
         }
 
 
+        /*
+           حفظ رد AI محليًا
+        */
+
         state.currentChat.push({
-            role: "assistant",
-            content: answer || "لم تصل إجابة."
+
+            role:
+                "assistant",
+
+            content:
+                answer ||
+                "لم تصل إجابة."
+
         });
+
 
         saveCurrentChat();
 
+
         scrollChatToBottom();
+
+
+        /*
+           =========================================
+           حفظ المحادثة في Firebase
+           =========================================
+
+           السؤال:
+           text
+
+           الرد:
+           answer
+        */
+
+        await saveChatToFirebase(
+
+            text,
+
+            answer ||
+            "لم تصل إجابة."
+
+        );
+
 
     } catch (error) {
 
@@ -671,10 +1194,12 @@ async function sendChatMessage(text) {
                     ".message-content"
                 );
 
+
             if (content) {
 
                 content.textContent =
-                    "❌ " + error.message;
+                    "❌ " +
+                    error.message;
 
             }
 
@@ -691,12 +1216,18 @@ async function sendChatMessage(text) {
 
 function setupChat() {
 
-    const sendButton = $("chatSendBtn");
+    const sendButton =
+        $("chatSendBtn");
 
-    const input = $("chatInput");
+
+    const input =
+        $("chatInput");
 
 
-    if (sendButton && input) {
+    if (
+        sendButton &&
+        input
+    ) {
 
         sendButton.addEventListener(
             "click",
@@ -715,11 +1246,16 @@ function setupChat() {
             (event) => {
 
                 if (
-                    event.key === "Enter" &&
+
+                    event.key ===
+                        "Enter" &&
+
                     !event.shiftKey
+
                 ) {
 
                     event.preventDefault();
+
 
                     sendChatMessage(
                         input.value
@@ -735,6 +1271,7 @@ function setupChat() {
 
     const homeSendButton =
         $("homeSendBtn");
+
 
     const homeInput =
         $("homeChatInput");
@@ -752,13 +1289,22 @@ function setupChat() {
                 const text =
                     homeInput.value.trim();
 
+
                 if (!text) return;
 
-                homeInput.value = "";
 
-                openSection("chat");
+                homeInput.value =
+                    "";
 
-                sendChatMessage(text);
+
+                openSection(
+                    "chat"
+                );
+
+
+                sendChatMessage(
+                    text
+                );
 
             }
         );
@@ -769,22 +1315,36 @@ function setupChat() {
             (event) => {
 
                 if (
-                    event.key === "Enter" &&
+
+                    event.key ===
+                        "Enter" &&
+
                     !event.shiftKey
+
                 ) {
 
                     event.preventDefault();
 
+
                     const text =
                         homeInput.value.trim();
 
+
                     if (!text) return;
 
-                    homeInput.value = "";
 
-                    openSection("chat");
+                    homeInput.value =
+                        "";
 
-                    sendChatMessage(text);
+
+                    openSection(
+                        "chat"
+                    );
+
+
+                    sendChatMessage(
+                        text
+                    );
 
                 }
 
@@ -806,7 +1366,9 @@ function setupChat() {
 function setupSuggestionButtons() {
 
     document
-        .querySelectorAll(".suggestions button")
+        .querySelectorAll(
+            ".suggestions button"
+        )
         .forEach((button) => {
 
             button.onclick = () => {
@@ -814,15 +1376,27 @@ function setupSuggestionButtons() {
                 const text =
                     button.textContent.trim();
 
-                const input = $("chatInput");
+
+                const input =
+                    $("chatInput");
+
 
                 if (input) {
-                    input.value = text;
+
+                    input.value =
+                        text;
+
                 }
 
-                openSection("chat");
 
-                sendChatMessage(text);
+                openSection(
+                    "chat"
+                );
+
+
+                sendChatMessage(
+                    text
+                );
 
             };
 
@@ -838,7 +1412,9 @@ function setupSuggestionButtons() {
 function setupGIS() {
 
     document
-        .querySelectorAll(".subject-card")
+        .querySelectorAll(
+            ".subject-card"
+        )
         .forEach((card) => {
 
             card.addEventListener(
@@ -848,13 +1424,18 @@ function setupGIS() {
                     const topic =
                         card.dataset.topic;
 
+
                     const input =
                         $("gisInput");
 
+
                     if (!input) return;
 
+
                     input.value =
+
                         `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
+
 
                     input.focus();
 
@@ -877,10 +1458,13 @@ function setupGIS() {
                 const input =
                     $("gisInput");
 
+
                 if (!input) return;
+
 
                 const text =
                     input.value.trim();
+
 
                 if (!text) {
 
@@ -889,14 +1473,21 @@ function setupGIS() {
                         "!"
                     );
 
+
                     return;
 
                 }
 
-                openSection("chat");
+
+                openSection(
+                    "chat"
+                );
+
 
                 sendChatMessage(
+
                     `أنت مساعد متخصص في GIS والاستشعار عن بعد والمساحة.\n\n${text}`
+
                 );
 
             }
@@ -914,7 +1505,9 @@ function setupGIS() {
 function setupCoding() {
 
     document
-        .querySelectorAll(".language-card")
+        .querySelectorAll(
+            ".language-card"
+        )
         .forEach((card) => {
 
             card.addEventListener(
@@ -925,25 +1518,35 @@ function setupCoding() {
                         card.dataset.language ||
                         "Python";
 
+
                     document
-                        .querySelectorAll(".language-card")
+                        .querySelectorAll(
+                            ".language-card"
+                        )
                         .forEach((item) => {
+
                             item.classList.remove(
                                 "selected"
                             );
+
                         });
+
 
                     card.classList.add(
                         "selected"
                     );
 
+
                     const input =
                         $("codeInput");
+
 
                     if (input) {
 
                         input.placeholder =
+
                             `مثال: اكتبلي ${state.selectedCodingLanguage} code...`;
+
 
                         input.focus();
 
@@ -968,11 +1571,15 @@ function setupCoding() {
                 const input =
                     $("codeInput");
 
+
                 const output =
                     $("codeOutput");
 
 
-                if (!input || !output) return;
+                if (
+                    !input ||
+                    !output
+                ) return;
 
 
                 const request =
@@ -985,6 +1592,7 @@ function setupCoding() {
                         "اكتب المطلوب من AI أولاً",
                         "!"
                     );
+
 
                     return;
 
@@ -999,10 +1607,15 @@ function setupCoding() {
 
                     const answer =
                         await askAI(
+
                             `أنت مساعد برمجة متخصص.\n` +
+
                             `لغة البرمجة: ${state.selectedCodingLanguage}\n\n` +
+
                             `المطلوب:\n${request}\n\n` +
+
                             `اكتب كودًا عمليًا مع شرح مختصر.`
+
                         );
 
 
@@ -1037,18 +1650,24 @@ function setupCoding() {
                 const output =
                     $("codeOutput");
 
+
                 if (!output) return;
+
 
                 try {
 
-                    await navigator.clipboard.writeText(
-                        output.textContent
-                    );
+                    await navigator
+                        .clipboard
+                        .writeText(
+                            output.textContent
+                        );
+
 
                     showNotification(
                         "تم نسخ الكود",
                         "✓"
                     );
+
 
                 } catch {
 
@@ -1104,7 +1723,9 @@ function setupStudy() {
                     };
 
 
-                    openSection("chat");
+                    openSection(
+                        "chat"
+                    );
 
 
                     const input =
@@ -1116,6 +1737,7 @@ function setupStudy() {
                         input.value =
                             prompts[action] ||
                             "ساعدني في المذاكرة.";
+
 
                         input.focus();
 
@@ -1138,40 +1760,55 @@ function setupFiles() {
     const inputs = [
 
         $("mainFileInput"),
+
         $("studyFileInput"),
+
         $("homeFileInput"),
+
         $("chatFileInput")
 
     ];
 
 
-    inputs.forEach((input) => {
+    inputs.forEach(
+        (input) => {
 
-        if (!input) return;
+            if (!input) return;
 
 
-        input.addEventListener(
-            "change",
-            () => {
+            input.addEventListener(
+                "change",
+                () => {
 
-                const file =
-                    input.files?.[0];
+                    const file =
+                        input.files?.[0];
 
-                if (!file) return;
 
-                state.selectedFile = file;
+                    if (!file) return;
 
-                addFileToList(file);
 
-                showNotification(
-                    `تم اختيار الملف: ${file.name}`,
-                    "✓"
-                );
+                    state.selectedFile =
+                        file;
 
-            }
-        );
 
-    });
+                    addFileToList(
+                        file
+                    );
+
+
+                    showNotification(
+
+                        `تم اختيار الملف: ${file.name}`,
+
+                        "✓"
+
+                    );
+
+                }
+            );
+
+        }
+    );
 
 }
 
@@ -1181,19 +1818,28 @@ function addFileToList(file) {
     const list =
         $("filesList");
 
+
     if (!list) return;
 
 
     const empty =
-        list.querySelector(".empty-files");
+        list.querySelector(
+            ".empty-files"
+        );
+
 
     if (empty) {
+
         empty.remove();
+
     }
 
 
     const item =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     item.className =
         "file-item";
@@ -1220,37 +1866,63 @@ function addFileToList(file) {
     `;
 
 
-    list.appendChild(item);
+    list.appendChild(
+        item
+    );
 
 }
 
 
 function formatFileSize(bytes) {
 
-    if (!bytes) return "0 KB";
+    if (!bytes) {
+        return "0 KB";
+    }
+
 
     const units = [
+
         "B",
+
         "KB",
+
         "MB",
+
         "GB"
+
     ];
+
 
     const index =
         Math.floor(
+
             Math.log(bytes) /
             Math.log(1024)
+
         );
 
+
     return (
-        (bytes /
+
+        (
+
+            bytes /
+
             Math.pow(
                 1024,
                 index
             )
-        ).toFixed(1) +
-        " " +
+
+        ).toFixed(1)
+
+        +
+
+        " "
+
+        +
+
         units[index]
+
     );
 
 }
@@ -1277,9 +1949,11 @@ function setupTests() {
                 $("testSubject")?.value ||
                 "GIS";
 
+
             const count =
                 $("testCount")?.value ||
                 "5";
+
 
             const container =
                 $("testContainer");
@@ -1304,10 +1978,15 @@ function setupTests() {
 
                 const answer =
                     await askAI(
+
                         `أنشئ اختبارًا تعليميًا في مادة ${subject}.\n` +
+
                         `عدد الأسئلة: ${count}.\n` +
+
                         `اجعل الأسئلة مناسبة لطالب جامعي، ` +
+
                         `واكتب الاختيارات والإجابة الصحيحة.`
+
                     );
 
 
@@ -1372,16 +2051,24 @@ function setupSettings() {
 
 
                 localStorage.setItem(
+
                     "ahmed_ai_save_chats",
+
                     state.saveChats
+
                 );
 
 
                 showNotification(
+
                     state.saveChats
+
                         ? "تم تفعيل حفظ المحادثات"
+
                         : "تم إيقاف حفظ المحادثات",
+
                     "✓"
+
                 );
 
             }
@@ -1409,8 +2096,11 @@ function setupSettings() {
 
 
                 localStorage.setItem(
+
                     "ahmed_ai_language",
+
                     state.selectedLanguage
+
                 );
 
 
@@ -1444,8 +2134,11 @@ function setupNotifications() {
             () => {
 
                 showNotification(
+
                     "لا توجد إشعارات جديدة",
+
                     "🔔"
+
                 );
 
             }
@@ -1474,8 +2167,11 @@ function setupWebSearch() {
         () => {
 
             showNotification(
+
                 "البحث على الإنترنت سنفعّله في المرحلة التالية",
+
                 "🌐"
+
             );
 
         }
@@ -1493,41 +2189,48 @@ function setupImages() {
     const inputs = [
 
         $("homeImageInput"),
+
         $("chatImageInput")
 
     ];
 
 
-    inputs.forEach((input) => {
+    inputs.forEach(
+        (input) => {
 
-        if (!input) return;
-
-
-        input.addEventListener(
-            "change",
-            () => {
-
-                const file =
-                    input.files?.[0];
-
-                if (!file) return;
+            if (!input) return;
 
 
-                showNotification(
-                    `تم اختيار الصورة: ${file.name}`,
-                    "📷"
-                );
+            input.addEventListener(
+                "change",
+                () => {
+
+                    const file =
+                        input.files?.[0];
 
 
-                /*
-                   إرسال الصور للـAI سيتم تفعيله
-                   في مرحلة Vision القادمة.
-                */
+                    if (!file) return;
 
-            }
-        );
 
-    });
+                    showNotification(
+
+                        `تم اختيار الصورة: ${file.name}`,
+
+                        "📷"
+
+                    );
+
+
+                    /*
+                       إرسال الصور للـAI سيتم تفعيله
+                       في مرحلة Vision القادمة.
+                    */
+
+                }
+            );
+
+        }
+    );
 
 }
 
@@ -1543,14 +2246,22 @@ function setupKeyboard() {
         (event) => {
 
             if (
+
                 (event.ctrlKey ||
                  event.metaKey) &&
-                event.key.toLowerCase() === "k"
+
+                event.key.toLowerCase() ===
+                    "k"
+
             ) {
 
                 event.preventDefault();
 
-                openSection("chat");
+
+                openSection(
+                    "chat"
+                );
+
 
                 $("chatInput")?.focus();
 
@@ -1571,6 +2282,13 @@ function init() {
     console.log(
         "Ahmed AI initialized successfully."
     );
+
+
+    /*
+       تشغيل Firebase
+    */
+
+    initializeFirebaseForChat();
 
 
     setupNavigation();
@@ -1601,7 +2319,9 @@ function init() {
 
     loadCurrentChat();
 
-    openSection("home");
+    openSection(
+        "home"
+    );
 
 }
 
@@ -1611,7 +2331,8 @@ function init() {
    ========================================================= */
 
 if (
-    document.readyState === "loading"
+    document.readyState ===
+    "loading"
 ) {
 
     document.addEventListener(
@@ -1623,42 +2344,94 @@ if (
 
     init();
 
-                       }
-/* ================================
+}
+
+
+/* =========================================================
    AHMED AI INTRODUCTION
-================================ */
+   ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    const introScreen = document.getElementById("introScreen");
-    const startAI = document.getElementById("startAI");
+        const introScreen =
+            document.getElementById(
+                "introScreen"
+            );
 
-    if (!introScreen) return;
 
-    // الدخول عند الضغط على الزر
-    if (startAI) {
-        startAI.addEventListener("click", () => {
-            introScreen.classList.add("hide");
+        const startAI =
+            document.getElementById(
+                "startAI"
+            );
 
-            setTimeout(() => {
-                introScreen.remove();
-            }, 800);
-        });
-    }
 
-    // الانتقال تلقائياً بعد 3 ثوانٍ
-    setTimeout(() => {
+        if (!introScreen) return;
 
-        if (!introScreen.classList.contains("hide")) {
 
-            introScreen.classList.add("hide");
+        /*
+           الدخول عند الضغط على الزر
+        */
 
-            setTimeout(() => {
-                introScreen.remove();
-            }, 800);
+        if (startAI) {
+
+            startAI.addEventListener(
+                "click",
+                () => {
+
+                    introScreen.classList.add(
+                        "hide"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            introScreen.remove();
+
+                        },
+                        800
+                    );
+
+                }
+            );
 
         }
 
-    }, 3000);
 
-});
+        /*
+           الانتقال تلقائياً بعد 3 ثوانٍ
+        */
+
+        setTimeout(
+            () => {
+
+                if (
+                    !introScreen.classList.contains(
+                        "hide"
+                    )
+                ) {
+
+                    introScreen.classList.add(
+                        "hide"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            introScreen.remove();
+
+                        },
+                        800
+                    );
+
+                }
+
+            },
+            3000
+        );
+
+    }
+);
