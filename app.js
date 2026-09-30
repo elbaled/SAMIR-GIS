@@ -1530,100 +1530,425 @@ function addMessageToUI(
    IMAGE MESSAGE UI
    ========================================================= */
 
-function addImageMessageToUI(
-    imageData,
-    imageName = "الصورة"
-) {
 
-    const container =
-        $("chatMessages");
+/* =========================================================
+   GEO AI - SMART MESSAGE RENDERER
+   ========================================================= */
 
-
-    if (!container) return null;
+let geoCodeCounter = 0;
 
 
-    const empty =
-        container.querySelector(
-            ".empty-chat"
-        );
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
 
-
-    if (empty) {
-
-        empty.remove();
-
-    }
-
-
-    const message =
-        document.createElement(
-            "div"
-        );
-
-
-    message.className =
-        "message user-message vision-image-message";
-
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-            أ
-        </div>
-
-        <div class="message-content">
-
-            <div
-                class="vision-image-wrapper"
-                style="
-                    max-width:100%;
-                    display:flex;
-                    flex-direction:column;
-                    gap:8px;
-                "
-            >
-
-                <img
-                    src="${imageData}"
-                    alt="${escapeHTML(imageName)}"
-                    style="
-                        max-width:100%;
-                        max-height:420px;
-                        object-fit:contain;
-                        border-radius:14px;
-                        display:block;
-                    "
-                >
-
-                <small
-                    style="
-                        opacity:0.75;
-                        display:block;
-                    "
-                >
-                    📷 ${escapeHTML(imageName)}
-                </small>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    container.appendChild(
-        message
-    );
-
-
-    scrollChatToBottom();
-
-
-    return message;
-
+function escapeHTML(text) {
+    return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
+/* =========================================================
+   ESCAPE CODE
+   ========================================================= */
+
+function escapeCode(code) {
+    return String(code ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   MARKDOWN RENDERER
+   ========================================================= */
+
+function renderGeoMarkdown(text) {
+
+    let source = String(text ?? "");
+
+    /*
+       نحفظ أكواد البرمجة أولًا
+    */
+
+    const codeBlocks = [];
+
+    source = source.replace(
+        /```([a-zA-Z0-9_+#.-]*)\s*\n?([\s\S]*?)```/g,
+        function (_, language, code) {
+
+            const id =
+                `geo-code-${Date.now()}-${geoCodeCounter++}`;
+
+            const lang =
+                language.trim() || "code";
+
+            const cleanCode =
+                code
+                    .replace(/^\n/, "")
+                    .replace(/\n$/, "");
+
+            codeBlocks.push({
+                id,
+                language: lang,
+                code: cleanCode
+            });
+
+            return `___GEO_CODE_${codeBlocks.length - 1}___`;
+        }
+    );
+
+
+    /*
+       Escape باقي النص
+    */
+
+    source = escapeHTML(source);
+
+
+    /*
+       العناوين
+    */
+
+    source = source.replace(
+        /^### (.*)$/gm,
+        "<h4>$1</h4>"
+    );
+
+    source = source.replace(
+        /^## (.*)$/gm,
+        "<h3>$1</h3>"
+    );
+
+    source = source.replace(
+        /^# (.*)$/gm,
+        "<h2>$1</h2>"
+    );
+
+
+    /*
+       Bold
+    */
+
+    source = source.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    /*
+       Italic
+    */
+
+    source = source.replace(
+        /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+        "<em>$1</em>"
+    );
+
+
+    /*
+       Inline Code
+    */
+
+    source = source.replace(
+        /`([^`\n]+)`/g,
+        `<code class="geo-inline-code">$1</code>`
+    );
+
+
+    /*
+       القوائم
+    */
+
+    source = source.replace(
+        /^[•*-]\s+(.*)$/gm,
+        `<div class="geo-list-item">• $1</div>`
+    );
+
+    source = source.replace(
+        /^\d+\.\s+(.*)$/gm,
+        `<div class="geo-list-item">$1</div>`
+    );
+
+
+    /*
+       فواصل الأسطر
+    */
+
+    source = source.replace(
+        /\n/g,
+        "<br>"
+    );
+
+
+    /*
+       استرجاع أكواد البرمجة
+    */
+
+    codeBlocks.forEach(
+        (block, index) => {
+
+            const escapedCode =
+                escapeCode(block.code);
+
+            const codeHTML = `
+                <div
+                    class="geo-code-wrapper"
+                    data-code-id="${block.id}"
+                    style="
+                        margin:14px 0;
+                        border-radius:12px;
+                        overflow:hidden;
+                        background:#050816;
+                        border:1px solid rgba(255,255,255,.10);
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:space-between;
+                            padding:8px 12px;
+                            background:#111827;
+                            color:#cbd5e1;
+                            font-size:12px;
+                        "
+                    >
+
+                        <span>
+                            ${escapeHTML(block.language)}
+                        </span>
+
+                        <button
+                            type="button"
+                            class="geo-copy-code"
+                            data-code-id="${block.id}"
+                            style="
+                                border:0;
+                                border-radius:7px;
+                                padding:6px 10px;
+                                background:#2563eb;
+                                color:white;
+                                cursor:pointer;
+                                font-size:12px;
+                            "
+                        >
+                            📋 نسخ الكود
+                        </button>
+
+                    </div>
+
+                    <pre
+                        style="
+                            margin:0;
+                            padding:14px;
+                            overflow-x:auto;
+                            color:#e5e7eb;
+                            font-family:
+                                Consolas,
+                                Monaco,
+                                'Courier New',
+                                monospace;
+                            font-size:13px;
+                            line-height:1.65;
+                            direction:ltr;
+                            text-align:left;
+                            white-space:pre;
+                        "
+                    ><code>${escapedCode}</code></pre>
+
+                </div>
+            `;
+
+            source =
+                source.replace(
+                    `___GEO_CODE_${index}___`,
+                    codeHTML
+                );
+        }
+    );
+
+
+    return source;
+}
+
+
+/* =========================================================
+   COPY CODE
+   ========================================================= */
+
+async function copyGeoCode(codeId, button) {
+
+    const wrapper =
+        document.querySelector(
+            `[data-code-id="${codeId}"]`
+        );
+
+    if (!wrapper) {
+        return;
+    }
+
+    const codeElement =
+        wrapper.querySelector("code");
+
+    if (!codeElement) {
+        return;
+    }
+
+    const code =
+        codeElement.textContent;
+
+    try {
+
+        await navigator.clipboard.writeText(
+            code
+        );
+
+        const oldText =
+            button.textContent;
+
+        button.textContent =
+            "✅ تم النسخ";
+
+        button.style.background =
+            "#16a34a";
+
+        setTimeout(() => {
+
+            button.textContent =
+                oldText;
+
+            button.style.background =
+                "#2563eb";
+
+        }, 1800);
+
+    } catch (error) {
+
+        /*
+           طريقة بديلة للأجهزة التي تمنع Clipboard API
+        */
+
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value = code;
+
+        textarea.style.position =
+            "fixed";
+
+        textarea.style.opacity =
+            "0";
+
+        document.body.appendChild(
+            textarea
+        );
+
+        textarea.select();
+
+        try {
+            document.execCommand("copy");
+
+            button.textContent =
+                "✅ تم النسخ";
+
+            setTimeout(() => {
+                button.textContent =
+                    "📋 نسخ الكود";
+            }, 1800);
+
+        } catch (copyError) {
+
+            showNotification(
+                "لم أستطع نسخ الكود تلقائيًا.",
+                "error"
+            );
+
+        }
+
+        textarea.remove();
+    }
+}
+
+
+/* =========================================================
+   MESSAGE UI
+   ========================================================= */
+
+function addMessageToUI(role, content) {
+
+    const container =
+        getChatContainer();
+
+    if (!container) {
+        return;
+    }
+
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        `chat-message ${
+            role === "user"
+                ? "user-message"
+                : "ai-message"
+        }`;
+
+    const renderedContent =
+        role === "assistant"
+            ? renderGeoMarkdown(content)
+            : escapeHTML(content)
+                .replace(/\n/g, "<br>");
+
+    wrapper.innerHTML = `
+        <div class="message-content">
+            ${renderedContent}
+        </div>
+    `;
+
+    container.appendChild(
+        wrapper
+    );
+
+    container.scrollTop =
+        container.scrollHeight;
+}
+
+
+/* =========================================================
+   COPY BUTTON EVENTS
+   ========================================================= */
+
+document.addEventListener(
+    "click",
+    function(event) {
+
+        const button =
+            event.target.closest(
+                ".geo-copy-code"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        const codeId =
+            button.dataset.codeId;
+
+        copyGeoCode(
+            codeId,
+            button
+        );
+    }
+);
 /* =========================================================
    IMAGE PREPARATION
    ========================================================= */
