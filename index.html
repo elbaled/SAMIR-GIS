@@ -843,6 +843,78 @@
 
         }
 
+
+        /* ==================================================
+           INTRO FOOTER
+        ================================================== */
+
+        .intro-footer {
+
+            margin-top: 25px;
+
+            text-align: center;
+
+            color:
+                rgba(255,255,255,0.65);
+
+            font-family:
+                "Cairo",
+                Tahoma,
+                Arial,
+                sans-serif;
+
+            line-height: 1.8;
+
+        }
+
+
+        .intro-developer {
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            color: #ffffff;
+
+        }
+
+
+        .intro-copyright {
+
+            margin-top: 3px;
+
+            font-size: 11px;
+
+            color:
+                rgba(255,255,255,0.55);
+
+        }
+
+
+        .intro-version {
+
+            display: inline-block;
+
+            margin-top: 8px;
+
+            padding:
+                4px 12px;
+
+            border:
+                1px solid
+                rgba(255,255,255,0.12);
+
+            border-radius: 999px;
+
+            background:
+                rgba(255,255,255,0.05);
+
+            font-size: 10px;
+
+            color: #93c5fd;
+
+        }
+
     </style>
 
 </head>
@@ -2865,6 +2937,27 @@
 
             </div>
 
+
+            <!-- =========================
+                 INTRO FOOTER
+            ========================== -->
+
+            <div class="intro-footer">
+
+                <div class="intro-developer">
+                    مطور أحمد سمير
+                </div>
+
+                <div class="intro-copyright">
+                    © 2026 جميع الحقوق محفوظة
+                </div>
+
+                <div class="intro-version">
+                    النسخة التجريبية
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -3032,10 +3125,6 @@
                 let date;
 
 
-                /*
-                 * Firestore Timestamp
-                 */
-
                 if (
                     value &&
                     typeof value.toDate === "function"
@@ -3047,10 +3136,6 @@
                 }
 
 
-                /*
-                 * JavaScript Date
-                 */
-
                 else if (
                     value instanceof Date
                 ) {
@@ -3059,10 +3144,6 @@
 
                 }
 
-
-                /*
-                 * String / Number
-                 */
 
                 else {
 
@@ -3243,10 +3324,6 @@
                 getRole();
 
 
-            /*
-             * Avatar
-             */
-
             if (profileAvatarLarge) {
 
                 profileAvatarLarge.textContent =
@@ -3258,10 +3335,6 @@
 
             }
 
-
-            /*
-             * Name
-             */
 
             if (profileDisplayName) {
 
@@ -3279,10 +3352,6 @@
             }
 
 
-            /*
-             * Email
-             */
-
             if (profileDisplayEmail) {
 
                 profileDisplayEmail.textContent =
@@ -3298,10 +3367,6 @@
 
             }
 
-
-            /*
-             * Role
-             */
 
             if (role === "admin") {
 
@@ -3346,10 +3411,6 @@
             }
 
 
-            /*
-             * UID
-             */
-
             if (profileUid) {
 
                 profileUid.textContent =
@@ -3359,10 +3420,6 @@
 
             }
 
-
-            /*
-             * Created At
-             */
 
             if (profileCreatedAt) {
 
@@ -3453,10 +3510,6 @@
 
         }
 
-
-        /*
-         * الضغط على بطاقة المستخدم
-         */
 
         if (userCard) {
 
@@ -3592,10 +3645,6 @@
             async (user) => {
 
 
-                /*
-                 * المستخدم غير مسجل دخول
-                 */
-
                 if (!user) {
 
                     window.location.replace(
@@ -3607,20 +3656,12 @@
                 }
 
 
-                /*
-                 * حفظ المستخدم الحالي
-                 */
-
                 currentUser =
                     user;
 
 
                 try {
 
-
-                    /*
-                     * جلب بيانات المستخدم
-                     */
 
                     const userRef =
                         doc(
@@ -3635,10 +3676,6 @@
                             userRef
                         );
 
-
-                    /*
-                     * بيانات Firestore
-                     */
 
                     if (userSnap.exists()) {
 
@@ -3657,23 +3694,11 @@
                     }
 
 
-                    /*
-                     * تحديث بطاقة المستخدم
-                     */
-
                     updateMainUserCard();
 
 
-                    /*
-                     * تجهيز Profile
-                     */
-
                     updateProfileModal();
 
-
-                    /*
-                     * إظهار الموقع
-                     */
 
                     document.body.classList.remove(
                         "auth-loading"
@@ -3714,10 +3739,6 @@
                         error
                     );
 
-
-                    /*
-                     * في حالة الخطأ
-                     */
 
                     window.location.replace(
                         "login.html"
