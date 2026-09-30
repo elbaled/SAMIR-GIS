@@ -12,7 +12,6 @@
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
 
-
 const AI_VISION_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/vision";
 
@@ -21,8 +20,7 @@ const AI_VISION_API_URL =
    FILE PARSING CONFIG
    ========================================================= */
 
-const MAX_FILE_TEXT =
-    60000;
+const MAX_FILE_TEXT = 60000;
 
 
 /* =========================================================
@@ -46,20 +44,16 @@ async function initializeFirebaseForChat() {
         const firebaseModule =
             await import("./firebase.js");
 
-
         firebaseAuth =
             firebaseModule.auth;
 
-
         firebaseDB =
             firebaseModule.db;
-
 
         const authModule =
             await import(
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js"
             );
-
 
         authModule.onAuthStateChanged(
             firebaseAuth,
@@ -68,10 +62,8 @@ async function initializeFirebaseForChat() {
                 currentUser =
                     user || null;
 
-
                 firebaseReady =
                     !!currentUser;
-
 
                 if (currentUser) {
 
@@ -91,7 +83,6 @@ async function initializeFirebaseForChat() {
             }
         );
 
-
     } catch (error) {
 
         console.error(
@@ -99,9 +90,7 @@ async function initializeFirebaseForChat() {
             error
         );
 
-
-        firebaseReady =
-            false;
+        firebaseReady = false;
 
     }
 
@@ -160,52 +149,34 @@ function showNotification(
     const notification =
         $("notification");
 
-
     const text =
         $("notificationText");
-
 
     const notificationIcon =
         $("notificationIcon");
 
-
     if (!notification) return;
 
-
     if (text) {
-
-        text.textContent =
-            message;
-
+        text.textContent = message;
     }
-
 
     if (notificationIcon) {
-
-        notificationIcon.textContent =
-            icon;
-
+        notificationIcon.textContent = icon;
     }
 
-
-    notification.classList.add(
-        "show"
-    );
-
+    notification.classList.add("show");
 
     clearTimeout(
         window.notificationTimer
     );
 
-
     window.notificationTimer =
         setTimeout(
             () => {
-
                 notification.classList.remove(
                     "show"
                 );
-
             },
             2500
         );
@@ -222,12 +193,9 @@ function scrollChatToBottom() {
     const chat =
         $("chatMessages");
 
-
     if (chat) {
-
         chat.scrollTop =
             chat.scrollHeight;
-
     }
 
 }
@@ -273,28 +241,20 @@ function truncateFileText(
             .replace(/\u0000/g, "")
             .trim();
 
-
     if (
         text.length <=
         MAX_FILE_TEXT
     ) {
-
         return text;
-
     }
 
-
     return (
-
         text.slice(
             0,
             MAX_FILE_TEXT
         )
-
         +
-
         "\n\n[تم اختصار جزء من الملف بسبب كبر حجمه.]"
-
     );
 
 }
@@ -322,104 +282,81 @@ function loadExternalScript(
                 );
 
                 return;
-
             }
-
 
             const existing =
                 document.querySelector(
                     `script[src="${src}"]`
                 );
 
-
             if (existing) {
 
                 existing.addEventListener(
                     "load",
                     () => {
-
                         resolve(
                             globalName
                                 ? window[globalName]
                                 : true
                         );
-
                     }
                 );
-
 
                 existing.addEventListener(
                     "error",
                     () => {
-
                         reject(
                             new Error(
                                 "تعذر تحميل مكتبة قراءة الملفات."
                             )
                         );
-
                     }
                 );
 
-
                 return;
-
             }
-
 
             const script =
                 document.createElement(
                     "script"
                 );
 
+            script.src = src;
+            script.async = true;
 
-            script.src =
-                src;
+            script.onload = () => {
 
-
-            script.async =
-                true;
-
-
-            script.onload =
-                () => {
-
-                    if (
-                        globalName &&
-                        !window[globalName]
-                    ) {
-
-                        reject(
-                            new Error(
-                                "تم تحميل المكتبة ولكن لم يتم العثور عليها."
-                            )
-                        );
-
-                        return;
-
-                    }
-
-
-                    resolve(
-                        globalName
-                            ? window[globalName]
-                            : true
-                    );
-
-                };
-
-
-            script.onerror =
-                () => {
+                if (
+                    globalName &&
+                    !window[globalName]
+                ) {
 
                     reject(
                         new Error(
-                            "تعذر تحميل مكتبة قراءة الملفات."
+                            "تم تحميل المكتبة ولكن لم يتم العثور عليها."
                         )
                     );
 
-                };
+                    return;
+                }
 
+                resolve(
+                    globalName
+                        ? window[globalName]
+                        : true
+                );
+
+            };
+
+            script.onerror = () => {
+
+                reject(
+                    new Error(
+                        "تعذر تحميل مكتبة قراءة الملفات."
+                    )
+                );
+
+            };
 
             document.head.appendChild(
                 script
@@ -445,45 +382,39 @@ function readTXTFile(
             const reader =
                 new FileReader();
 
+            reader.onload = () => {
 
-            reader.onload =
-                () => {
+                try {
 
-                    try {
-
-                        const text =
-                            String(
-                                reader.result ||
-                                ""
-                            );
-
-
-                        resolve(
-                            truncateFileText(
-                                text
-                            )
+                    const text =
+                        String(
+                            reader.result ||
+                            ""
                         );
 
-                    } catch (error) {
-
-                        reject(error);
-
-                    }
-
-                };
-
-
-            reader.onerror =
-                () => {
-
-                    reject(
-                        new Error(
-                            "تعذر قراءة ملف TXT."
+                    resolve(
+                        truncateFileText(
+                            text
                         )
                     );
 
-                };
+                } catch (error) {
 
+                    reject(error);
+
+                }
+
+            };
+
+            reader.onerror = () => {
+
+                reject(
+                    new Error(
+                        "تعذر قراءة ملف TXT."
+                    )
+                );
+
+            };
 
             reader.readAsText(
                 file,
@@ -509,7 +440,6 @@ async function readDOCXFile(
         "mammoth"
     );
 
-
     if (
         !window.mammoth
     ) {
@@ -520,10 +450,8 @@ async function readDOCXFile(
 
     }
 
-
     const arrayBuffer =
         await file.arrayBuffer();
-
 
     const result =
         await window.mammoth.extractRawText({
@@ -531,10 +459,8 @@ async function readDOCXFile(
                 arrayBuffer
         });
 
-
     const text =
         result?.value || "";
-
 
     if (!text.trim()) {
 
@@ -543,7 +469,6 @@ async function readDOCXFile(
         );
 
     }
-
 
     return truncateFileText(
         text
@@ -565,14 +490,11 @@ async function readPDFFile(
             "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
         );
 
-
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
 
-
     const arrayBuffer =
         await file.arrayBuffer();
-
 
     const pdf =
         await pdfjsLib.getDocument({
@@ -580,10 +502,7 @@ async function readPDFFile(
                 arrayBuffer
         }).promise;
 
-
-    let fullText =
-        "";
-
+    let fullText = "";
 
     for (
         let pageNumber = 1;
@@ -596,10 +515,8 @@ async function readPDFFile(
                 pageNumber
             );
 
-
         const textContent =
             await page.getTextContent();
-
 
         const pageText =
             textContent.items
@@ -609,30 +526,23 @@ async function readPDFFile(
                 )
                 .join(" ");
 
-
         fullText +=
             `\n\n--- الصفحة ${pageNumber} ---\n\n`;
 
-
         fullText +=
             pageText;
-
 
         if (
             fullText.length >=
             MAX_FILE_TEXT
         ) {
-
             break;
-
         }
 
     }
 
-
     fullText =
         fullText.trim();
-
 
     if (!fullText) {
 
@@ -641,7 +551,6 @@ async function readPDFFile(
         );
 
     }
-
 
     return truncateFileText(
         fullText
@@ -666,12 +575,10 @@ async function extractFileText(
 
     }
 
-
     const extension =
         getFileExtension(
             file.name
         );
-
 
     if (
         extension === "txt"
@@ -683,7 +590,6 @@ async function extractFileText(
 
     }
 
-
     if (
         extension === "pdf"
     ) {
@@ -693,7 +599,6 @@ async function extractFileText(
         );
 
     }
-
 
     if (
         extension === "docx"
@@ -705,7 +610,6 @@ async function extractFileText(
 
     }
 
-
     if (
         extension === "doc"
     ) {
@@ -715,7 +619,6 @@ async function extractFileText(
         );
 
     }
-
 
     throw new Error(
         "نوع الملف غير مدعوم. استخدم PDF أو DOCX أو TXT."
@@ -733,7 +636,6 @@ let state = {
     currentSection:
         "home",
 
-
     darkMode:
         localStorage.getItem(
             "geo_ai_dark"
@@ -741,7 +643,6 @@ let state = {
         localStorage.getItem(
             "ahmed_ai_dark"
         ) === "true",
-
 
     saveChats:
         localStorage.getItem(
@@ -751,10 +652,8 @@ let state = {
             "ahmed_ai_save_chats"
         ) !== "false",
 
-
     currentChat:
         [],
-
 
     selectedLanguage:
         localStorage.getItem(
@@ -765,34 +664,26 @@ let state = {
         ) ||
         "ar",
 
-
     selectedCodingLanguage:
         "Python",
-
 
     selectedFile:
         null,
 
-
     selectedFileText:
         "",
-
 
     selectedFileName:
         "",
 
-
     selectedFileType:
         "",
-
 
     selectedImage:
         null,
 
-
     selectedImageData:
         null,
-
 
     selectedImageName:
         null
@@ -807,90 +698,59 @@ let state = {
 const pageInfo = {
 
     home: {
-
         title:
             "الرئيسية",
-
         subtitle:
             "مساعدك الذكي للمذاكرة والعمل"
-
     },
-
 
     chat: {
-
         title:
             "AI Chat",
-
         subtitle:
             "تحدث مع GEO AI"
-
     },
-
 
     study: {
-
         title:
             "المذاكرة",
-
         subtitle:
             "مدرسك الشخصي"
-
     },
-
 
     gis: {
-
         title:
             "مساعد GIS",
-
         subtitle:
             "GIS • Remote Sensing • Surveying"
-
     },
-
 
     coding: {
-
         title:
             "البرمجة",
-
         subtitle:
             "Python • ArcPy • JavaScript • SQL"
-
     },
-
 
     files: {
-
         title:
             "ملفاتي",
-
         subtitle:
             "إدارة ملفات المذاكرة"
-
     },
-
 
     tests: {
-
         title:
             "الاختبارات",
-
         subtitle:
             "اختبر معلوماتك"
-
     },
 
-
     settings: {
-
         title:
             "الإعدادات",
-
         subtitle:
             "إعدادات GEO AI"
-
     }
 
 };
@@ -907,9 +767,7 @@ function openSection(
     const section =
         $(sectionName + "Section");
 
-
     if (!section) return;
-
 
     document
         .querySelectorAll(
@@ -917,19 +775,15 @@ function openSection(
         )
         .forEach(
             (item) => {
-
                 item.classList.remove(
                     "active"
                 );
-
             }
         );
-
 
     section.classList.add(
         "active"
     );
-
 
     document
         .querySelectorAll(
@@ -947,48 +801,35 @@ function openSection(
             }
         );
 
-
     state.currentSection =
         sectionName;
-
 
     const info =
         pageInfo[
             sectionName
         ];
 
-
     if (info) {
 
         if ($("pageTitle")) {
-
             $("pageTitle").textContent =
                 info.title;
-
         }
 
-
         if ($("pageSubtitle")) {
-
             $("pageSubtitle").textContent =
                 info.subtitle;
-
         }
 
     }
 
-
     closeMobileSidebar();
 
-
     window.scrollTo({
-
         top:
             0,
-
         behavior:
             "smooth"
-
     });
 
 }
@@ -1021,7 +862,6 @@ function setupNavigation() {
             }
         );
 
-
     document
         .querySelectorAll(
             ".quick-card[data-action]"
@@ -1043,10 +883,8 @@ function setupNavigation() {
             }
         );
 
-
     const newChatBtn =
         $("newChatBtn");
-
 
     if (newChatBtn) {
 
@@ -1065,10 +903,8 @@ function setupNavigation() {
 
     }
 
-
     const mobileMenuBtn =
         $("mobileMenuBtn");
-
 
     if (mobileMenuBtn) {
 
@@ -1078,7 +914,6 @@ function setupNavigation() {
 
                 const sidebar =
                     $("sidebar");
-
 
                 if (sidebar) {
 
@@ -1100,7 +935,6 @@ function closeMobileSidebar() {
 
     const sidebar =
         $("sidebar");
-
 
     if (sidebar) {
 
@@ -1133,10 +967,8 @@ function applyTheme() {
 
     }
 
-
     const toggle =
         $("darkModeToggle");
-
 
     if (toggle) {
 
@@ -1152,10 +984,8 @@ function setupTheme() {
 
     applyTheme();
 
-
     const themeBtn =
         $("themeBtn");
-
 
     if (themeBtn) {
 
@@ -1166,12 +996,10 @@ function setupTheme() {
                 state.darkMode =
                     !state.darkMode;
 
-
                 localStorage.setItem(
                     "geo_ai_dark",
                     state.darkMode
                 );
-
 
                 applyTheme();
 
@@ -1180,16 +1008,13 @@ function setupTheme() {
 
     }
 
-
     const darkModeToggle =
         $("darkModeToggle");
-
 
     if (darkModeToggle) {
 
         darkModeToggle.checked =
             state.darkMode;
-
 
         darkModeToggle.addEventListener(
             "change",
@@ -1198,12 +1023,10 @@ function setupTheme() {
                 state.darkMode =
                     darkModeToggle.checked;
 
-
                 localStorage.setItem(
                     "geo_ai_dark",
                     state.darkMode
                 );
-
 
                 applyTheme();
 
@@ -1223,7 +1046,6 @@ function saveCurrentChat() {
 
     if (!state.saveChats) return;
 
-
     localStorage.setItem(
         "geo_ai_current_chat",
         JSON.stringify(
@@ -1238,7 +1060,6 @@ function loadCurrentChat() {
 
     if (!state.saveChats) return;
 
-
     try {
 
         const saved =
@@ -1249,29 +1070,21 @@ function loadCurrentChat() {
                 "ahmed_ai_current_chat"
             );
 
-
         if (!saved) return;
-
 
         const messages =
             JSON.parse(
                 saved
             );
 
-
         if (!Array.isArray(messages)) {
-
             return;
-
         }
-
 
         state.currentChat =
             messages;
 
-
         renderSavedChat();
-
 
     } catch (error) {
 
@@ -1294,22 +1107,16 @@ function renderSavedChat() {
     const container =
         getChatContainer();
 
-
     if (!container) return;
-
 
     if (
         !state.currentChat.length
     ) {
-
         return;
-
     }
-
 
     container.innerHTML =
         "";
-
 
     state.currentChat.forEach(
         (message) => {
@@ -1322,7 +1129,6 @@ function renderSavedChat() {
 
         }
     );
-
 
     scrollChatToBottom();
 
@@ -1339,18 +1145,12 @@ async function saveChatToFirebase(
 ) {
 
     if (!currentUser) {
-
         return;
-
     }
-
 
     if (!firebaseDB) {
-
         return;
-
     }
-
 
     try {
 
@@ -1359,13 +1159,11 @@ async function saveChatToFirebase(
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
             );
 
-
         const {
             collection,
             addDoc,
             serverTimestamp
         } = firestoreModule;
-
 
         const chatData = {
 
@@ -1393,7 +1191,6 @@ async function saveChatToFirebase(
 
         };
 
-
         await addDoc(
             collection(
                 firebaseDB,
@@ -1401,7 +1198,6 @@ async function saveChatToFirebase(
             ),
             chatData
         );
-
 
     } catch (error) {
 
@@ -1424,27 +1220,21 @@ function newChat() {
     state.currentChat =
         [];
 
-
     state.selectedImage =
         null;
-
 
     state.selectedImageData =
         null;
 
-
     state.selectedImageName =
         null;
-
 
     localStorage.removeItem(
         "geo_ai_current_chat"
     );
 
-
     const chatMessages =
         $("chatMessages");
-
 
     if (chatMessages) {
 
@@ -1486,11 +1276,9 @@ function newChat() {
 
         `;
 
-
         setupSuggestionButtons();
 
     }
-
 
     showNotification(
         "تم إنشاء محادثة جديدة",
@@ -1522,7 +1310,6 @@ function normalizeCodeLanguage(
         )
         .trim()
         .toLowerCase();
-
 
     const languages = {
 
@@ -1630,7 +1417,6 @@ function normalizeCodeLanguage(
 
     };
 
-
     return (
         languages[lang] ||
         (
@@ -1656,7 +1442,6 @@ function buildGeoCodeBox(
             block.code
         );
 
-
     return `
 
         <div
@@ -1676,7 +1461,6 @@ function buildGeoCodeBox(
                     )}
                 </span>
 
-
                 <button
                     type="button"
                     class="geo-copy-code"
@@ -1686,7 +1470,6 @@ function buildGeoCodeBox(
                 </button>
 
             </div>
-
 
             <pre
                 class="geo-code-pre"
@@ -1710,19 +1493,14 @@ function renderGeoText(
     let source =
         String(text ?? "");
 
-
     if (!source.trim()) {
-
         return "";
-
     }
-
 
     source =
         escapeHTML(
             source
         );
-
 
     source =
         source.replace(
@@ -1730,13 +1508,11 @@ function renderGeoText(
             "<h4>$1</h4>"
         );
 
-
     source =
         source.replace(
             /^## (.*)$/gm,
             "<h3>$1</h3>"
         );
-
 
     source =
         source.replace(
@@ -1744,13 +1520,11 @@ function renderGeoText(
             "<h2>$1</h2>"
         );
 
-
     source =
         source.replace(
             /\*\*(.*?)\*\*/g,
             "<strong>$1</strong>"
         );
-
 
     source =
         source.replace(
@@ -1758,13 +1532,11 @@ function renderGeoText(
             "<em>$1</em>"
         );
 
-
     source =
         source.replace(
             /`([^`\n]+)`/g,
             `<code class="geo-inline-code">$1</code>`
         );
-
 
     source =
         source.replace(
@@ -1772,13 +1544,11 @@ function renderGeoText(
             `<div class="geo-list-item">• $1</div>`
         );
 
-
     source =
         source.replace(
             /^\d+\.\s+(.*)$/gm,
             `<div class="geo-list-item">$1</div>`
         );
-
 
     source =
         source.replace(
@@ -1786,20 +1556,17 @@ function renderGeoText(
             `<div class="geo-code-explanation-title">$1</div>`
         );
 
-
     source =
         source.replace(
             /^(Explanation:?)$/gim,
             `<div class="geo-code-explanation-title">$1</div>`
         );
 
-
     source =
         source.replace(
             /\n/g,
             "<br>"
         );
-
 
     return source;
 
@@ -1817,14 +1584,8 @@ function renderGeoMarkdown(
     let source =
         String(text ?? "");
 
-
     const codeBlocks =
         [];
-
-
-    /* =====================================================
-       استخراج Markdown Code Blocks
-       ===================================================== */
 
     source =
         source.replace(
@@ -1846,17 +1607,12 @@ function renderGeoMarkdown(
                             ""
                         );
 
-
                 if (!cleanCode.trim()) {
-
                     return "";
-
                 }
-
 
                 const id =
                     `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
 
                 codeBlocks.push({
 
@@ -1872,26 +1628,13 @@ function renderGeoMarkdown(
 
                 });
 
-
                 return "";
 
             }
         );
 
-
-    /* =====================================================
-       دعم الصيغة:
-
-       Python:
-       code...
-
-       JavaScript:
-       code...
-       ===================================================== */
-
     const languagePattern =
         /(?:^|\n)(Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:\s*\n([\s\S]*?)(?=\n(?:شرح|شرح الكود|Explanation|Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:|$)/g;
-
 
     source =
         source.replace(
@@ -1906,17 +1649,12 @@ function renderGeoMarkdown(
                     String(code)
                         .trim();
 
-
                 if (!cleanCode) {
-
                     return match;
-
                 }
-
 
                 const id =
                     `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
 
                 codeBlocks.push({
 
@@ -1932,16 +1670,10 @@ function renderGeoMarkdown(
 
                 });
 
-
                 return "";
 
             }
         );
-
-
-    /* =====================================================
-       تنظيف النص
-       ===================================================== */
 
     source =
         source
@@ -1951,16 +1683,10 @@ function renderGeoMarkdown(
             )
             .trim();
 
-
-    /* =====================================================
-       شرح الإجابة
-       ===================================================== */
-
     let explanationHTML =
         renderGeoText(
             source
         );
-
 
     if (
         codeBlocks.length &&
@@ -1984,11 +1710,6 @@ function renderGeoMarkdown(
 
     }
 
-
-    /* =====================================================
-       جميع صناديق الأكواد أولاً
-       ===================================================== */
-
     const codeHTML =
         codeBlocks
             .map(
@@ -1998,7 +1719,6 @@ function renderGeoMarkdown(
                     )
             )
             .join("");
-
 
     return (
         codeHTML +
@@ -2022,30 +1742,21 @@ async function copyGeoCode(
             `.geo-code-wrapper[data-code-id="${codeId}"]`
         );
 
-
     if (!wrapper) {
-
         return;
-
     }
-
 
     const codeElement =
         wrapper.querySelector(
             "pre code"
         );
 
-
     if (!codeElement) {
-
         return;
-
     }
-
 
     const code =
         codeElement.textContent;
-
 
     try {
 
@@ -2053,19 +1764,15 @@ async function copyGeoCode(
             code
         );
 
-
         const oldText =
             button.textContent;
-
 
         button.textContent =
             "✅ تم النسخ";
 
-
         button.classList.add(
             "copied"
         );
-
 
         setTimeout(
             () => {
@@ -2073,7 +1780,6 @@ async function copyGeoCode(
                 button.textContent =
                     oldText ||
                     "📋 نسخ الكود";
-
 
                 button.classList.remove(
                     "copied"
@@ -2083,7 +1789,6 @@ async function copyGeoCode(
             1800
         );
 
-
     } catch (error) {
 
         const textarea =
@@ -2091,26 +1796,20 @@ async function copyGeoCode(
                 "textarea"
             );
 
-
         textarea.value =
             code;
-
 
         textarea.style.position =
             "fixed";
 
-
         textarea.style.opacity =
             "0";
-
 
         document.body.appendChild(
             textarea
         );
 
-
         textarea.select();
-
 
         try {
 
@@ -2118,10 +1817,8 @@ async function copyGeoCode(
                 "copy"
             );
 
-
             button.textContent =
                 "✅ تم النسخ";
-
 
             setTimeout(
                 () => {
@@ -2133,7 +1830,6 @@ async function copyGeoCode(
                 1800
             );
 
-
         } catch (copyError) {
 
             showNotification(
@@ -2142,7 +1838,6 @@ async function copyGeoCode(
             );
 
         }
-
 
         textarea.remove();
 
@@ -2164,17 +1859,12 @@ document.addEventListener(
                 ".geo-copy-code"
             );
 
-
         if (!button) {
-
             return;
-
         }
-
 
         const codeId =
             button.dataset.codeId;
-
 
         copyGeoCode(
             codeId,
@@ -2198,41 +1888,30 @@ function addMessageToUI(
     const container =
         getChatContainer();
 
-
     if (!container) {
-
         return null;
-
     }
-
 
     const empty =
         container.querySelector(
             ".empty-chat"
         );
 
-
     if (empty) {
-
         empty.remove();
-
     }
-
 
     const message =
         document.createElement(
             "div"
         );
 
-
     message.className =
         role === "user"
             ? "message user-message"
             : "message ai-message";
 
-
     let renderedContent;
-
 
     if (
         role === "assistant"
@@ -2255,7 +1934,6 @@ function addMessageToUI(
 
     }
 
-
     message.innerHTML = `
 
         <div class="message-avatar">
@@ -2266,23 +1944,17 @@ function addMessageToUI(
             }
         </div>
 
-
         <div class="message-content">
-
             ${renderedContent}
-
         </div>
 
     `;
-
 
     container.appendChild(
         message
     );
 
-
     scrollChatToBottom();
-
 
     if (save) {
 
@@ -2298,11 +1970,9 @@ function addMessageToUI(
 
         });
 
-
         saveCurrentChat();
 
     }
-
 
     return message;
 
@@ -2321,43 +1991,32 @@ function addImageMessageToUI(
     const container =
         getChatContainer();
 
-
     if (!container) {
-
         return null;
-
     }
-
 
     const empty =
         container.querySelector(
             ".empty-chat"
         );
 
-
     if (empty) {
-
         empty.remove();
-
     }
-
 
     const message =
         document.createElement(
             "div"
         );
 
-
     message.className =
         "message user-message";
-
 
     message.innerHTML = `
 
         <div class="message-avatar">
             أ
         </div>
-
 
         <div class="message-content">
 
@@ -2394,14 +2053,11 @@ function addImageMessageToUI(
 
     `;
 
-
     container.appendChild(
         message
     );
 
-
     scrollChatToBottom();
-
 
     return message;
 
@@ -2430,11 +2086,8 @@ function prepareSelectedImage(
                     )
                 );
 
-
                 return;
-
             }
-
 
             if (
                 !file.type ||
@@ -2449,15 +2102,11 @@ function prepareSelectedImage(
                     )
                 );
 
-
                 return;
-
             }
-
 
             const reader =
                 new FileReader();
-
 
             reader.onload =
                 () => {
@@ -2473,18 +2122,14 @@ function prepareSelectedImage(
                             )
                         );
 
-
                         return;
-
                     }
-
 
                     resolve(
                         reader.result
                     );
 
                 };
-
 
             reader.onerror =
                 () => {
@@ -2496,7 +2141,6 @@ function prepareSelectedImage(
                     );
 
                 };
-
 
             reader.readAsDataURL(
                 file
@@ -2518,7 +2162,6 @@ async function setSelectedImage(
 
     if (!file) return;
 
-
     try {
 
         const imageData =
@@ -2526,38 +2169,30 @@ async function setSelectedImage(
                 file
             );
 
-
         state.selectedImage =
             file;
-
 
         state.selectedImageData =
             imageData;
 
-
         state.selectedImageName =
             file.name;
-
 
         openSection(
             "chat"
         );
-
 
         addImageMessageToUI(
             imageData,
             file.name
         );
 
-
         showNotification(
             `تم تجهيز الصورة: ${file.name}`,
             "📷"
         );
 
-
         $("chatInput")?.focus();
-
 
     } catch (error) {
 
@@ -2565,7 +2200,6 @@ async function setSelectedImage(
             "Image preparation error:",
             error
         );
-
 
         showNotification(
             error.message ||
@@ -2587,36 +2221,24 @@ function clearSelectedImage() {
     state.selectedImage =
         null;
 
-
     state.selectedImageData =
         null;
-
 
     state.selectedImageName =
         null;
 
-
     const homeImageInput =
         $("homeImageInput");
-
 
     const chatImageInput =
         $("chatImageInput");
 
-
     if (homeImageInput) {
-
-        homeImageInput.value =
-            "";
-
+        homeImageInput.value = "";
     }
 
-
     if (chatImageInput) {
-
-        chatImageInput.value =
-            "";
-
+        chatImageInput.value = "";
     }
 
 }
@@ -2663,18 +2285,15 @@ async function askAI(
         state.selectedFileText ||
         "";
 
-
     const fileName =
         options.fileName ||
         state.selectedFileName ||
         "";
 
-
     const fileType =
         options.fileType ||
         state.selectedFileType ||
         "";
-
 
     const context =
         state.currentChat
@@ -2698,30 +2317,36 @@ async function askAI(
                 })
             );
 
-
     const userMessage =
         String(
             message || ""
         ).trim();
 
+    if (
+        !userMessage &&
+        !fileText
+    ) {
+
+        throw new Error(
+            "اكتب سؤالك أولاً."
+        );
+
+    }
 
     const finalMessage =
         GEO_AI_CODE_FORMAT_INSTRUCTION +
         "\n\nرسالة المستخدم:\n" +
         userMessage;
 
-
     const body = {
 
         message:
             finalMessage,
 
-
         context:
             context.length
                 ? context
                 : undefined,
-
 
         fileText:
             fileText
@@ -2730,11 +2355,9 @@ async function askAI(
                 )
                 : undefined,
 
-
         fileName:
             fileName ||
             undefined,
-
 
         fileType:
             fileType ||
@@ -2742,78 +2365,126 @@ async function askAI(
 
     };
 
+    console.log(
+        "GEO AI → Sending request:",
+        body
+    );
 
-    const response =
-        await fetch(
-            AI_API_URL,
-            {
-
-                method:
-                    "POST",
-
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-
-                body:
-                    JSON.stringify(
-                        body
-                    )
-
-            }
-        );
-
-
-    let data;
-
+    let response;
 
     try {
 
-        data =
-            await response.json();
+        response =
+            await fetch(
+                AI_API_URL,
+                {
 
-    } catch {
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(
+                            body
+                        )
+
+                }
+            );
+
+    } catch (error) {
+
+        console.error(
+            "GEO AI Network Error:",
+            error
+        );
 
         throw new Error(
-            "السيرفر لم يرجع بيانات صحيحة."
+            "تعذر الاتصال بسيرفر GEO AI. تأكد من اتصال الإنترنت أو من رابط الـAPI."
         );
 
     }
 
+    const rawText =
+        await response.text();
+
+    console.log(
+        "GEO AI ← Server response:",
+        response.status,
+        rawText
+    );
+
+    let data;
+
+    try {
+
+        data =
+            rawText
+                ? JSON.parse(rawText)
+                : null;
+
+    } catch (error) {
+
+        throw new Error(
+            `السيرفر أرسل استجابة غير مفهومة. HTTP ${response.status}`
+        );
+
+    }
 
     if (!response.ok) {
 
         throw new Error(
             data?.error ||
-            "حدث خطأ في الاتصال بالسيرفر."
+            data?.message ||
+            `حدث خطأ من السيرفر. HTTP ${response.status}`
         );
 
     }
 
-
-    if (!data.success) {
+    if (
+        data &&
+        data.success === false
+    ) {
 
         throw new Error(
-            data?.error ||
-            "تعذر الحصول على إجابة."
+            data.error ||
+            data.message ||
+            "السيرفر رفض الطلب."
         );
 
     }
 
+    const answer =
+        data?.response ||
+        data?.answer ||
+        data?.text ||
+        data?.message ||
+        "";
 
-    return (
+    if (
+        !String(answer).trim()
+    ) {
 
-        data.response ||
-        data.answer ||
-        data.text ||
-        ""
+        console.error(
+            "Empty AI response:",
+            data
+        );
 
-    );
+        throw new Error(
+            "السيرفر يعمل لكنه لم يرجع إجابة من الـAI."
+        );
+
+    }
+
+    return String(answer);
 
 }
 
@@ -2835,86 +2506,117 @@ async function askVision(
 
     }
 
-
-    const response =
-        await fetch(
-            AI_VISION_API_URL,
-            {
-
-                method:
-                    "POST",
-
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-
-                body:
-                    JSON.stringify({
-
-                        message:
-                            message ||
-                            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
-
-
-                        image:
-                            imageData
-
-                    })
-
-            }
-        );
-
-
-    let data;
-
+    let response;
 
     try {
 
-        data =
-            await response.json();
+        response =
+            await fetch(
+                AI_VISION_API_URL,
+                {
 
-    } catch {
+                    method:
+                        "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            message:
+                                message ||
+                                "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
+
+                            image:
+                                imageData
+
+                        })
+
+                }
+            );
+
+    } catch (error) {
+
+        console.error(
+            "Vision Network Error:",
+            error
+        );
 
         throw new Error(
-            "سيرفر Vision لم يرجع بيانات صحيحة."
+            "تعذر الاتصال بخدمة تحليل الصور."
         );
 
     }
 
+    const rawText =
+        await response.text();
+
+    let data;
+
+    try {
+
+        data =
+            rawText
+                ? JSON.parse(rawText)
+                : null;
+
+    } catch {
+
+        throw new Error(
+            `Vision أرسل استجابة غير مفهومة. HTTP ${response.status}`
+        );
+
+    }
 
     if (!response.ok) {
 
         throw new Error(
             data?.error ||
-            "حدث خطأ أثناء الاتصال بخدمة Vision."
+            data?.message ||
+            `خطأ في Vision. HTTP ${response.status}`
         );
 
     }
 
-
-    if (!data.success) {
+    if (
+        data &&
+        data.success === false
+    ) {
 
         throw new Error(
-            data?.error ||
+            data.error ||
+            data.message ||
             "تعذر تحليل الصورة."
         );
 
     }
 
+    const answer =
+        data?.response ||
+        data?.answer ||
+        data?.text ||
+        data?.message ||
+        "";
 
-    return (
+    if (
+        !String(answer).trim()
+    ) {
 
-        data.response ||
-        data.answer ||
-        data.text ||
-        ""
+        throw new Error(
+            "خدمة Vision لم ترجع تحليلاً."
+        );
 
-    );
+    }
+
+    return String(answer);
 
 }
 
@@ -2933,36 +2635,25 @@ async function sendChatMessage(
             text || ""
         ).trim();
 
-
     const hasImage =
         !!state.selectedImageData;
 
-
     const hasFile =
         !!state.selectedFileText;
-
 
     if (
         !text &&
         !hasImage
     ) {
-
         return;
-
     }
-
 
     const input =
         $("chatInput");
 
-
     if (input) {
-
-        input.value =
-            "";
-
+        input.value = "";
     }
-
 
     if (
         hasImage &&
@@ -2974,7 +2665,6 @@ async function sendChatMessage(
 
     }
 
-
     if (text) {
 
         addMessageToUI(
@@ -2983,7 +2673,6 @@ async function sendChatMessage(
         );
 
     }
-
 
     const loadingMessage =
         addMessageToUI(
@@ -2998,41 +2687,30 @@ async function sendChatMessage(
             false
         );
 
-
     const imageDataToSend =
         state.selectedImageData;
 
-
     const imageNameToSend =
         state.selectedImageName;
-
 
     const fileTextToSend =
         options.fileText ||
         state.selectedFileText ||
         "";
 
-
     const fileNameToSend =
         options.fileName ||
         state.selectedFileName ||
         "";
-
 
     const fileTypeToSend =
         options.fileType ||
         state.selectedFileType ||
         "";
 
-
     try {
 
         let answer;
-
-
-        /* ============================
-           VISION
-           ============================ */
 
         if (hasImage) {
 
@@ -3042,14 +2720,7 @@ async function sendChatMessage(
                     imageDataToSend
                 );
 
-        }
-
-
-        /* ============================
-           FILE + CHAT
-           ============================ */
-
-        else {
+        } else {
 
             answer =
                 await askAI(
@@ -3070,7 +2741,6 @@ async function sendChatMessage(
 
         }
 
-
         const finalAnswer =
             answer ||
             (
@@ -3079,18 +2749,12 @@ async function sendChatMessage(
                     : "لم تصل إجابة."
             );
 
-
-        /* ==================================================
-           تحويل إجابة AI إلى صناديق كود
-           ================================================== */
-
         if (loadingMessage) {
 
             const content =
                 loadingMessage.querySelector(
                     ".message-content"
                 );
-
 
             if (content) {
 
@@ -3103,11 +2767,6 @@ async function sendChatMessage(
 
         }
 
-
-        /* ==================================================
-           حفظ الرد محلياً
-           ================================================== */
-
         state.currentChat.push({
 
             role:
@@ -3118,16 +2777,9 @@ async function sendChatMessage(
 
         });
 
-
         saveCurrentChat();
 
-
         scrollChatToBottom();
-
-
-        /* ==================================================
-           حفظ Firebase
-           ================================================== */
 
         await saveChatToFirebase(
 
@@ -3151,17 +2803,9 @@ async function sendChatMessage(
 
         );
 
-
-        /* ==================================================
-           مسح الصورة بعد التحليل
-           ================================================== */
-
         if (hasImage) {
-
             clearSelectedImage();
-
         }
-
 
     } catch (error) {
 
@@ -3170,14 +2814,12 @@ async function sendChatMessage(
             error
         );
 
-
         if (loadingMessage) {
 
             const content =
                 loadingMessage.querySelector(
                     ".message-content"
                 );
-
 
             if (content) {
 
@@ -3212,10 +2854,8 @@ function setupChat() {
     const sendButton =
         $("chatSendBtn");
 
-
     const input =
         $("chatInput");
-
 
     if (
         sendButton &&
@@ -3233,7 +2873,6 @@ function setupChat() {
             }
         );
 
-
         input.addEventListener(
             "keydown",
             (event) => {
@@ -3244,7 +2883,6 @@ function setupChat() {
                 ) {
 
                     event.preventDefault();
-
 
                     sendChatMessage(
                         input.value
@@ -3257,14 +2895,11 @@ function setupChat() {
 
     }
 
-
     const homeSendButton =
         $("homeSendBtn");
 
-
     const homeInput =
         $("homeChatInput");
-
 
     if (
         homeSendButton &&
@@ -3278,7 +2913,6 @@ function setupChat() {
                 const text =
                     homeInput.value.trim();
 
-
                 if (
                     state.selectedImageData
                 ) {
@@ -3286,33 +2920,26 @@ function setupChat() {
                     homeInput.value =
                         "";
 
-
                     openSection(
                         "chat"
                     );
-
 
                     sendChatMessage(
                         text
                     );
 
-
                     return;
 
                 }
 
-
                 if (!text) return;
-
 
                 homeInput.value =
                     "";
 
-
                 openSection(
                     "chat"
                 );
-
 
                 sendChatMessage(
                     text
@@ -3320,7 +2947,6 @@ function setupChat() {
 
             }
         );
-
 
         homeInput.addEventListener(
             "keydown",
@@ -3333,10 +2959,8 @@ function setupChat() {
 
                     event.preventDefault();
 
-
                     const text =
                         homeInput.value.trim();
-
 
                     if (
                         state.selectedImageData
@@ -3345,33 +2969,26 @@ function setupChat() {
                         homeInput.value =
                             "";
 
-
                         openSection(
                             "chat"
                         );
-
 
                         sendChatMessage(
                             text
                         );
 
-
                         return;
 
                     }
 
-
                     if (!text) return;
-
 
                     homeInput.value =
                         "";
 
-
                     openSection(
                         "chat"
                     );
-
 
                     sendChatMessage(
                         text
@@ -3383,7 +3000,6 @@ function setupChat() {
         );
 
     }
-
 
     setupSuggestionButtons();
 
@@ -3409,10 +3025,8 @@ function setupSuggestionButtons() {
                         const text =
                             button.textContent.trim();
 
-
                         const input =
                             $("chatInput");
-
 
                         if (input) {
 
@@ -3421,11 +3035,9 @@ function setupSuggestionButtons() {
 
                         }
 
-
                         openSection(
                             "chat"
                         );
-
 
                         sendChatMessage(
                             text
@@ -3459,17 +3071,13 @@ function setupGIS() {
                         const topic =
                             card.dataset.topic;
 
-
                         const input =
                             $("gisInput");
 
-
                         if (!input) return;
-
 
                         input.value =
                             `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
-
 
                         input.focus();
 
@@ -3479,10 +3087,8 @@ function setupGIS() {
             }
         );
 
-
     const button =
         $("gisSendBtn");
-
 
     if (button) {
 
@@ -3493,13 +3099,10 @@ function setupGIS() {
                 const input =
                     $("gisInput");
 
-
                 if (!input) return;
-
 
                 const text =
                     input.value.trim();
-
 
                 if (!text) {
 
@@ -3508,16 +3111,13 @@ function setupGIS() {
                         "!"
                     );
 
-
                     return;
 
                 }
 
-
                 openSection(
                     "chat"
                 );
-
 
                 sendChatMessage(
                     `أنت مساعد متخصص في GIS والاستشعار عن بعد والمساحة.\n\n${text}`
@@ -3552,7 +3152,6 @@ function setupCoding() {
                             card.dataset.language ||
                             "Python";
 
-
                         document
                             .querySelectorAll(
                                 ".language-card"
@@ -3567,21 +3166,17 @@ function setupCoding() {
                                 }
                             );
 
-
                         card.classList.add(
                             "selected"
                         );
 
-
                         const input =
                             $("codeInput");
-
 
                         if (input) {
 
                             input.placeholder =
                                 `مثال: اكتبلي ${state.selectedCodingLanguage} code...`;
-
 
                             input.focus();
 
@@ -3593,10 +3188,8 @@ function setupCoding() {
             }
         );
 
-
     const button =
         $("codeSendBtn");
-
 
     if (button) {
 
@@ -3607,24 +3200,18 @@ function setupCoding() {
                 const input =
                     $("codeInput");
 
-
                 const output =
                     $("codeOutput");
-
 
                 if (
                     !input ||
                     !output
                 ) {
-
                     return;
-
                 }
-
 
                 const request =
                     input.value.trim();
-
 
                 if (!request) {
 
@@ -3633,27 +3220,23 @@ function setupCoding() {
                         "!"
                     );
 
-
                     return;
 
                 }
 
-
                 output.innerHTML = `
 
-                    <div
-                        class="geo-coding-loading"
-                    >
+                    <div class="geo-coding-loading">
                         🤖 جاري إنشاء الكود...
                     </div>
 
                 `;
 
-
                 try {
 
                     const answer =
                         await askAI(
+
                             `أنت مساعد برمجة متخصص.
 
 لغة البرمجة المطلوبة:
@@ -3681,8 +3264,8 @@ ${request}
 لا تضع تعليقات عربية داخل الكود إلا إذا طلب المستخدم ذلك صراحة.
 إذا كان المطلوب ملفاً كاملاً، اكتب الملف كاملاً بدون اختصار.
 لا تستخدم ... داخل الكود كبديل عن أجزاء محذوفة.`
-                        );
 
+                        );
 
                     output.innerHTML =
                         renderGeoMarkdown(
@@ -3690,14 +3273,11 @@ ${request}
                             "لم يتم إنشاء الكود."
                         );
 
-
                 } catch (error) {
 
                     output.innerHTML = `
 
-                        <div
-                            class="geo-error-message"
-                        >
+                        <div class="geo-error-message">
 
                             ❌
                             ${escapeHTML(
@@ -3715,10 +3295,8 @@ ${request}
 
     }
 
-
     const copyButton =
         $("copyCodeBtn");
-
 
     if (copyButton) {
 
@@ -3729,15 +3307,12 @@ ${request}
                 const output =
                     $("codeOutput");
 
-
                 if (!output) return;
-
 
                 const codeElements =
                     output.querySelectorAll(
                         ".geo-code-wrapper pre code"
                     );
-
 
                 if (!codeElements.length) {
 
@@ -3746,11 +3321,9 @@ ${request}
                         "!"
                     );
 
-
                     return;
 
                 }
-
 
                 const code =
                     Array.from(
@@ -3764,7 +3337,6 @@ ${request}
                         "\n\n"
                     );
 
-
                 try {
 
                     await navigator
@@ -3772,7 +3344,6 @@ ${request}
                         .writeText(
                             code
                         );
-
 
                     showNotification(
                         "تم نسخ الكود",
@@ -3816,7 +3387,6 @@ function setupStudy() {
                         const action =
                             button.dataset.studyAction;
 
-
                         const prompts = {
 
                             explain:
@@ -3833,15 +3403,12 @@ function setupStudy() {
 
                         };
 
-
                         openSection(
                             "chat"
                         );
 
-
                         const input =
                             $("chatInput");
-
 
                         if (input) {
 
@@ -3849,11 +3416,9 @@ function setupStudy() {
                                 prompts[action] ||
                                 "ساعدني في المذاكرة من محتوى المحاضرة.";
 
-
                             input.focus();
 
                         }
-
 
                         showNotification(
                             state.selectedFileText
@@ -3891,12 +3456,10 @@ function setupFiles() {
 
     ];
 
-
     inputs.forEach(
         (input) => {
 
             if (!input) return;
-
 
             input.addEventListener(
                 "change",
@@ -3905,9 +3468,7 @@ function setupFiles() {
                     const file =
                         input.files?.[0];
 
-
                     if (!file) return;
-
 
                     await handleSelectedFile(
                         file
@@ -3935,14 +3496,11 @@ async function handleSelectedFile(
         state.selectedFile =
             file;
 
-
         state.selectedFileText =
             "";
 
-
         state.selectedFileName =
             file.name;
-
 
         state.selectedFileType =
             file.type ||
@@ -3950,24 +3508,20 @@ async function handleSelectedFile(
                 file.name
             );
 
-
         addFileToList(
             file,
             "⏳ جاري القراءة..."
         );
-
 
         showNotification(
             `جاري قراءة ${file.name}...`,
             "📚"
         );
 
-
         const text =
             await extractFileText(
                 file
             );
-
 
         if (!text.trim()) {
 
@@ -3977,47 +3531,38 @@ async function handleSelectedFile(
 
         }
 
-
         state.selectedFileText =
             text;
-
 
         showNotification(
             `تمت قراءة الملف بنجاح: ${file.name}`,
             "✓"
         );
 
-
         updateLatestFileStatus(
             "✓ تمت القراءة"
         );
 
-
         openSection(
             "chat"
         );
-
 
         addMessageToUI(
             "assistant",
             `📚 تم تحميل الملف "${file.name}" بنجاح.\n\nأقدر الآن أساعدك في:\n- تلخيصه\n- شرحه\n- استخراج التعريفات\n- إنشاء أسئلة\n- إنشاء اختبار\n- الإجابة عن أسئلتك من محتواه`
         );
 
-
         const input =
             $("chatInput");
-
 
         if (input) {
 
             input.placeholder =
                 `اسأل GEO AI عن "${file.name}"...`;
 
-
             input.focus();
 
         }
-
 
     } catch (error) {
 
@@ -4026,15 +3571,12 @@ async function handleSelectedFile(
             error
         );
 
-
         state.selectedFileText =
             "";
-
 
         updateLatestFileStatus(
             "❌ فشلت القراءة"
         );
-
 
         showNotification(
             error.message ||
@@ -4059,43 +3601,33 @@ function addFileToList(
     const list =
         $("filesList");
 
-
     if (!list) return;
-
 
     const empty =
         list.querySelector(
             ".empty-files"
         );
 
-
     if (empty) {
-
         empty.remove();
-
     }
-
 
     const item =
         document.createElement(
             "div"
         );
 
-
     item.className =
         "file-item";
 
-
     item.dataset.fileName =
         file.name;
-
 
     item.innerHTML = `
 
         <div class="file-icon">
             📄
         </div>
-
 
         <div class="file-info">
 
@@ -4104,7 +3636,6 @@ function addFileToList(
                     file.name
                 )}
             </strong>
-
 
             <small>
                 ${formatFileSize(
@@ -4119,7 +3650,6 @@ function addFileToList(
         </div>
 
     `;
-
 
     list.appendChild(
         item
@@ -4139,37 +3669,29 @@ function updateLatestFileStatus(
     const list =
         $("filesList");
 
-
     if (!list) return;
-
 
     const items =
         list.querySelectorAll(
             ".file-item"
         );
 
-
     if (!items.length) return;
-
 
     const last =
         items[
             items.length - 1
         ];
 
-
     const small =
         last.querySelector(
             "small"
         );
 
-
     if (!small) return;
-
 
     const file =
         state.selectedFile;
-
 
     small.textContent =
         `${file ? formatFileSize(file.size) : ""} • ${status}`;
@@ -4186,24 +3708,15 @@ function formatFileSize(
 ) {
 
     if (!bytes) {
-
         return "0 KB";
-
     }
 
-
     const units = [
-
         "B",
-
         "KB",
-
         "MB",
-
         "GB"
-
     ];
-
 
     const index =
         Math.min(
@@ -4214,9 +3727,7 @@ function formatFileSize(
             units.length - 1
         );
 
-
     return (
-
         (
             bytes /
             Math.pow(
@@ -4224,15 +3735,10 @@ function formatFileSize(
                 index
             )
         ).toFixed(1)
-
         +
-
         " "
-
         +
-
         units[index]
-
     );
 
 }
@@ -4247,9 +3753,7 @@ function setupTests() {
     const button =
         $("createTestBtn");
 
-
     if (!button) return;
-
 
     button.addEventListener(
         "click",
@@ -4259,18 +3763,14 @@ function setupTests() {
                 $("testSubject")?.value ||
                 "GIS";
 
-
             const count =
                 $("testCount")?.value ||
                 "5";
 
-
             const container =
                 $("testContainer");
 
-
             if (!container) return;
-
 
             container.innerHTML = `
 
@@ -4285,11 +3785,9 @@ function setupTests() {
 
             `;
 
-
             try {
 
                 let prompt;
-
 
                 if (
                     state.selectedFileText
@@ -4327,12 +3825,10 @@ function setupTests() {
 
                 }
 
-
                 const answer =
                     await askAI(
                         prompt
                     );
-
 
                 container.innerHTML = `
 
@@ -4345,7 +3841,6 @@ function setupTests() {
                             )}
                         </h2>
 
-
                         <div class="test-content">
 
                             ${renderGeoMarkdown(
@@ -4357,7 +3852,6 @@ function setupTests() {
                     </div>
 
                 `;
-
 
             } catch (error) {
 
@@ -4391,12 +3885,10 @@ function setupSettings() {
     const saveToggle =
         $("saveChatsToggle");
 
-
     if (saveToggle) {
 
         saveToggle.checked =
             state.saveChats;
-
 
         saveToggle.addEventListener(
             "change",
@@ -4405,12 +3897,10 @@ function setupSettings() {
                 state.saveChats =
                     saveToggle.checked;
 
-
                 localStorage.setItem(
                     "geo_ai_save_chats",
                     state.saveChats
                 );
-
 
                 showNotification(
                     state.saveChats
@@ -4424,16 +3914,13 @@ function setupSettings() {
 
     }
 
-
     const languageSelect =
         $("languageSelect");
-
 
     if (languageSelect) {
 
         languageSelect.value =
             state.selectedLanguage;
-
 
         languageSelect.addEventListener(
             "change",
@@ -4442,12 +3929,10 @@ function setupSettings() {
                 state.selectedLanguage =
                     languageSelect.value;
 
-
                 localStorage.setItem(
                     "geo_ai_language",
                     state.selectedLanguage
                 );
-
 
                 showNotification(
                     "تم حفظ اللغة",
@@ -4470,7 +3955,6 @@ function setupNotifications() {
 
     const button =
         $("notificationBtn");
-
 
     if (button) {
 
@@ -4500,9 +3984,7 @@ function setupWebSearch() {
     const button =
         $("webSearchBtn");
 
-
     if (!button) return;
-
 
     button.addEventListener(
         "click",
@@ -4533,12 +4015,10 @@ function setupImages() {
 
     ];
 
-
     inputs.forEach(
         (input) => {
 
             if (!input) return;
-
 
             input.addEventListener(
                 "change",
@@ -4547,9 +4027,7 @@ function setupImages() {
                     const file =
                         input.files?.[0];
 
-
                     if (!file) return;
-
 
                     if (
                         !file.type ||
@@ -4563,15 +4041,12 @@ function setupImages() {
                             "!"
                         );
 
-
                         input.value =
                             "";
-
 
                         return;
 
                     }
-
 
                     await setSelectedImage(
                         file
@@ -4607,149 +4082,15 @@ function setupKeyboard() {
 
                 event.preventDefault();
 
-
                 openSection(
                     "chat"
                 );
-
 
                 $("chatInput")?.focus();
 
             }
 
         }
-    );
-
-}
-
-
-/* =========================================================
-   INTRODUCTION
-   ========================================================= */
-
-function setupIntro() {
-
-    const introScreen =
-        $("introScreen");
-
-
-    const startAI =
-        $("startAI");
-
-
-    if (!introScreen) {
-
-        return;
-
-    }
-
-
-    /*
-       منع التمرير أثناء ظهور شاشة البداية
-    */
-
-    document.body.style.overflow =
-        "hidden";
-
-
-    /*
-       إخفاء شاشة البداية
-    */
-
-    const hideIntro =
-        () => {
-
-            if (
-                !introScreen ||
-                introScreen.classList.contains(
-                    "hidden"
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            introScreen.classList.add(
-                "hidden"
-            );
-
-
-            document.body.style.overflow =
-                "";
-
-
-            setTimeout(
-                () => {
-
-                    if (
-                        introScreen &&
-                        introScreen.parentNode
-                    ) {
-
-                        introScreen.remove();
-
-                    }
-
-                },
-                500
-            );
-
-        };
-
-
-    /*
-       زر ابدأ الآن
-    */
-
-    if (startAI) {
-
-        startAI.addEventListener(
-            "click",
-            hideIntro
-        );
-
-    }
-
-
-    /*
-       دعم إضافي في حالة كان
-       الزر موجوداً داخل عنصر آخر
-    */
-
-    introScreen.addEventListener(
-        "click",
-        (event) => {
-
-            const button =
-                event.target.closest(
-                    "#startAI"
-                );
-
-
-            if (button) {
-
-                hideIntro();
-
-            }
-
-        }
-    );
-
-
-    /*
-       إخفاء تلقائي بعد 3 ثوانٍ
-       إذا لم يضغط المستخدم على الزر
-    */
-
-    setTimeout(
-        () => {
-
-            hideIntro();
-
-        },
-        3000
     );
 
 }
@@ -4765,54 +4106,35 @@ function init() {
         "GEO AI initialized successfully."
     );
 
-
     initializeFirebaseForChat();
-
 
     setupNavigation();
 
-
     setupTheme();
-
 
     setupChat();
 
-
     setupGIS();
-
 
     setupCoding();
 
-
     setupStudy();
-
 
     setupFiles();
 
-
     setupTests();
-
 
     setupSettings();
 
-
     setupNotifications();
-
 
     setupWebSearch();
 
-
     setupImages();
-
 
     setupKeyboard();
 
-
-    setupIntro();
-
-
     loadCurrentChat();
-
 
     openSection(
         "home"
@@ -4839,4 +4161,4 @@ if (
 
     init();
 
-    }
+}
