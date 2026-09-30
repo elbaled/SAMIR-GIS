@@ -239,12 +239,7 @@ function scrollChatToBottom() {
 
 function getChatContainer() {
 
-    return (
-        $("chatMessages") ||
-        document.querySelector(
-            "#chatMessages"
-        )
-    );
+    return $("chatMessages");
 
 }
 
@@ -1649,10 +1644,66 @@ function normalizeCodeLanguage(
 
 
 /* =========================================================
-   MARKDOWN RENDERER
+   BUILD CODE BOX
    ========================================================= */
 
-function renderGeoMarkdown(
+function buildGeoCodeBox(
+    block
+) {
+
+    const escapedCode =
+        escapeCode(
+            block.code
+        );
+
+
+    return `
+
+        <div
+            class="geo-code-wrapper"
+            data-code-id="${block.id}"
+        >
+
+            <div
+                class="geo-code-header"
+            >
+
+                <span
+                    class="geo-code-language"
+                >
+                    ${escapeHTML(
+                        block.language
+                    )}
+                </span>
+
+
+                <button
+                    type="button"
+                    class="geo-copy-code"
+                    data-code-id="${block.id}"
+                >
+                    📋 نسخ الكود
+                </button>
+
+            </div>
+
+
+            <pre
+                class="geo-code-pre"
+            ><code>${escapedCode}</code></pre>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   RENDER NORMAL TEXT
+   ========================================================= */
+
+function renderGeoText(
     text
 ) {
 
@@ -1660,134 +1711,18 @@ function renderGeoMarkdown(
         String(text ?? "");
 
 
-    const codeBlocks =
-        [];
+    if (!source.trim()) {
 
+        return "";
 
-    /*
-       ======================================================
-       حفظ أكواد Markdown أولاً
-       ======================================================
-    */
+    }
 
-    source =
-        source.replace(
-            /```([a-zA-Z0-9_+#.-]*)\s*\n?([\s\S]*?)```/g,
-            function (
-                _,
-                language,
-                code
-            ) {
-
-                const id =
-                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
-
-                const lang =
-                    normalizeCodeLanguage(
-                        language
-                    );
-
-
-                const cleanCode =
-                    code
-                        .replace(
-                            /^\n/,
-                            ""
-                        )
-                        .replace(
-                            /\n$/,
-                            ""
-                        );
-
-
-                codeBlocks.push({
-
-                    id,
-
-                    language:
-                        lang,
-
-                    code:
-                        cleanCode
-
-                });
-
-
-                return `___GEO_CODE_${codeBlocks.length - 1}___`;
-
-            }
-        );
-
-
-    /*
-       ======================================================
-       دعم الحالات التي يرسل فيها AI كوداً بدون ``` 
-       ======================================================
-    */
-
-    source =
-        source.replace(
-            /(?:^|\n)(?:Python|python)\s*:\s*\n([\s\S]*?)(?=\n(?:شرح|Explanation|JavaScript|SQL|Python)\s*:|$)/g,
-            function (
-                _,
-                code
-            ) {
-
-                const cleanCode =
-                    String(code)
-                        .trim();
-
-
-                if (
-                    !cleanCode
-                ) {
-
-                    return _;
-
-                }
-
-
-                const id =
-                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
-
-                codeBlocks.push({
-
-                    id,
-
-                    language:
-                        "Python",
-
-                    code:
-                        cleanCode
-
-                });
-
-
-                return `\n___GEO_CODE_${codeBlocks.length - 1}___\n`;
-
-            }
-        );
-
-
-    /*
-       ======================================================
-       Escape باقي النص
-       ======================================================
-    */
 
     source =
         escapeHTML(
             source
         );
 
-
-    /*
-       ======================================================
-       العناوين
-       ======================================================
-    */
 
     source =
         source.replace(
@@ -1810,24 +1745,12 @@ function renderGeoMarkdown(
         );
 
 
-    /*
-       ======================================================
-       Bold
-       ======================================================
-    */
-
     source =
         source.replace(
             /\*\*(.*?)\*\*/g,
             "<strong>$1</strong>"
         );
 
-
-    /*
-       ======================================================
-       Italic
-       ======================================================
-    */
 
     source =
         source.replace(
@@ -1836,24 +1759,12 @@ function renderGeoMarkdown(
         );
 
 
-    /*
-       ======================================================
-       Inline Code
-       ======================================================
-    */
-
     source =
         source.replace(
             /`([^`\n]+)`/g,
             `<code class="geo-inline-code">$1</code>`
         );
 
-
-    /*
-       ======================================================
-       القوائم
-       ======================================================
-    */
 
     source =
         source.replace(
@@ -1869,12 +1780,6 @@ function renderGeoMarkdown(
         );
 
 
-    /*
-       ======================================================
-       عناوين الشرح
-       ======================================================
-    */
-
     source =
         source.replace(
             /^(شرح الكود:?)$/gim,
@@ -1889,12 +1794,6 @@ function renderGeoMarkdown(
         );
 
 
-    /*
-       ======================================================
-       فواصل الأسطر
-       ======================================================
-    */
-
     source =
         source.replace(
             /\n/g,
@@ -1902,73 +1801,222 @@ function renderGeoMarkdown(
         );
 
 
+    return source;
+
+}
+
+
+/* =========================================================
+   SMART MARKDOWN RENDERER
+   ========================================================= */
+
+function renderGeoMarkdown(
+    text
+) {
+
+    let source =
+        String(text ?? "");
+
+
+    const codeBlocks =
+        [];
+
+
     /*
        ======================================================
-       استرجاع أكواد البرمجة
+       استخراج كل أكواد Markdown
        ======================================================
     */
 
-    codeBlocks.forEach(
-        (
-            block,
-            index
-        ) => {
+    source =
+        source.replace(
+            /```([a-zA-Z0-9_+#.-]*)\s*\n?([\s\S]*?)```/g,
+            function (
+                _match,
+                language,
+                code
+            ) {
 
-            const escapedCode =
-                escapeCode(
-                    block.code
-                );
-
-
-            const codeHTML = `
-
-                <div
-                    class="geo-code-wrapper"
-                    data-code-id="${block.id}"
-                >
-
-                    <div
-                        class="geo-code-header"
-                    >
-
-                        <span
-                            class="geo-code-language"
-                        >
-                            ${escapeHTML(block.language)}
-                        </span>
+                const cleanCode =
+                    String(code)
+                        .replace(
+                            /^\n/,
+                            ""
+                        )
+                        .replace(
+                            /\n$/,
+                            ""
+                        );
 
 
-                        <button
-                            type="button"
-                            class="geo-copy-code"
-                            data-code-id="${block.id}"
-                        >
-                            📋 نسخ الكود
-                        </button>
+                if (!cleanCode.trim()) {
 
-                    </div>
+                    return "";
+
+                }
 
 
-                    <pre
-                        class="geo-code-pre"
-                    ><code>${escapedCode}</code></pre>
+                const id =
+                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
 
+
+                codeBlocks.push({
+
+                    id,
+
+                    language:
+                        normalizeCodeLanguage(
+                            language
+                        ),
+
+                    code:
+                        cleanCode
+
+                });
+
+
+                return "";
+
+            }
+        );
+
+
+    /*
+       ======================================================
+       دعم:
+       Python:
+       JavaScript:
+       SQL:
+       ======================================================
+    */
+
+    const languagePattern =
+        /(?:^|\n)(Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:\s*\n([\s\S]*?)(?=\n(?:شرح|شرح الكود|Explanation|Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:|$)/g;
+
+
+    source =
+        source.replace(
+            languagePattern,
+            function (
+                match,
+                language,
+                code
+            ) {
+
+                const cleanCode =
+                    String(code)
+                        .trim();
+
+
+                if (!cleanCode) {
+
+                    return match;
+
+                }
+
+
+                const id =
+                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
+
+
+                codeBlocks.push({
+
+                    id,
+
+                    language:
+                        normalizeCodeLanguage(
+                            language
+                        ),
+
+                    code:
+                        cleanCode
+
+                });
+
+
+                return "";
+
+            }
+        );
+
+
+    /*
+       ======================================================
+       إزالة بقايا الفواصل الزائدة
+       ======================================================
+    */
+
+    source =
+        source
+            .replace(
+                /\n{3,}/g,
+                "\n\n"
+            )
+            .trim();
+
+
+    /*
+       ======================================================
+       شرح الإجابة
+       ======================================================
+    */
+
+    let explanationHTML =
+        renderGeoText(
+            source
+        );
+
+
+    /*
+       ======================================================
+       جعل عنوان الشرح موحداً
+       ======================================================
+    */
+
+    if (
+        codeBlocks.length &&
+        explanationHTML.trim()
+    ) {
+
+        explanationHTML =
+            `
+            <div class="geo-explanation">
+
+                <div class="geo-code-explanation-title">
+                    شرح الكود:
                 </div>
 
+                <div class="geo-explanation-content">
+                    ${explanationHTML}
+                </div>
+
+            </div>
             `;
 
+    }
 
-            source =
-                source.replace(
-                    `___GEO_CODE_${index}___`,
-                    codeHTML
-                );
 
-        }
+    /*
+       ======================================================
+       صناديق الأكواد أولاً
+       ======================================================
+    */
+
+    const codeHTML =
+        codeBlocks
+            .map(
+                block =>
+                    buildGeoCodeBox(
+                        block
+                    )
+            )
+            .join("");
+
+
+    return (
+        codeHTML +
+        explanationHTML
     );
-
-
-    return source;
 
 }
 
@@ -1984,7 +2032,7 @@ async function copyGeoCode(
 
     const wrapper =
         document.querySelector(
-            `[data-code-id="${codeId}"]`
+            `.geo-code-wrapper[data-code-id="${codeId}"]`
         );
 
 
@@ -1997,7 +2045,7 @@ async function copyGeoCode(
 
     const codeElement =
         wrapper.querySelector(
-            "code"
+            "pre code"
         );
 
 
@@ -2036,7 +2084,8 @@ async function copyGeoCode(
             () => {
 
                 button.textContent =
-                    oldText;
+                    oldText ||
+                    "📋 نسخ الكود";
 
 
                 button.classList.remove(
@@ -2195,17 +2244,29 @@ function addMessageToUI(
             : "message ai-message";
 
 
-    const renderedContent =
+    let renderedContent;
+
+
+    if (
         role === "assistant"
-            ? renderGeoMarkdown(
+    ) {
+
+        renderedContent =
+            renderGeoMarkdown(
                 content
-            )
-            : escapeHTML(
+            );
+
+    } else {
+
+        renderedContent =
+            escapeHTML(
                 content
             ).replace(
                 /\n/g,
                 "<br>"
             );
+
+    }
 
 
     message.innerHTML = `
@@ -2575,6 +2636,30 @@ function clearSelectedImage() {
 
 
 /* =========================================================
+   AI FORMATTING INSTRUCTION
+   ========================================================= */
+
+const GEO_AI_CODE_FORMAT_INSTRUCTION = `
+
+تعليمات تنسيق مهمة جداً لإجابة GEO AI:
+
+إذا كانت الإجابة تحتوي على كود برمجي:
+
+1. ضع الكود داخل Markdown code block باستخدام ``` واسم اللغة.
+2. لا تضع الشرح داخل صندوق الكود.
+3. لا تضع تعليقات عربية داخل الكود إلا إذا طلب المستخدم ذلك.
+4. إذا كانت الإجابة تحتوي على أكثر من كود، اجعل كل كود داخل صندوق مستقل.
+5. ضع جميع صناديق الأكواد أولاً.
+6. بعد صناديق الأكواد اكتب:
+شرح الكود:
+ثم الشرح في نص منفصل.
+7. اجعل الكود جاهزاً للنسخ والتشغيل قدر الإمكان.
+8. لا تستخدم صندوق كود واحد يحتوي على الشرح والكود معاً.
+
+`;
+
+
+/* =========================================================
    AI REQUEST
    ========================================================= */
 
@@ -2624,12 +2709,22 @@ async function askAI(
             );
 
 
+    const userMessage =
+        String(
+            message || ""
+        ).trim();
+
+
+    const finalMessage =
+        GEO_AI_CODE_FORMAT_INSTRUCTION +
+        "\n\nرسالة المستخدم:\n" +
+        userMessage;
+
+
     const body = {
 
         message:
-            String(
-                message || ""
-            ).trim(),
+            finalMessage,
 
 
         context:
@@ -3001,9 +3096,7 @@ async function sendChatMessage(
 
         /*
            ==================================================
-           مهم:
-           لا نستخدم textContent هنا
-           لأننا نريد تحويل Markdown إلى صندوق كود.
+           تحويل إجابة AI إلى صناديق كود
            ==================================================
         */
 
@@ -3028,7 +3121,9 @@ async function sendChatMessage(
 
 
         /*
+           ==================================================
            حفظ الرد محلياً
+           ==================================================
         */
 
         state.currentChat.push({
@@ -3049,7 +3144,9 @@ async function sendChatMessage(
 
 
         /*
+           ==================================================
            حفظ Firebase
+           ==================================================
         */
 
         await saveChatToFirebase(
@@ -3076,7 +3173,9 @@ async function sendChatMessage(
 
 
         /*
+           ==================================================
            مسح الصورة بعد التحليل
+           ==================================================
         */
 
         if (hasImage) {
@@ -3577,11 +3676,29 @@ function setupCoding() {
 
                     const answer =
                         await askAI(
-                            `أنت مساعد برمجة متخصص.\n` +
-                            `لغة البرمجة: ${state.selectedCodingLanguage}\n\n` +
-                            `المطلوب:\n${request}\n\n` +
-                            `اكتب الكود داخل Markdown code block باستخدام ``` مع اسم اللغة، وبعد صندوق الكود اكتب شرحاً مختصراً منفصلاً. ` +
-                            `لا تضع الشرح أو التعليقات العربية داخل الكود إلا إذا طلب المستخدم ذلك صراحة.`
+                            `أنت مساعد برمجة متخصص.
+
+لغة البرمجة المطلوبة:
+${state.selectedCodingLanguage}
+
+المطلوب:
+${request}
+
+اكتب الكود جاهزاً للنسخ والتشغيل.
+
+مهم جداً:
+ضع الكود داخل Markdown code block باستخدام:
+\`\`\`${state.selectedCodingLanguage}
+الكود هنا
+\`\`\`
+
+بعد صندوق الكود اكتب:
+شرح الكود:
+
+ثم اشرح الكود باختصار وبوضوح.
+
+لا تضع الشرح داخل صندوق الكود.
+لا تضع تعليقات عربية داخل الكود إلا إذا طلب المستخدم ذلك صراحة.`
                         );
 
 
@@ -3634,13 +3751,13 @@ function setupCoding() {
                 if (!output) return;
 
 
-                const code =
-                    output.querySelector(
-                        ".geo-code-wrapper code"
+                const codeElements =
+                    output.querySelectorAll(
+                        ".geo-code-wrapper pre code"
                     );
 
 
-                if (!code) {
+                if (!codeElements.length) {
 
                     showNotification(
                         "لا يوجد كود لنسخه",
@@ -3653,12 +3770,25 @@ function setupCoding() {
                 }
 
 
+                const code =
+                    Array.from(
+                        codeElements
+                    )
+                    .map(
+                        element =>
+                            element.textContent
+                    )
+                    .join(
+                        "\n\n"
+                    );
+
+
                 try {
 
                     await navigator
                         .clipboard
                         .writeText(
-                            code.textContent
+                            code
                         );
 
 
