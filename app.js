@@ -12,6 +12,7 @@
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
 
+
 const AI_VISION_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/vision";
 
@@ -20,7 +21,8 @@ const AI_VISION_API_URL =
    FILE PARSING CONFIG
    ========================================================= */
 
-const MAX_FILE_TEXT = 60000;
+const MAX_FILE_TEXT =
+    60000;
 
 
 /* =========================================================
@@ -50,10 +52,12 @@ async function initializeFirebaseForChat() {
         firebaseDB =
             firebaseModule.db;
 
+
         const authModule =
             await import(
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js"
             );
+
 
         authModule.onAuthStateChanged(
             firebaseAuth,
@@ -83,6 +87,7 @@ async function initializeFirebaseForChat() {
             }
         );
 
+
     } catch (error) {
 
         console.error(
@@ -105,42 +110,6 @@ const $ = (id) =>
     document.getElementById(id);
 
 
-/* =========================================================
-   ESCAPE HTML
-   ========================================================= */
-
-function escapeHTML(text) {
-
-    return String(text ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-/* =========================================================
-   ESCAPE CODE
-   ========================================================= */
-
-function escapeCode(code) {
-
-    return String(code ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-/* =========================================================
-   NOTIFICATION
-   ========================================================= */
-
 function showNotification(
     message,
     icon = "✓"
@@ -155,28 +124,44 @@ function showNotification(
     const notificationIcon =
         $("notificationIcon");
 
+
     if (!notification) return;
 
+
     if (text) {
-        text.textContent = message;
+
+        text.textContent =
+            message;
+
     }
+
 
     if (notificationIcon) {
-        notificationIcon.textContent = icon;
+
+        notificationIcon.textContent =
+            icon;
+
     }
 
-    notification.classList.add("show");
+
+    notification.classList.add(
+        "show"
+    );
+
 
     clearTimeout(
         window.notificationTimer
     );
 
+
     window.notificationTimer =
         setTimeout(
             () => {
+
                 notification.classList.remove(
                     "show"
                 );
+
             },
             2500
         );
@@ -184,30 +169,33 @@ function showNotification(
 }
 
 
-/* =========================================================
-   SCROLL CHAT
-   ========================================================= */
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        String(text ?? "");
+
+    return div.innerHTML;
+
+}
+
 
 function scrollChatToBottom() {
 
     const chat =
         $("chatMessages");
 
+
     if (chat) {
+
         chat.scrollTop =
             chat.scrollHeight;
+
     }
-
-}
-
-
-/* =========================================================
-   GET CHAT CONTAINER
-   ========================================================= */
-
-function getChatContainer() {
-
-    return $("chatMessages");
 
 }
 
@@ -216,9 +204,7 @@ function getChatContainer() {
    FILE HELPERS
    ========================================================= */
 
-function getFileExtension(
-    fileName
-) {
+function getFileExtension(fileName) {
 
     return String(fileName || "")
         .split(".")
@@ -228,33 +214,35 @@ function getFileExtension(
 }
 
 
-/* =========================================================
-   TRUNCATE FILE TEXT
-   ========================================================= */
-
-function truncateFileText(
-    text
-) {
+function truncateFileText(text) {
 
     text =
         String(text || "")
             .replace(/\u0000/g, "")
             .trim();
 
+
     if (
         text.length <=
         MAX_FILE_TEXT
     ) {
+
         return text;
+
     }
 
+
     return (
+
         text.slice(
             0,
             MAX_FILE_TEXT
         )
+
         +
+
         "\n\n[تم اختصار جزء من الملف بسبب كبر حجمه.]"
+
     );
 
 }
@@ -282,81 +270,103 @@ function loadExternalScript(
                 );
 
                 return;
+
             }
+
 
             const existing =
                 document.querySelector(
                     `script[src="${src}"]`
                 );
 
+
             if (existing) {
 
                 existing.addEventListener(
                     "load",
                     () => {
+
                         resolve(
                             globalName
                                 ? window[globalName]
                                 : true
                         );
+
                     }
                 );
+
 
                 existing.addEventListener(
                     "error",
                     () => {
+
                         reject(
                             new Error(
                                 "تعذر تحميل مكتبة قراءة الملفات."
                             )
                         );
+
                     }
                 );
 
+
                 return;
+
             }
+
 
             const script =
                 document.createElement(
                     "script"
                 );
 
-            script.src = src;
-            script.async = true;
 
-            script.onload = () => {
+            script.src =
+                src;
 
-                if (
-                    globalName &&
-                    !window[globalName]
-                ) {
+            script.async =
+                true;
+
+
+            script.onload =
+                () => {
+
+                    if (
+                        globalName &&
+                        !window[globalName]
+                    ) {
+
+                        reject(
+                            new Error(
+                                "تم تحميل المكتبة ولكن لم يتم العثور عليها."
+                            )
+                        );
+
+                        return;
+
+                    }
+
+
+                    resolve(
+                        globalName
+                            ? window[globalName]
+                            : true
+                    );
+
+                };
+
+
+            script.onerror =
+                () => {
 
                     reject(
                         new Error(
-                            "تم تحميل المكتبة ولكن لم يتم العثور عليها."
+                            "تعذر تحميل مكتبة قراءة الملفات."
                         )
                     );
 
-                    return;
-                }
+                };
 
-                resolve(
-                    globalName
-                        ? window[globalName]
-                        : true
-                );
-
-            };
-
-            script.onerror = () => {
-
-                reject(
-                    new Error(
-                        "تعذر تحميل مكتبة قراءة الملفات."
-                    )
-                );
-
-            };
 
             document.head.appendChild(
                 script
@@ -372,9 +382,7 @@ function loadExternalScript(
    READ TXT
    ========================================================= */
 
-function readTXTFile(
-    file
-) {
+function readTXTFile(file) {
 
     return new Promise(
         (resolve, reject) => {
@@ -382,39 +390,45 @@ function readTXTFile(
             const reader =
                 new FileReader();
 
-            reader.onload = () => {
 
-                try {
+            reader.onload =
+                () => {
 
-                    const text =
-                        String(
-                            reader.result ||
-                            ""
+                    try {
+
+                        const text =
+                            String(
+                                reader.result ||
+                                ""
+                            );
+
+
+                        resolve(
+                            truncateFileText(
+                                text
+                            )
                         );
 
-                    resolve(
-                        truncateFileText(
-                            text
+                    } catch (error) {
+
+                        reject(error);
+
+                    }
+
+                };
+
+
+            reader.onerror =
+                () => {
+
+                    reject(
+                        new Error(
+                            "تعذر قراءة ملف TXT."
                         )
                     );
 
-                } catch (error) {
+                };
 
-                    reject(error);
-
-                }
-
-            };
-
-            reader.onerror = () => {
-
-                reject(
-                    new Error(
-                        "تعذر قراءة ملف TXT."
-                    )
-                );
-
-            };
 
             reader.readAsText(
                 file,
@@ -431,14 +445,13 @@ function readTXTFile(
    READ DOCX
    ========================================================= */
 
-async function readDOCXFile(
-    file
-) {
+async function readDOCXFile(file) {
 
     await loadExternalScript(
         "https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js",
         "mammoth"
     );
+
 
     if (
         !window.mammoth
@@ -450,8 +463,10 @@ async function readDOCXFile(
 
     }
 
+
     const arrayBuffer =
         await file.arrayBuffer();
+
 
     const result =
         await window.mammoth.extractRawText({
@@ -459,8 +474,10 @@ async function readDOCXFile(
                 arrayBuffer
         });
 
+
     const text =
         result?.value || "";
+
 
     if (!text.trim()) {
 
@@ -469,6 +486,7 @@ async function readDOCXFile(
         );
 
     }
+
 
     return truncateFileText(
         text
@@ -481,20 +499,21 @@ async function readDOCXFile(
    READ PDF
    ========================================================= */
 
-async function readPDFFile(
-    file
-) {
+async function readPDFFile(file) {
 
     const pdfjsLib =
         await import(
             "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
         );
 
+
     pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
 
+
     const arrayBuffer =
         await file.arrayBuffer();
+
 
     const pdf =
         await pdfjsLib.getDocument({
@@ -502,7 +521,10 @@ async function readPDFFile(
                 arrayBuffer
         }).promise;
 
-    let fullText = "";
+
+    let fullText =
+        "";
+
 
     for (
         let pageNumber = 1;
@@ -515,8 +537,10 @@ async function readPDFFile(
                 pageNumber
             );
 
+
         const textContent =
             await page.getTextContent();
+
 
         const pageText =
             textContent.items
@@ -526,23 +550,35 @@ async function readPDFFile(
                 )
                 .join(" ");
 
+
         fullText +=
             `\n\n--- الصفحة ${pageNumber} ---\n\n`;
 
+
         fullText +=
             pageText;
+
+
+        /*
+           لا نستمر في استخراج كمية ضخمة
+           أكبر من الحد الذي سيرسله الموقع.
+        */
 
         if (
             fullText.length >=
             MAX_FILE_TEXT
         ) {
+
             break;
+
         }
 
     }
 
+
     fullText =
         fullText.trim();
+
 
     if (!fullText) {
 
@@ -552,6 +588,7 @@ async function readPDFFile(
 
     }
 
+
     return truncateFileText(
         fullText
     );
@@ -560,12 +597,10 @@ async function readPDFFile(
 
 
 /* =========================================================
-   READ SUPPORTED FILE
+   READ ANY SUPPORTED FILE
    ========================================================= */
 
-async function extractFileText(
-    file
-) {
+async function extractFileText(file) {
 
     if (!file) {
 
@@ -575,10 +610,16 @@ async function extractFileText(
 
     }
 
+
     const extension =
         getFileExtension(
             file.name
         );
+
+
+    /*
+       TXT
+    */
 
     if (
         extension === "txt"
@@ -590,6 +631,11 @@ async function extractFileText(
 
     }
 
+
+    /*
+       PDF
+    */
+
     if (
         extension === "pdf"
     ) {
@@ -599,6 +645,11 @@ async function extractFileText(
         );
 
     }
+
+
+    /*
+       DOCX
+    */
 
     if (
         extension === "docx"
@@ -610,6 +661,11 @@ async function extractFileText(
 
     }
 
+
+    /*
+       DOC القديم
+    */
+
     if (
         extension === "doc"
     ) {
@@ -619,6 +675,7 @@ async function extractFileText(
         );
 
     }
+
 
     throw new Error(
         "نوع الملف غير مدعوم. استخدم PDF أو DOCX أو TXT."
@@ -636,6 +693,7 @@ let state = {
     currentSection:
         "home",
 
+
     darkMode:
         localStorage.getItem(
             "geo_ai_dark"
@@ -643,6 +701,7 @@ let state = {
         localStorage.getItem(
             "ahmed_ai_dark"
         ) === "true",
+
 
     saveChats:
         localStorage.getItem(
@@ -652,8 +711,10 @@ let state = {
             "ahmed_ai_save_chats"
         ) !== "false",
 
+
     currentChat:
         [],
+
 
     selectedLanguage:
         localStorage.getItem(
@@ -664,26 +725,46 @@ let state = {
         ) ||
         "ar",
 
+
     selectedCodingLanguage:
         "Python",
+
+
+    /*
+       الملف الحالي
+    */
 
     selectedFile:
         null,
 
+
+    /*
+       النص المستخرج من الملف
+    */
+
     selectedFileText:
         "",
+
 
     selectedFileName:
         "",
 
+
     selectedFileType:
         "",
+
+
+    /*
+       الصورة الحالية
+    */
 
     selectedImage:
         null,
 
+
     selectedImageData:
         null,
+
 
     selectedImageName:
         null
@@ -700,55 +781,70 @@ const pageInfo = {
     home: {
         title:
             "الرئيسية",
+
         subtitle:
             "مساعدك الذكي للمذاكرة والعمل"
     },
 
+
     chat: {
         title:
             "AI Chat",
+
         subtitle:
             "تحدث مع GEO AI"
     },
 
+
     study: {
         title:
             "المذاكرة",
+
         subtitle:
             "مدرسك الشخصي"
     },
 
+
     gis: {
         title:
             "مساعد GIS",
+
         subtitle:
             "GIS • Remote Sensing • Surveying"
     },
 
+
     coding: {
         title:
             "البرمجة",
+
         subtitle:
             "Python • ArcPy • JavaScript • SQL"
     },
 
+
     files: {
         title:
             "ملفاتي",
+
         subtitle:
             "إدارة ملفات المذاكرة"
     },
 
+
     tests: {
         title:
             "الاختبارات",
+
         subtitle:
             "اختبر معلوماتك"
     },
 
+
     settings: {
         title:
             "الإعدادات",
+
         subtitle:
             "إعدادات GEO AI"
     }
@@ -767,7 +863,9 @@ function openSection(
     const section =
         $(sectionName + "Section");
 
+
     if (!section) return;
+
 
     document
         .querySelectorAll(
@@ -775,15 +873,19 @@ function openSection(
         )
         .forEach(
             (item) => {
+
                 item.classList.remove(
                     "active"
                 );
+
             }
         );
+
 
     section.classList.add(
         "active"
     );
+
 
     document
         .querySelectorAll(
@@ -801,29 +903,39 @@ function openSection(
             }
         );
 
+
     state.currentSection =
         sectionName;
+
 
     const info =
         pageInfo[
             sectionName
         ];
 
+
     if (info) {
 
         if ($("pageTitle")) {
+
             $("pageTitle").textContent =
                 info.title;
+
         }
 
+
         if ($("pageSubtitle")) {
+
             $("pageSubtitle").textContent =
                 info.subtitle;
+
         }
 
     }
 
+
     closeMobileSidebar();
+
 
     window.scrollTo({
         top:
@@ -862,6 +974,7 @@ function setupNavigation() {
             }
         );
 
+
     document
         .querySelectorAll(
             ".quick-card[data-action]"
@@ -883,8 +996,10 @@ function setupNavigation() {
             }
         );
 
+
     const newChatBtn =
         $("newChatBtn");
+
 
     if (newChatBtn) {
 
@@ -903,8 +1018,10 @@ function setupNavigation() {
 
     }
 
+
     const mobileMenuBtn =
         $("mobileMenuBtn");
+
 
     if (mobileMenuBtn) {
 
@@ -914,6 +1031,7 @@ function setupNavigation() {
 
                 const sidebar =
                     $("sidebar");
+
 
                 if (sidebar) {
 
@@ -935,6 +1053,7 @@ function closeMobileSidebar() {
 
     const sidebar =
         $("sidebar");
+
 
     if (sidebar) {
 
@@ -967,8 +1086,10 @@ function applyTheme() {
 
     }
 
+
     const toggle =
         $("darkModeToggle");
+
 
     if (toggle) {
 
@@ -984,8 +1105,10 @@ function setupTheme() {
 
     applyTheme();
 
+
     const themeBtn =
         $("themeBtn");
+
 
     if (themeBtn) {
 
@@ -996,10 +1119,12 @@ function setupTheme() {
                 state.darkMode =
                     !state.darkMode;
 
+
                 localStorage.setItem(
                     "geo_ai_dark",
                     state.darkMode
                 );
+
 
                 applyTheme();
 
@@ -1008,13 +1133,16 @@ function setupTheme() {
 
     }
 
+
     const darkModeToggle =
         $("darkModeToggle");
+
 
     if (darkModeToggle) {
 
         darkModeToggle.checked =
             state.darkMode;
+
 
         darkModeToggle.addEventListener(
             "change",
@@ -1023,10 +1151,12 @@ function setupTheme() {
                 state.darkMode =
                     darkModeToggle.checked;
 
+
                 localStorage.setItem(
                     "geo_ai_dark",
                     state.darkMode
                 );
+
 
                 applyTheme();
 
@@ -1046,6 +1176,7 @@ function saveCurrentChat() {
 
     if (!state.saveChats) return;
 
+
     localStorage.setItem(
         "geo_ai_current_chat",
         JSON.stringify(
@@ -1060,6 +1191,7 @@ function loadCurrentChat() {
 
     if (!state.saveChats) return;
 
+
     try {
 
         const saved =
@@ -1070,21 +1202,27 @@ function loadCurrentChat() {
                 "ahmed_ai_current_chat"
             );
 
+
         if (!saved) return;
+
 
         const messages =
             JSON.parse(
                 saved
             );
 
+
         if (!Array.isArray(messages)) {
             return;
         }
 
+
         state.currentChat =
             messages;
 
+
         renderSavedChat();
+
 
     } catch (error) {
 
@@ -1098,25 +1236,27 @@ function loadCurrentChat() {
 }
 
 
-/* =========================================================
-   RENDER SAVED CHAT
-   ========================================================= */
-
 function renderSavedChat() {
 
     const container =
-        getChatContainer();
+        $("chatMessages");
+
 
     if (!container) return;
+
 
     if (
         !state.currentChat.length
     ) {
+
         return;
+
     }
+
 
     container.innerHTML =
         "";
+
 
     state.currentChat.forEach(
         (message) => {
@@ -1129,6 +1269,7 @@ function renderSavedChat() {
 
         }
     );
+
 
     scrollChatToBottom();
 
@@ -1145,12 +1286,18 @@ async function saveChatToFirebase(
 ) {
 
     if (!currentUser) {
+
         return;
+
     }
 
+
     if (!firebaseDB) {
+
         return;
+
     }
+
 
     try {
 
@@ -1159,11 +1306,13 @@ async function saveChatToFirebase(
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
             );
 
+
         const {
             collection,
             addDoc,
             serverTimestamp
         } = firestoreModule;
+
 
         const chatData = {
 
@@ -1191,6 +1340,7 @@ async function saveChatToFirebase(
 
         };
 
+
         await addDoc(
             collection(
                 firebaseDB,
@@ -1198,6 +1348,7 @@ async function saveChatToFirebase(
             ),
             chatData
         );
+
 
     } catch (error) {
 
@@ -1220,6 +1371,7 @@ function newChat() {
     state.currentChat =
         [];
 
+
     state.selectedImage =
         null;
 
@@ -1229,12 +1381,15 @@ function newChat() {
     state.selectedImageName =
         null;
 
+
     localStorage.removeItem(
         "geo_ai_current_chat"
     );
 
+
     const chatMessages =
         $("chatMessages");
+
 
     if (chatMessages) {
 
@@ -1276,9 +1431,11 @@ function newChat() {
 
         `;
 
+
         setupSuggestionButtons();
 
     }
+
 
     showNotification(
         "تم إنشاء محادثة جديدة",
@@ -1289,442 +1446,338 @@ function newChat() {
 
 
 /* =========================================================
-   GEO AI SMART MARKDOWN RENDERER
+   CHAT UI
    ========================================================= */
 
-let geoCodeCounter =
-    0;
-
-
-/* =========================================================
-   DETECT CODE LANGUAGE
-   ========================================================= */
-
-function normalizeCodeLanguage(
-    language
+function addMessageToUI(
+    role,
+    content,
+    save = true
 ) {
 
-    const lang =
-        String(
-            language || ""
-        )
-        .trim()
-        .toLowerCase();
-
-    const languages = {
-
-        py:
-            "Python",
-
-        python:
-            "Python",
-
-        python3:
-            "Python",
-
-        js:
-            "JavaScript",
-
-        javascript:
-            "JavaScript",
-
-        jsx:
-            "JSX",
-
-        ts:
-            "TypeScript",
-
-        typescript:
-            "TypeScript",
-
-        html:
-            "HTML",
-
-        css:
-            "CSS",
-
-        sql:
-            "SQL",
-
-        json:
-            "JSON",
-
-        xml:
-            "XML",
-
-        bash:
-            "Bash",
-
-        sh:
-            "Shell",
-
-        shell:
-            "Shell",
-
-        powershell:
-            "PowerShell",
-
-        ps:
-            "PowerShell",
-
-        java:
-            "Java",
-
-        c:
-            "C",
-
-        cpp:
-            "C++",
-
-        "c++":
-            "C++",
-
-        cs:
-            "C#",
-
-        "c#":
-            "C#",
-
-        php:
-            "PHP",
-
-        go:
-            "Go",
-
-        rust:
-            "Rust",
-
-        ruby:
-            "Ruby",
-
-        kotlin:
-            "Kotlin",
-
-        swift:
-            "Swift",
-
-        r:
-            "R",
-
-        matlab:
-            "MATLAB",
-
-        arcpy:
-            "ArcPy",
-
-        qgis:
-            "QGIS / Python"
-
-    };
-
-    return (
-        languages[lang] ||
-        (
-            language
-                ? String(language).trim()
-                : "Code"
-        )
-    );
-
-}
+    const container =
+        $("chatMessages");
 
 
-/* =========================================================
-   BUILD CODE BOX
-   ========================================================= */
+    if (!container) return null;
 
-function buildGeoCodeBox(
-    block
-) {
 
-    const escapedCode =
-        escapeCode(
-            block.code
+    const empty =
+        container.querySelector(
+            ".empty-chat"
         );
 
-    return `
 
-        <div
-            class="geo-code-wrapper"
-            data-code-id="${block.id}"
-        >
+    if (empty) {
 
-            <div
-                class="geo-code-header"
-            >
+        empty.remove();
 
-                <span
-                    class="geo-code-language"
-                >
-                    ${escapeHTML(
-                        block.language
-                    )}
-                </span>
+    }
 
-                <button
-                    type="button"
-                    class="geo-copy-code"
-                    data-code-id="${block.id}"
-                >
-                    📋 نسخ الكود
-                </button>
 
-            </div>
+    const message =
+        document.createElement(
+            "div"
+        );
 
-            <pre
-                class="geo-code-pre"
-            ><code>${escapedCode}</code></pre>
 
+    message.className =
+        role === "user"
+            ? "message user-message"
+            : "message ai-message";
+
+
+    message.innerHTML = `
+
+        <div class="message-avatar">
+            ${role === "user" ? "أ" : "🤖"}
+        </div>
+
+        <div class="message-content">
+            ${escapeHTML(content)}
         </div>
 
     `;
 
-}
 
-
-/* =========================================================
-   RENDER NORMAL TEXT
-   ========================================================= */
-
-function renderGeoText(
-    text
-) {
-
-    let source =
-        String(text ?? "");
-
-    if (!source.trim()) {
-        return "";
-    }
-
-    source =
-        escapeHTML(
-            source
-        );
-
-    source =
-        source.replace(
-            /^### (.*)$/gm,
-            "<h4>$1</h4>"
-        );
-
-    source =
-        source.replace(
-            /^## (.*)$/gm,
-            "<h3>$1</h3>"
-        );
-
-    source =
-        source.replace(
-            /^# (.*)$/gm,
-            "<h2>$1</h2>"
-        );
-
-    source =
-        source.replace(
-            /\*\*(.*?)\*\*/g,
-            "<strong>$1</strong>"
-        );
-
-    source =
-        source.replace(
-            /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
-            "<em>$1</em>"
-        );
-
-    source =
-        source.replace(
-            /`([^`\n]+)`/g,
-            `<code class="geo-inline-code">$1</code>`
-        );
-
-    source =
-        source.replace(
-            /^[•*-]\s+(.*)$/gm,
-            `<div class="geo-list-item">• $1</div>`
-        );
-
-    source =
-        source.replace(
-            /^\d+\.\s+(.*)$/gm,
-            `<div class="geo-list-item">$1</div>`
-        );
-
-    source =
-        source.replace(
-            /^(شرح الكود:?)$/gim,
-            `<div class="geo-code-explanation-title">$1</div>`
-        );
-
-    source =
-        source.replace(
-            /^(Explanation:?)$/gim,
-            `<div class="geo-code-explanation-title">$1</div>`
-        );
-
-    source =
-        source.replace(
-            /\n/g,
-            "<br>"
-        );
-
-    return source;
-
-}
-
-
-/* =========================================================
-   SMART MARKDOWN RENDERER
-   ========================================================= */
-
-function renderGeoMarkdown(
-    text
-) {
-
-    let source =
-        String(text ?? "");
-
-    const codeBlocks =
-        [];
-
-    source =
-        source.replace(
-            /```([a-zA-Z0-9_+#.-]*)\s*\n?([\s\S]*?)```/g,
-            function (
-                _match,
-                language,
-                code
-            ) {
-
-                const cleanCode =
-                    String(code)
-                        .replace(
-                            /^\n/,
-                            ""
-                        )
-                        .replace(
-                            /\n$/,
-                            ""
-                        );
-
-                if (!cleanCode.trim()) {
-                    return "";
-                }
-
-                const id =
-                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
-                codeBlocks.push({
-
-                    id,
-
-                    language:
-                        normalizeCodeLanguage(
-                            language
-                        ),
-
-                    code:
-                        cleanCode
-
-                });
-
-                return "";
-
-            }
-        );
-
-    const languagePattern =
-        /(?:^|\n)(Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:\s*\n([\s\S]*?)(?=\n(?:شرح|شرح الكود|Explanation|Python|python|JavaScript|javascript|JS|js|SQL|sql|HTML|html|CSS|css|ArcPy|arcpy)\s*:|$)/g;
-
-    source =
-        source.replace(
-            languagePattern,
-            function (
-                match,
-                language,
-                code
-            ) {
-
-                const cleanCode =
-                    String(code)
-                        .trim();
-
-                if (!cleanCode) {
-                    return match;
-                }
-
-                const id =
-                    `geo-code-${Date.now()}-${geoCodeCounter++}`;
-
-                codeBlocks.push({
-
-                    id,
-
-                    language:
-                        normalizeCodeLanguage(
-                            language
-                        ),
-
-                    code:
-                        cleanCode
-
-                });
-
-                return "";
-
-            }
-        );
-
-    source =
-        source
-            .replace(
-                /\n{3,}/g,
-                "\n\n"
-            )
-            .trim();
-
-    let explanationHTML =
-        renderGeoText(
-            source
-        );
-
-    if (
-        codeBlocks.length &&
-        explanationHTML.trim()
-    ) {
-
-        explanationHTML =
-            `
-            <div class="geo-explanation">
-
-                <div class="geo-code-explanation-title">
-                    شرح الكود:
-                </div>
-
-                <div class="geo-explanation-content">
-                    ${explanationHTML}
-                </div>
-
-            </div>
-            `;
-
-    }
-
-    const codeHTML =
-        codeBlocks
-            .map(
-                block =>
-                    buildGeoCodeBox(
-                        block
-                    )
-            )
-            .join("");
-
-    return (
-        codeHTML +
-        explanationHTML
+    container.appendChild(
+        message
     );
 
+
+    scrollChatToBottom();
+
+
+    if (save) {
+
+        state.currentChat.push({
+            role,
+            content
+        });
+
+
+        saveCurrentChat();
+
+    }
+
+
+    return message;
+
+}
+
+
+/* =========================================================
+   IMAGE MESSAGE UI
+   ========================================================= */
+
+
+/* =========================================================
+   GEO AI - SMART MESSAGE RENDERER
+   ========================================================= */
+
+let geoCodeCounter = 0;
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(text) {
+    return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   ESCAPE CODE
+   ========================================================= */
+
+function escapeCode(code) {
+    return String(code ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   MARKDOWN RENDERER
+   ========================================================= */
+
+function renderGeoMarkdown(text) {
+
+    let source = String(text ?? "");
+
+    /*
+       نحفظ أكواد البرمجة أولًا
+    */
+
+    const codeBlocks = [];
+
+    source = source.replace(
+        /```([a-zA-Z0-9_+#.-]*)\s*\n?([\s\S]*?)```/g,
+        function (_, language, code) {
+
+            const id =
+                `geo-code-${Date.now()}-${geoCodeCounter++}`;
+
+            const lang =
+                language.trim() || "code";
+
+            const cleanCode =
+                code
+                    .replace(/^\n/, "")
+                    .replace(/\n$/, "");
+
+            codeBlocks.push({
+                id,
+                language: lang,
+                code: cleanCode
+            });
+
+            return `___GEO_CODE_${codeBlocks.length - 1}___`;
+        }
+    );
+
+
+    /*
+       Escape باقي النص
+    */
+
+    source = escapeHTML(source);
+
+
+    /*
+       العناوين
+    */
+
+    source = source.replace(
+        /^### (.*)$/gm,
+        "<h4>$1</h4>"
+    );
+
+    source = source.replace(
+        /^## (.*)$/gm,
+        "<h3>$1</h3>"
+    );
+
+    source = source.replace(
+        /^# (.*)$/gm,
+        "<h2>$1</h2>"
+    );
+
+
+    /*
+       Bold
+    */
+
+    source = source.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    /*
+       Italic
+    */
+
+    source = source.replace(
+        /(?<!\*)\*([^*\n]+)\*(?!\*)/g,
+        "<em>$1</em>"
+    );
+
+
+    /*
+       Inline Code
+    */
+
+    source = source.replace(
+        /`([^`\n]+)`/g,
+        `<code class="geo-inline-code">$1</code>`
+    );
+
+
+    /*
+       القوائم
+    */
+
+    source = source.replace(
+        /^[•*-]\s+(.*)$/gm,
+        `<div class="geo-list-item">• $1</div>`
+    );
+
+    source = source.replace(
+        /^\d+\.\s+(.*)$/gm,
+        `<div class="geo-list-item">$1</div>`
+    );
+
+
+    /*
+       فواصل الأسطر
+    */
+
+    source = source.replace(
+        /\n/g,
+        "<br>"
+    );
+
+
+    /*
+       استرجاع أكواد البرمجة
+    */
+
+    codeBlocks.forEach(
+        (block, index) => {
+
+            const escapedCode =
+                escapeCode(block.code);
+
+            const codeHTML = `
+                <div
+                    class="geo-code-wrapper"
+                    data-code-id="${block.id}"
+                    style="
+                        margin:14px 0;
+                        border-radius:12px;
+                        overflow:hidden;
+                        background:#050816;
+                        border:1px solid rgba(255,255,255,.10);
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            justify-content:space-between;
+                            padding:8px 12px;
+                            background:#111827;
+                            color:#cbd5e1;
+                            font-size:12px;
+                        "
+                    >
+
+                        <span>
+                            ${escapeHTML(block.language)}
+                        </span>
+
+                        <button
+                            type="button"
+                            class="geo-copy-code"
+                            data-code-id="${block.id}"
+                            style="
+                                border:0;
+                                border-radius:7px;
+                                padding:6px 10px;
+                                background:#2563eb;
+                                color:white;
+                                cursor:pointer;
+                                font-size:12px;
+                            "
+                        >
+                            📋 نسخ الكود
+                        </button>
+
+                    </div>
+
+                    <pre
+                        style="
+                            margin:0;
+                            padding:14px;
+                            overflow-x:auto;
+                            color:#e5e7eb;
+                            font-family:
+                                Consolas,
+                                Monaco,
+                                'Courier New',
+                                monospace;
+                            font-size:13px;
+                            line-height:1.65;
+                            direction:ltr;
+                            text-align:left;
+                            white-space:pre;
+                        "
+                    ><code>${escapedCode}</code></pre>
+
+                </div>
+            `;
+
+            source =
+                source.replace(
+                    `___GEO_CODE_${index}___`,
+                    codeHTML
+                );
+        }
+    );
+
+
+    return source;
 }
 
 
@@ -1732,14 +1785,11 @@ function renderGeoMarkdown(
    COPY CODE
    ========================================================= */
 
-async function copyGeoCode(
-    codeId,
-    button
-) {
+async function copyGeoCode(codeId, button) {
 
     const wrapper =
         document.querySelector(
-            `.geo-code-wrapper[data-code-id="${codeId}"]`
+            `[data-code-id="${codeId}"]`
         );
 
     if (!wrapper) {
@@ -1747,9 +1797,7 @@ async function copyGeoCode(
     }
 
     const codeElement =
-        wrapper.querySelector(
-            "pre code"
-        );
+        wrapper.querySelector("code");
 
     if (!codeElement) {
         return;
@@ -1770,34 +1818,29 @@ async function copyGeoCode(
         button.textContent =
             "✅ تم النسخ";
 
-        button.classList.add(
-            "copied"
-        );
+        button.style.background =
+            "#16a34a";
 
-        setTimeout(
-            () => {
+        setTimeout(() => {
 
-                button.textContent =
-                    oldText ||
-                    "📋 نسخ الكود";
+            button.textContent =
+                oldText;
 
-                button.classList.remove(
-                    "copied"
-                );
+            button.style.background =
+                "#2563eb";
 
-            },
-            1800
-        );
+        }, 1800);
 
     } catch (error) {
 
-        const textarea =
-            document.createElement(
-                "textarea"
-            );
+        /*
+           طريقة بديلة للأجهزة التي تمنع Clipboard API
+        */
 
-        textarea.value =
-            code;
+        const textarea =
+            document.createElement("textarea");
+
+        textarea.value = code;
 
         textarea.style.position =
             "fixed";
@@ -1812,42 +1855,76 @@ async function copyGeoCode(
         textarea.select();
 
         try {
-
-            document.execCommand(
-                "copy"
-            );
+            document.execCommand("copy");
 
             button.textContent =
                 "✅ تم النسخ";
 
-            setTimeout(
-                () => {
-
-                    button.textContent =
-                        "📋 نسخ الكود";
-
-                },
-                1800
-            );
+            setTimeout(() => {
+                button.textContent =
+                    "📋 نسخ الكود";
+            }, 1800);
 
         } catch (copyError) {
 
             showNotification(
                 "لم أستطع نسخ الكود تلقائيًا.",
-                "!"
+                "error"
             );
 
         }
 
         textarea.remove();
-
     }
-
 }
 
 
 /* =========================================================
-   CODE COPY EVENTS
+   MESSAGE UI
+   ========================================================= */
+
+function addMessageToUI(role, content) {
+
+    const container =
+        getChatContainer();
+
+    if (!container) {
+        return;
+    }
+
+    const wrapper =
+        document.createElement("div");
+
+    wrapper.className =
+        `chat-message ${
+            role === "user"
+                ? "user-message"
+                : "ai-message"
+        }`;
+
+    const renderedContent =
+        role === "assistant"
+            ? renderGeoMarkdown(content)
+            : escapeHTML(content)
+                .replace(/\n/g, "<br>");
+
+    wrapper.innerHTML = `
+        <div class="message-content">
+            ${renderedContent}
+        </div>
+    `;
+
+    container.appendChild(
+        wrapper
+    );
+
+    container.scrollTop =
+        container.scrollHeight;
+}
+
+
+/* =========================================================
+   COPY BUTTON EVENTS
    ========================================================= */
 
 document.addEventListener(
@@ -1870,200 +1947,8 @@ document.addEventListener(
             codeId,
             button
         );
-
     }
 );
-
-
-/* =========================================================
-   MESSAGE UI
-   ========================================================= */
-
-function addMessageToUI(
-    role,
-    content,
-    save = true
-) {
-
-    const container =
-        getChatContainer();
-
-    if (!container) {
-        return null;
-    }
-
-    const empty =
-        container.querySelector(
-            ".empty-chat"
-        );
-
-    if (empty) {
-        empty.remove();
-    }
-
-    const message =
-        document.createElement(
-            "div"
-        );
-
-    message.className =
-        role === "user"
-            ? "message user-message"
-            : "message ai-message";
-
-    let renderedContent;
-
-    if (
-        role === "assistant"
-    ) {
-
-        renderedContent =
-            renderGeoMarkdown(
-                content
-            );
-
-    } else {
-
-        renderedContent =
-            escapeHTML(
-                content
-            ).replace(
-                /\n/g,
-                "<br>"
-            );
-
-    }
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-            ${
-                role === "user"
-                    ? "أ"
-                    : "🤖"
-            }
-        </div>
-
-        <div class="message-content">
-            ${renderedContent}
-        </div>
-
-    `;
-
-    container.appendChild(
-        message
-    );
-
-    scrollChatToBottom();
-
-    if (save) {
-
-        state.currentChat.push({
-
-            role:
-                role,
-
-            content:
-                String(
-                    content ?? ""
-                )
-
-        });
-
-        saveCurrentChat();
-
-    }
-
-    return message;
-
-}
-
-
-/* =========================================================
-   IMAGE MESSAGE UI
-   ========================================================= */
-
-function addImageMessageToUI(
-    imageData,
-    imageName
-) {
-
-    const container =
-        getChatContainer();
-
-    if (!container) {
-        return null;
-    }
-
-    const empty =
-        container.querySelector(
-            ".empty-chat"
-        );
-
-    if (empty) {
-        empty.remove();
-    }
-
-    const message =
-        document.createElement(
-            "div"
-        );
-
-    message.className =
-        "message user-message";
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-            أ
-        </div>
-
-        <div class="message-content">
-
-            <div
-                style="
-                    display:flex;
-                    flex-direction:column;
-                    gap:8px;
-                "
-            >
-
-                <img
-                    src="${imageData}"
-                    alt="${escapeHTML(
-                        imageName || "صورة"
-                    )}"
-                    style="
-                        max-width:100%;
-                        max-height:320px;
-                        border-radius:12px;
-                        object-fit:contain;
-                    "
-                >
-
-                <small>
-                    📷 ${escapeHTML(
-                        imageName || "صورة"
-                    )}
-                </small>
-
-            </div>
-
-        </div>
-
-    `;
-
-    container.appendChild(
-        message
-    );
-
-    scrollChatToBottom();
-
-    return message;
-
-}
-
-
 /* =========================================================
    IMAGE PREPARATION
    ========================================================= */
@@ -2073,10 +1958,7 @@ function prepareSelectedImage(
 ) {
 
     return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
+        (resolve, reject) => {
 
             if (!file) {
 
@@ -2087,7 +1969,9 @@ function prepareSelectedImage(
                 );
 
                 return;
+
             }
+
 
             if (
                 !file.type ||
@@ -2103,10 +1987,13 @@ function prepareSelectedImage(
                 );
 
                 return;
+
             }
+
 
             const reader =
                 new FileReader();
+
 
             reader.onload =
                 () => {
@@ -2123,13 +2010,16 @@ function prepareSelectedImage(
                         );
 
                         return;
+
                     }
+
 
                     resolve(
                         reader.result
                     );
 
                 };
+
 
             reader.onerror =
                 () => {
@@ -2141,6 +2031,7 @@ function prepareSelectedImage(
                     );
 
                 };
+
 
             reader.readAsDataURL(
                 file
@@ -2162,12 +2053,14 @@ async function setSelectedImage(
 
     if (!file) return;
 
+
     try {
 
         const imageData =
             await prepareSelectedImage(
                 file
             );
+
 
         state.selectedImage =
             file;
@@ -2178,21 +2071,26 @@ async function setSelectedImage(
         state.selectedImageName =
             file.name;
 
+
         openSection(
             "chat"
         );
+
 
         addImageMessageToUI(
             imageData,
             file.name
         );
 
+
         showNotification(
             `تم تجهيز الصورة: ${file.name}`,
             "📷"
         );
 
+
         $("chatInput")?.focus();
+
 
     } catch (error) {
 
@@ -2200,6 +2098,7 @@ async function setSelectedImage(
             "Image preparation error:",
             error
         );
+
 
         showNotification(
             error.message ||
@@ -2227,48 +2126,31 @@ function clearSelectedImage() {
     state.selectedImageName =
         null;
 
+
     const homeImageInput =
         $("homeImageInput");
+
 
     const chatImageInput =
         $("chatImageInput");
 
+
     if (homeImageInput) {
-        homeImageInput.value = "";
+
+        homeImageInput.value =
+            "";
+
     }
 
+
     if (chatImageInput) {
-        chatImageInput.value = "";
+
+        chatImageInput.value =
+            "";
+
     }
 
 }
-
-
-/* =========================================================
-   AI FORMATTING INSTRUCTION
-   ========================================================= */
-
-const GEO_AI_CODE_FORMAT_INSTRUCTION = `
-
-تعليمات تنسيق مهمة جداً لإجابة GEO AI:
-
-إذا كانت الإجابة تحتوي على كود برمجي:
-
-1. ضع الكود داخل Markdown code block باستخدام ``` واسم اللغة.
-2. لا تضع الشرح داخل صندوق الكود.
-3. لا تضع تعليقات عربية داخل الكود إلا إذا طلب المستخدم ذلك.
-4. إذا كانت الإجابة تحتوي على أكثر من كود، اجعل كل كود داخل صندوق مستقل.
-5. ضع جميع صناديق الأكواد أولاً.
-6. بعد صناديق الأكواد اكتب:
-شرح الكود:
-ثم الشرح في نص منفصل.
-7. اجعل الكود جاهزاً للنسخ والتشغيل قدر الإمكان.
-8. لا تستخدم صندوق كود واحد يحتوي على الشرح والكود معاً.
-9. إذا طلب المستخدم ملفاً كاملاً، أرسل الملف كاملاً داخل صندوق كود واحد فقط.
-10. لا تختصر الكود المطلوب ولا تستبدل أجزاء منه بعبارات مثل "..." أو "باقي الكود".
-11. اجعل اسم اللغة واضحاً بعد علامات Markdown الخاصة بالكود.
-
-`;
 
 
 /* =========================================================
@@ -2285,22 +2167,29 @@ async function askAI(
         state.selectedFileText ||
         "";
 
+
     const fileName =
         options.fileName ||
         state.selectedFileName ||
         "";
+
 
     const fileType =
         options.fileType ||
         state.selectedFileType ||
         "";
 
+
+    /*
+       إرسال آخر رسائل المحادثة
+       حتى يفهم AI السياق.
+    */
+
     const context =
         state.currentChat
             .slice(-20)
             .map(
                 item => ({
-
                     role:
                         item.role === "assistant"
                             ? "assistant"
@@ -2313,37 +2202,19 @@ async function askAI(
                             0,
                             12000
                         )
-
                 })
             );
 
-    const userMessage =
-        String(
-            message || ""
-        ).trim();
-
-    if (
-        !userMessage &&
-        !fileText
-    ) {
-
-        throw new Error(
-            "اكتب سؤالك أولاً."
-        );
-
-    }
-
-    const finalMessage =
-        GEO_AI_CODE_FORMAT_INSTRUCTION +
-        "\n\nرسالة المستخدم:\n" +
-        userMessage;
 
     const body = {
 
         message:
-            finalMessage,
+            String(
+                message || ""
+            ).trim(),
 
         context:
+
             context.length
                 ? context
                 : undefined,
@@ -2365,126 +2236,70 @@ async function askAI(
 
     };
 
-    console.log(
-        "GEO AI → Sending request:",
-        body
-    );
 
-    let response;
+    const response =
+        await fetch(
+            AI_API_URL,
+            {
+                method:
+                    "POST",
 
-    try {
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-        response =
-            await fetch(
-                AI_API_URL,
-                {
-
-                    method:
-                        "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json",
-
-                        "Accept":
-                            "application/json"
-
-                    },
-
-                    body:
-                        JSON.stringify(
-                            body
-                        )
-
-                }
-            );
-
-    } catch (error) {
-
-        console.error(
-            "GEO AI Network Error:",
-            error
+                body:
+                    JSON.stringify(
+                        body
+                    )
+            }
         );
 
-        throw new Error(
-            "تعذر الاتصال بسيرفر GEO AI. تأكد من اتصال الإنترنت أو من رابط الـAPI."
-        );
-
-    }
-
-    const rawText =
-        await response.text();
-
-    console.log(
-        "GEO AI ← Server response:",
-        response.status,
-        rawText
-    );
 
     let data;
+
 
     try {
 
         data =
-            rawText
-                ? JSON.parse(rawText)
-                : null;
+            await response.json();
 
-    } catch (error) {
+    } catch {
 
         throw new Error(
-            `السيرفر أرسل استجابة غير مفهومة. HTTP ${response.status}`
+            "السيرفر لم يرجع بيانات صحيحة."
         );
 
     }
+
 
     if (!response.ok) {
 
         throw new Error(
             data?.error ||
-            data?.message ||
-            `حدث خطأ من السيرفر. HTTP ${response.status}`
+            "حدث خطأ في الاتصال بالسيرفر."
         );
 
     }
 
-    if (
-        data &&
-        data.success === false
-    ) {
+
+    if (!data.success) {
 
         throw new Error(
-            data.error ||
-            data.message ||
-            "السيرفر رفض الطلب."
+            data?.error ||
+            "تعذر الحصول على إجابة."
         );
 
     }
 
-    const answer =
-        data?.response ||
-        data?.answer ||
-        data?.text ||
-        data?.message ||
-        "";
 
-    if (
-        !String(answer).trim()
-    ) {
-
-        console.error(
-            "Empty AI response:",
-            data
-        );
-
-        throw new Error(
-            "السيرفر يعمل لكنه لم يرجع إجابة من الـAI."
-        );
-
-    }
-
-    return String(answer);
+    return (
+        data.response ||
+        data.answer ||
+        data.text ||
+        ""
+    );
 
 }
 
@@ -2506,117 +2321,75 @@ async function askVision(
 
     }
 
-    let response;
 
-    try {
+    const response =
+        await fetch(
+            AI_VISION_API_URL,
+            {
+                method:
+                    "POST",
 
-        response =
-            await fetch(
-                AI_VISION_API_URL,
-                {
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-                    method:
-                        "POST",
+                body:
+                    JSON.stringify({
+                        message:
+                            message ||
+                            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
 
-                    headers: {
-
-                        "Content-Type":
-                            "application/json",
-
-                        "Accept":
-                            "application/json"
-
-                    },
-
-                    body:
-                        JSON.stringify({
-
-                            message:
-                                message ||
-                                "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
-
-                            image:
-                                imageData
-
-                        })
-
-                }
-            );
-
-    } catch (error) {
-
-        console.error(
-            "Vision Network Error:",
-            error
+                        image:
+                            imageData
+                    })
+            }
         );
 
-        throw new Error(
-            "تعذر الاتصال بخدمة تحليل الصور."
-        );
-
-    }
-
-    const rawText =
-        await response.text();
 
     let data;
+
 
     try {
 
         data =
-            rawText
-                ? JSON.parse(rawText)
-                : null;
+            await response.json();
 
     } catch {
 
         throw new Error(
-            `Vision أرسل استجابة غير مفهومة. HTTP ${response.status}`
+            "سيرفر Vision لم يرجع بيانات صحيحة."
         );
 
     }
+
 
     if (!response.ok) {
 
         throw new Error(
             data?.error ||
-            data?.message ||
-            `خطأ في Vision. HTTP ${response.status}`
+            "حدث خطأ أثناء الاتصال بخدمة Vision."
         );
 
     }
 
-    if (
-        data &&
-        data.success === false
-    ) {
+
+    if (!data.success) {
 
         throw new Error(
-            data.error ||
-            data.message ||
+            data?.error ||
             "تعذر تحليل الصورة."
         );
 
     }
 
-    const answer =
-        data?.response ||
-        data?.answer ||
-        data?.text ||
-        data?.message ||
-        "";
 
-    if (
-        !String(answer).trim()
-    ) {
-
-        throw new Error(
-            "خدمة Vision لم ترجع تحليلاً."
-        );
-
-    }
-
-    return String(answer);
+    return (
+        data.response ||
+        data.answer ||
+        data.text ||
+        ""
+    );
 
 }
 
@@ -2635,25 +2408,44 @@ async function sendChatMessage(
             text || ""
         ).trim();
 
+
     const hasImage =
         !!state.selectedImageData;
 
+
     const hasFile =
         !!state.selectedFileText;
+
+
+    /*
+       لا توجد رسالة ولا صورة
+    */
 
     if (
         !text &&
         !hasImage
     ) {
+
         return;
+
     }
+
 
     const input =
         $("chatInput");
 
+
     if (input) {
-        input.value = "";
+
+        input.value =
+            "";
+
     }
+
+
+    /*
+       السؤال الافتراضي للصورة
+    */
 
     if (
         hasImage &&
@@ -2665,6 +2457,11 @@ async function sendChatMessage(
 
     }
 
+
+    /*
+       إضافة سؤال المستخدم
+    */
+
     if (text) {
 
         addMessageToUI(
@@ -2673,6 +2470,11 @@ async function sendChatMessage(
         );
 
     }
+
+
+    /*
+       رسالة التحميل
+    */
 
     const loadingMessage =
         addMessageToUI(
@@ -2687,30 +2489,43 @@ async function sendChatMessage(
             false
         );
 
+
     const imageDataToSend =
         state.selectedImageData;
 
+
     const imageNameToSend =
         state.selectedImageName;
+
 
     const fileTextToSend =
         options.fileText ||
         state.selectedFileText ||
         "";
 
+
     const fileNameToSend =
         options.fileName ||
         state.selectedFileName ||
         "";
+
 
     const fileTypeToSend =
         options.fileType ||
         state.selectedFileType ||
         "";
 
+
     try {
 
         let answer;
+
+
+        /*
+           ============================
+           VISION
+           ============================
+        */
 
         if (hasImage) {
 
@@ -2720,13 +2535,21 @@ async function sendChatMessage(
                     imageDataToSend
                 );
 
-        } else {
+        }
+
+
+        /*
+           ============================
+           FILE + CHAT
+           ============================
+        */
+
+        else {
 
             answer =
                 await askAI(
                     text,
                     {
-
                         fileText:
                             fileTextToSend,
 
@@ -2735,11 +2558,11 @@ async function sendChatMessage(
 
                         fileType:
                             fileTypeToSend
-
                     }
                 );
 
         }
+
 
         const finalAnswer =
             answer ||
@@ -2749,6 +2572,11 @@ async function sendChatMessage(
                     : "لم تصل إجابة."
             );
 
+
+        /*
+           تحديث رسالة التحميل
+        */
+
         if (loadingMessage) {
 
             const content =
@@ -2756,16 +2584,20 @@ async function sendChatMessage(
                     ".message-content"
                 );
 
+
             if (content) {
 
-                content.innerHTML =
-                    renderGeoMarkdown(
-                        finalAnswer
-                    );
+                content.textContent =
+                    finalAnswer;
 
             }
 
         }
+
+
+        /*
+           حفظ الرد محلياً
+        */
 
         state.currentChat.push({
 
@@ -2777,9 +2609,16 @@ async function sendChatMessage(
 
         });
 
+
         saveCurrentChat();
 
+
         scrollChatToBottom();
+
+
+        /*
+           حفظ Firebase
+        */
 
         await saveChatToFirebase(
 
@@ -2803,9 +2642,17 @@ async function sendChatMessage(
 
         );
 
+
+        /*
+           مسح الصورة بعد التحليل
+        */
+
         if (hasImage) {
+
             clearSelectedImage();
+
         }
+
 
     } catch (error) {
 
@@ -2814,6 +2661,7 @@ async function sendChatMessage(
             error
         );
 
+
         if (loadingMessage) {
 
             const content =
@@ -2821,20 +2669,12 @@ async function sendChatMessage(
                     ".message-content"
                 );
 
+
             if (content) {
 
-                content.innerHTML = `
-
-                    <div class="geo-error-message">
-
-                        ❌
-                        ${escapeHTML(
-                            error.message
-                        )}
-
-                    </div>
-
-                `;
+                content.textContent =
+                    "❌ " +
+                    error.message;
 
             }
 
@@ -2854,8 +2694,10 @@ function setupChat() {
     const sendButton =
         $("chatSendBtn");
 
+
     const input =
         $("chatInput");
+
 
     if (
         sendButton &&
@@ -2873,6 +2715,7 @@ function setupChat() {
             }
         );
 
+
         input.addEventListener(
             "keydown",
             (event) => {
@@ -2883,6 +2726,7 @@ function setupChat() {
                 ) {
 
                     event.preventDefault();
+
 
                     sendChatMessage(
                         input.value
@@ -2895,11 +2739,14 @@ function setupChat() {
 
     }
 
+
     const homeSendButton =
         $("homeSendBtn");
 
+
     const homeInput =
         $("homeChatInput");
+
 
     if (
         homeSendButton &&
@@ -2912,6 +2759,7 @@ function setupChat() {
 
                 const text =
                     homeInput.value.trim();
+
 
                 if (
                     state.selectedImageData
@@ -2932,7 +2780,9 @@ function setupChat() {
 
                 }
 
+
                 if (!text) return;
+
 
                 homeInput.value =
                     "";
@@ -2948,6 +2798,7 @@ function setupChat() {
             }
         );
 
+
         homeInput.addEventListener(
             "keydown",
             (event) => {
@@ -2959,8 +2810,10 @@ function setupChat() {
 
                     event.preventDefault();
 
+
                     const text =
                         homeInput.value.trim();
+
 
                     if (
                         state.selectedImageData
@@ -2981,7 +2834,9 @@ function setupChat() {
 
                     }
 
+
                     if (!text) return;
+
 
                     homeInput.value =
                         "";
@@ -3000,6 +2855,7 @@ function setupChat() {
         );
 
     }
+
 
     setupSuggestionButtons();
 
@@ -3025,8 +2881,10 @@ function setupSuggestionButtons() {
                         const text =
                             button.textContent.trim();
 
+
                         const input =
                             $("chatInput");
+
 
                         if (input) {
 
@@ -3035,9 +2893,11 @@ function setupSuggestionButtons() {
 
                         }
 
+
                         openSection(
                             "chat"
                         );
+
 
                         sendChatMessage(
                             text
@@ -3071,13 +2931,17 @@ function setupGIS() {
                         const topic =
                             card.dataset.topic;
 
+
                         const input =
                             $("gisInput");
 
+
                         if (!input) return;
+
 
                         input.value =
                             `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
+
 
                         input.focus();
 
@@ -3087,8 +2951,10 @@ function setupGIS() {
             }
         );
 
+
     const button =
         $("gisSendBtn");
+
 
     if (button) {
 
@@ -3099,10 +2965,13 @@ function setupGIS() {
                 const input =
                     $("gisInput");
 
+
                 if (!input) return;
+
 
                 const text =
                     input.value.trim();
+
 
                 if (!text) {
 
@@ -3115,9 +2984,11 @@ function setupGIS() {
 
                 }
 
+
                 openSection(
                     "chat"
                 );
+
 
                 sendChatMessage(
                     `أنت مساعد متخصص في GIS والاستشعار عن بعد والمساحة.\n\n${text}`
@@ -3152,6 +3023,7 @@ function setupCoding() {
                             card.dataset.language ||
                             "Python";
 
+
                         document
                             .querySelectorAll(
                                 ".language-card"
@@ -3166,12 +3038,15 @@ function setupCoding() {
                                 }
                             );
 
+
                         card.classList.add(
                             "selected"
                         );
 
+
                         const input =
                             $("codeInput");
+
 
                         if (input) {
 
@@ -3188,8 +3063,10 @@ function setupCoding() {
             }
         );
 
+
     const button =
         $("codeSendBtn");
+
 
     if (button) {
 
@@ -3200,18 +3077,20 @@ function setupCoding() {
                 const input =
                     $("codeInput");
 
+
                 const output =
                     $("codeOutput");
+
 
                 if (
                     !input ||
                     !output
-                ) {
-                    return;
-                }
+                ) return;
+
 
                 const request =
                     input.value.trim();
+
 
                 if (!request) {
 
@@ -3224,69 +3103,31 @@ function setupCoding() {
 
                 }
 
-                output.innerHTML = `
 
-                    <div class="geo-coding-loading">
-                        🤖 جاري إنشاء الكود...
-                    </div>
+                output.textContent =
+                    "🤖 جاري إنشاء الكود...";
 
-                `;
 
                 try {
 
                     const answer =
                         await askAI(
-
-                            `أنت مساعد برمجة متخصص.
-
-لغة البرمجة المطلوبة:
-${state.selectedCodingLanguage}
-
-المطلوب:
-${request}
-
-اكتب الكود جاهزاً للنسخ والتشغيل.
-
-مهم جداً:
-ضع الكود داخل Markdown code block باستخدام:
-
-\`\`\`${state.selectedCodingLanguage}
-الكود هنا
-\`\`\`
-
-بعد صندوق الكود اكتب:
-
-شرح الكود:
-
-ثم اشرح الكود باختصار وبوضوح.
-
-لا تضع الشرح داخل صندوق الكود.
-لا تضع تعليقات عربية داخل الكود إلا إذا طلب المستخدم ذلك صراحة.
-إذا كان المطلوب ملفاً كاملاً، اكتب الملف كاملاً بدون اختصار.
-لا تستخدم ... داخل الكود كبديل عن أجزاء محذوفة.`
-
+                            `أنت مساعد برمجة متخصص.\n` +
+                            `لغة البرمجة: ${state.selectedCodingLanguage}\n\n` +
+                            `المطلوب:\n${request}\n\n` +
+                            `اكتب كودًا عمليًا مع شرح مختصر.`
                         );
 
-                    output.innerHTML =
-                        renderGeoMarkdown(
-                            answer ||
-                            "لم يتم إنشاء الكود."
-                        );
+
+                    output.textContent =
+                        answer ||
+                        "لم يتم إنشاء الكود.";
 
                 } catch (error) {
 
-                    output.innerHTML = `
-
-                        <div class="geo-error-message">
-
-                            ❌
-                            ${escapeHTML(
-                                error.message
-                            )}
-
-                        </div>
-
-                    `;
+                    output.textContent =
+                        "❌ " +
+                        error.message;
 
                 }
 
@@ -3295,8 +3136,10 @@ ${request}
 
     }
 
+
     const copyButton =
         $("copyCodeBtn");
+
 
     if (copyButton) {
 
@@ -3307,43 +3150,18 @@ ${request}
                 const output =
                     $("codeOutput");
 
+
                 if (!output) return;
 
-                const codeElements =
-                    output.querySelectorAll(
-                        ".geo-code-wrapper pre code"
-                    );
-
-                if (!codeElements.length) {
-
-                    showNotification(
-                        "لا يوجد كود لنسخه",
-                        "!"
-                    );
-
-                    return;
-
-                }
-
-                const code =
-                    Array.from(
-                        codeElements
-                    )
-                    .map(
-                        element =>
-                            element.textContent
-                    )
-                    .join(
-                        "\n\n"
-                    );
 
                 try {
 
                     await navigator
                         .clipboard
                         .writeText(
-                            code
+                            output.textContent
                         );
+
 
                     showNotification(
                         "تم نسخ الكود",
@@ -3387,6 +3205,7 @@ function setupStudy() {
                         const action =
                             button.dataset.studyAction;
 
+
                         const prompts = {
 
                             explain:
@@ -3403,12 +3222,15 @@ function setupStudy() {
 
                         };
 
+
                         openSection(
                             "chat"
                         );
 
+
                         const input =
                             $("chatInput");
+
 
                         if (input) {
 
@@ -3416,9 +3238,11 @@ function setupStudy() {
                                 prompts[action] ||
                                 "ساعدني في المذاكرة من محتوى المحاضرة.";
 
+
                             input.focus();
 
                         }
+
 
                         showNotification(
                             state.selectedFileText
@@ -3456,10 +3280,12 @@ function setupFiles() {
 
     ];
 
+
     inputs.forEach(
         (input) => {
 
             if (!input) return;
+
 
             input.addEventListener(
                 "change",
@@ -3468,7 +3294,9 @@ function setupFiles() {
                     const file =
                         input.files?.[0];
 
+
                     if (!file) return;
+
 
                     await handleSelectedFile(
                         file
@@ -3508,20 +3336,24 @@ async function handleSelectedFile(
                 file.name
             );
 
+
         addFileToList(
             file,
             "⏳ جاري القراءة..."
         );
+
 
         showNotification(
             `جاري قراءة ${file.name}...`,
             "📚"
         );
 
+
         const text =
             await extractFileText(
                 file
             );
+
 
         if (!text.trim()) {
 
@@ -3531,29 +3363,58 @@ async function handleSelectedFile(
 
         }
 
+
         state.selectedFileText =
             text;
+
+
+        /*
+           ننتقل للمحادثة
+           لو الملف تم اختياره من
+           Chat أو Home أو Study.
+        */
 
         showNotification(
             `تمت قراءة الملف بنجاح: ${file.name}`,
             "✓"
         );
 
+
+        /*
+           تحديث حالة الملف في القائمة
+        */
+
         updateLatestFileStatus(
             "✓ تمت القراءة"
         );
 
+
+        /*
+           الانتقال تلقائياً إلى Chat
+        */
+
         openSection(
             "chat"
         );
+
+
+        /*
+           إظهار رسالة للمستخدم
+        */
 
         addMessageToUI(
             "assistant",
             `📚 تم تحميل الملف "${file.name}" بنجاح.\n\nأقدر الآن أساعدك في:\n- تلخيصه\n- شرحه\n- استخراج التعريفات\n- إنشاء أسئلة\n- إنشاء اختبار\n- الإجابة عن أسئلتك من محتواه`
         );
 
+
+        /*
+           تجهيز مربع الكتابة
+        */
+
         const input =
             $("chatInput");
+
 
         if (input) {
 
@@ -3564,6 +3425,7 @@ async function handleSelectedFile(
 
         }
 
+
     } catch (error) {
 
         console.error(
@@ -3571,12 +3433,15 @@ async function handleSelectedFile(
             error
         );
 
+
         state.selectedFileText =
             "";
+
 
         updateLatestFileStatus(
             "❌ فشلت القراءة"
         );
+
 
         showNotification(
             error.message ||
@@ -3601,27 +3466,36 @@ function addFileToList(
     const list =
         $("filesList");
 
+
     if (!list) return;
+
 
     const empty =
         list.querySelector(
             ".empty-files"
         );
 
+
     if (empty) {
+
         empty.remove();
+
     }
+
 
     const item =
         document.createElement(
             "div"
         );
 
+
     item.className =
         "file-item";
 
+
     item.dataset.fileName =
         file.name;
+
 
     item.innerHTML = `
 
@@ -3632,24 +3506,19 @@ function addFileToList(
         <div class="file-info">
 
             <strong>
-                ${escapeHTML(
-                    file.name
-                )}
+                ${escapeHTML(file.name)}
             </strong>
 
             <small>
-                ${formatFileSize(
-                    file.size
-                )}
+                ${formatFileSize(file.size)}
                 •
-                ${escapeHTML(
-                    status
-                )}
+                ${escapeHTML(status)}
             </small>
 
         </div>
 
     `;
+
 
     list.appendChild(
         item
@@ -3669,29 +3538,42 @@ function updateLatestFileStatus(
     const list =
         $("filesList");
 
+
     if (!list) return;
+
 
     const items =
         list.querySelectorAll(
             ".file-item"
         );
 
+
     if (!items.length) return;
+
 
     const last =
         items[
             items.length - 1
         ];
 
+
     const small =
         last.querySelector(
             "small"
         );
 
+
     if (!small) return;
+
+
+    const fileName =
+        last.dataset.fileName ||
+        "";
+
 
     const file =
         state.selectedFile;
+
 
     small.textContent =
         `${file ? formatFileSize(file.size) : ""} • ${status}`;
@@ -3708,8 +3590,11 @@ function formatFileSize(
 ) {
 
     if (!bytes) {
+
         return "0 KB";
+
     }
+
 
     const units = [
         "B",
@@ -3717,6 +3602,7 @@ function formatFileSize(
         "MB",
         "GB"
     ];
+
 
     const index =
         Math.min(
@@ -3726,6 +3612,7 @@ function formatFileSize(
             ),
             units.length - 1
         );
+
 
     return (
         (
@@ -3753,7 +3640,9 @@ function setupTests() {
     const button =
         $("createTestBtn");
 
+
     if (!button) return;
+
 
     button.addEventListener(
         "click",
@@ -3763,31 +3652,35 @@ function setupTests() {
                 $("testSubject")?.value ||
                 "GIS";
 
+
             const count =
                 $("testCount")?.value ||
                 "5";
 
+
             const container =
                 $("testContainer");
 
+
             if (!container) return;
+
 
             container.innerHTML = `
 
                 <div class="test-loading">
 
                     🤖 جاري إنشاء اختبار
-                    ${escapeHTML(
-                        subject
-                    )}...
+                    ${escapeHTML(subject)}...
 
                 </div>
 
             `;
 
+
             try {
 
                 let prompt;
+
 
                 if (
                     state.selectedFileText
@@ -3825,10 +3718,12 @@ function setupTests() {
 
                 }
 
+
                 const answer =
                     await askAI(
                         prompt
                     );
+
 
                 container.innerHTML = `
 
@@ -3836,17 +3731,11 @@ function setupTests() {
 
                         <h2>
                             📝 اختبار
-                            ${escapeHTML(
-                                subject
-                            )}
+                            ${escapeHTML(subject)}
                         </h2>
 
                         <div class="test-content">
-
-                            ${renderGeoMarkdown(
-                                answer
-                            )}
-
+                            ${escapeHTML(answer)}
                         </div>
 
                     </div>
@@ -3860,9 +3749,7 @@ function setupTests() {
                     <div class="test-error">
 
                         ❌
-                        ${escapeHTML(
-                            error.message
-                        )}
+                        ${escapeHTML(error.message)}
 
                     </div>
 
@@ -3885,10 +3772,12 @@ function setupSettings() {
     const saveToggle =
         $("saveChatsToggle");
 
+
     if (saveToggle) {
 
         saveToggle.checked =
             state.saveChats;
+
 
         saveToggle.addEventListener(
             "change",
@@ -3897,10 +3786,12 @@ function setupSettings() {
                 state.saveChats =
                     saveToggle.checked;
 
+
                 localStorage.setItem(
                     "geo_ai_save_chats",
                     state.saveChats
                 );
+
 
                 showNotification(
                     state.saveChats
@@ -3914,13 +3805,16 @@ function setupSettings() {
 
     }
 
+
     const languageSelect =
         $("languageSelect");
+
 
     if (languageSelect) {
 
         languageSelect.value =
             state.selectedLanguage;
+
 
         languageSelect.addEventListener(
             "change",
@@ -3929,10 +3823,12 @@ function setupSettings() {
                 state.selectedLanguage =
                     languageSelect.value;
 
+
                 localStorage.setItem(
                     "geo_ai_language",
                     state.selectedLanguage
                 );
+
 
                 showNotification(
                     "تم حفظ اللغة",
@@ -3955,6 +3851,7 @@ function setupNotifications() {
 
     const button =
         $("notificationBtn");
+
 
     if (button) {
 
@@ -3984,7 +3881,9 @@ function setupWebSearch() {
     const button =
         $("webSearchBtn");
 
+
     if (!button) return;
+
 
     button.addEventListener(
         "click",
@@ -4015,10 +3914,12 @@ function setupImages() {
 
     ];
 
+
     inputs.forEach(
         (input) => {
 
             if (!input) return;
+
 
             input.addEventListener(
                 "change",
@@ -4027,7 +3928,9 @@ function setupImages() {
                     const file =
                         input.files?.[0];
 
+
                     if (!file) return;
+
 
                     if (
                         !file.type ||
@@ -4041,12 +3944,15 @@ function setupImages() {
                             "!"
                         );
 
+
                         input.value =
                             "";
+
 
                         return;
 
                     }
+
 
                     await setSelectedImage(
                         file
@@ -4072,19 +3978,19 @@ function setupKeyboard() {
         (event) => {
 
             if (
-                (
-                    event.ctrlKey ||
-                    event.metaKey
-                ) &&
+                (event.ctrlKey ||
+                 event.metaKey) &&
                 event.key.toLowerCase() ===
                     "k"
             ) {
 
                 event.preventDefault();
 
+
                 openSection(
                     "chat"
                 );
+
 
                 $("chatInput")?.focus();
 
@@ -4106,7 +4012,9 @@ function init() {
         "GEO AI initialized successfully."
     );
 
+
     initializeFirebaseForChat();
+
 
     setupNavigation();
 
@@ -4162,3 +4070,85 @@ if (
     init();
 
 }
+
+
+/* =========================================================
+   GEO AI INTRODUCTION
+   ========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const introScreen =
+            document.getElementById(
+                "introScreen"
+            );
+
+
+        const startAI =
+            document.getElementById(
+                "startAI"
+            );
+
+
+        if (!introScreen) return;
+
+
+        if (startAI) {
+
+            startAI.addEventListener(
+                "click",
+                () => {
+
+                    introScreen.classList.add(
+                        "hide"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            introScreen.remove();
+
+                        },
+                        800
+                    );
+
+                }
+            );
+
+        }
+
+
+        setTimeout(
+            () => {
+
+                if (
+                    !introScreen.classList.contains(
+                        "hide"
+                    )
+                ) {
+
+                    introScreen.classList.add(
+                        "hide"
+                    );
+
+
+                    setTimeout(
+                        () => {
+
+                            introScreen.remove();
+
+                        },
+                        800
+                    );
+
+                }
+
+            },
+            3000
+        );
+
+    }
+);
