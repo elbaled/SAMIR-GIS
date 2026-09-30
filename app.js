@@ -1,5 +1,5 @@
 /* =========================================================
-   GEO AI - Main Application 
+   GEO AI - Main Application
    ========================================================= */
 
 "use strict";
@@ -9,18 +9,20 @@
    CONFIG
    ========================================================= */
 
-// رابط Ahmed AI Worker
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
 
 
-/* =========================================================
-   VISION CONFIG
-   ========================================================= */
-
-// رابط GEO AI Vision Worker
 const AI_VISION_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/vision";
+
+
+/* =========================================================
+   FILE PARSING CONFIG
+   ========================================================= */
+
+const MAX_FILE_TEXT =
+    60000;
 
 
 /* =========================================================
@@ -30,7 +32,6 @@ const AI_VISION_API_URL =
 let firebaseAuth = null;
 let firebaseDB = null;
 let currentUser = null;
-
 let firebaseReady = false;
 
 
@@ -62,7 +63,8 @@ async function initializeFirebaseForChat() {
             firebaseAuth,
             (user) => {
 
-                currentUser = user || null;
+                currentUser =
+                    user || null;
 
                 firebaseReady =
                     !!currentUser;
@@ -70,14 +72,14 @@ async function initializeFirebaseForChat() {
                 if (currentUser) {
 
                     console.log(
-                        "Ahmed AI Firebase user:",
+                        "GEO AI Firebase user:",
                         currentUser.email
                     );
 
                 } else {
 
                     console.log(
-                        "Ahmed AI: no authenticated user."
+                        "GEO AI: no authenticated user."
                     );
 
                 }
@@ -104,10 +106,14 @@ async function initializeFirebaseForChat() {
    HELPERS
    ========================================================= */
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) =>
+    document.getElementById(id);
 
 
-function showNotification(message, icon = "✓") {
+function showNotification(
+    message,
+    icon = "✓"
+) {
 
     const notification =
         $("notification");
@@ -123,16 +129,24 @@ function showNotification(message, icon = "✓") {
 
 
     if (text) {
-        text.textContent = message;
+
+        text.textContent =
+            message;
+
     }
 
 
     if (notificationIcon) {
-        notificationIcon.textContent = icon;
+
+        notificationIcon.textContent =
+            icon;
+
     }
 
 
-    notification.classList.add("show");
+    notification.classList.add(
+        "show"
+    );
 
 
     clearTimeout(
@@ -141,13 +155,16 @@ function showNotification(message, icon = "✓") {
 
 
     window.notificationTimer =
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            notification.classList.remove(
-                "show"
-            );
+                notification.classList.remove(
+                    "show"
+                );
 
-        }, 2500);
+            },
+            2500
+        );
 
 }
 
@@ -155,10 +172,12 @@ function showNotification(message, icon = "✓") {
 function escapeHTML(text) {
 
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     div.textContent =
-        text;
+        String(text ?? "");
 
     return div.innerHTML;
 
@@ -182,47 +201,570 @@ function scrollChatToBottom() {
 
 
 /* =========================================================
+   FILE HELPERS
+   ========================================================= */
+
+function getFileExtension(fileName) {
+
+    return String(fileName || "")
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+}
+
+
+function truncateFileText(text) {
+
+    text =
+        String(text || "")
+            .replace(/\u0000/g, "")
+            .trim();
+
+
+    if (
+        text.length <=
+        MAX_FILE_TEXT
+    ) {
+
+        return text;
+
+    }
+
+
+    return (
+
+        text.slice(
+            0,
+            MAX_FILE_TEXT
+        )
+
+        +
+
+        "\n\n[تم اختصار جزء من الملف بسبب كبر حجمه.]"
+
+    );
+
+}
+
+
+/* =========================================================
+   LOAD EXTERNAL SCRIPT
+   ========================================================= */
+
+function loadExternalScript(
+    src,
+    globalName
+) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            if (
+                globalName &&
+                window[globalName]
+            ) {
+
+                resolve(
+                    window[globalName]
+                );
+
+                return;
+
+            }
+
+
+            const existing =
+                document.querySelector(
+                    `script[src="${src}"]`
+                );
+
+
+            if (existing) {
+
+                existing.addEventListener(
+                    "load",
+                    () => {
+
+                        resolve(
+                            globalName
+                                ? window[globalName]
+                                : true
+                        );
+
+                    }
+                );
+
+
+                existing.addEventListener(
+                    "error",
+                    () => {
+
+                        reject(
+                            new Error(
+                                "تعذر تحميل مكتبة قراءة الملفات."
+                            )
+                        );
+
+                    }
+                );
+
+
+                return;
+
+            }
+
+
+            const script =
+                document.createElement(
+                    "script"
+                );
+
+
+            script.src =
+                src;
+
+            script.async =
+                true;
+
+
+            script.onload =
+                () => {
+
+                    if (
+                        globalName &&
+                        !window[globalName]
+                    ) {
+
+                        reject(
+                            new Error(
+                                "تم تحميل المكتبة ولكن لم يتم العثور عليها."
+                            )
+                        );
+
+                        return;
+
+                    }
+
+
+                    resolve(
+                        globalName
+                            ? window[globalName]
+                            : true
+                    );
+
+                };
+
+
+            script.onerror =
+                () => {
+
+                    reject(
+                        new Error(
+                            "تعذر تحميل مكتبة قراءة الملفات."
+                        )
+                    );
+
+                };
+
+
+            document.head.appendChild(
+                script
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   READ TXT
+   ========================================================= */
+
+function readTXTFile(file) {
+
+    return new Promise(
+        (resolve, reject) => {
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                () => {
+
+                    try {
+
+                        const text =
+                            String(
+                                reader.result ||
+                                ""
+                            );
+
+
+                        resolve(
+                            truncateFileText(
+                                text
+                            )
+                        );
+
+                    } catch (error) {
+
+                        reject(error);
+
+                    }
+
+                };
+
+
+            reader.onerror =
+                () => {
+
+                    reject(
+                        new Error(
+                            "تعذر قراءة ملف TXT."
+                        )
+                    );
+
+                };
+
+
+            reader.readAsText(
+                file,
+                "UTF-8"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   READ DOCX
+   ========================================================= */
+
+async function readDOCXFile(file) {
+
+    await loadExternalScript(
+        "https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js",
+        "mammoth"
+    );
+
+
+    if (
+        !window.mammoth
+    ) {
+
+        throw new Error(
+            "مكتبة قراءة DOCX غير متاحة."
+        );
+
+    }
+
+
+    const arrayBuffer =
+        await file.arrayBuffer();
+
+
+    const result =
+        await window.mammoth.extractRawText({
+            arrayBuffer:
+                arrayBuffer
+        });
+
+
+    const text =
+        result?.value || "";
+
+
+    if (!text.trim()) {
+
+        throw new Error(
+            "لم يتم العثور على نص قابل للقراءة داخل ملف DOCX."
+        );
+
+    }
+
+
+    return truncateFileText(
+        text
+    );
+
+}
+
+
+/* =========================================================
+   READ PDF
+   ========================================================= */
+
+async function readPDFFile(file) {
+
+    const pdfjsLib =
+        await import(
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs"
+        );
+
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+
+    const arrayBuffer =
+        await file.arrayBuffer();
+
+
+    const pdf =
+        await pdfjsLib.getDocument({
+            data:
+                arrayBuffer
+        }).promise;
+
+
+    let fullText =
+        "";
+
+
+    for (
+        let pageNumber = 1;
+        pageNumber <= pdf.numPages;
+        pageNumber++
+    ) {
+
+        const page =
+            await pdf.getPage(
+                pageNumber
+            );
+
+
+        const textContent =
+            await page.getTextContent();
+
+
+        const pageText =
+            textContent.items
+                .map(
+                    item =>
+                        item.str || ""
+                )
+                .join(" ");
+
+
+        fullText +=
+            `\n\n--- الصفحة ${pageNumber} ---\n\n`;
+
+
+        fullText +=
+            pageText;
+
+
+        /*
+           لا نستمر في استخراج كمية ضخمة
+           أكبر من الحد الذي سيرسله الموقع.
+        */
+
+        if (
+            fullText.length >=
+            MAX_FILE_TEXT
+        ) {
+
+            break;
+
+        }
+
+    }
+
+
+    fullText =
+        fullText.trim();
+
+
+    if (!fullText) {
+
+        throw new Error(
+            "لم يتم العثور على نص داخل ملف PDF. إذا كان الملف عبارة عن صور ممسوحة ضوئياً، نحتاج OCR في مرحلة لاحقة."
+        );
+
+    }
+
+
+    return truncateFileText(
+        fullText
+    );
+
+}
+
+
+/* =========================================================
+   READ ANY SUPPORTED FILE
+   ========================================================= */
+
+async function extractFileText(file) {
+
+    if (!file) {
+
+        throw new Error(
+            "لم يتم اختيار ملف."
+        );
+
+    }
+
+
+    const extension =
+        getFileExtension(
+            file.name
+        );
+
+
+    /*
+       TXT
+    */
+
+    if (
+        extension === "txt"
+    ) {
+
+        return await readTXTFile(
+            file
+        );
+
+    }
+
+
+    /*
+       PDF
+    */
+
+    if (
+        extension === "pdf"
+    ) {
+
+        return await readPDFFile(
+            file
+        );
+
+    }
+
+
+    /*
+       DOCX
+    */
+
+    if (
+        extension === "docx"
+    ) {
+
+        return await readDOCXFile(
+            file
+        );
+
+    }
+
+
+    /*
+       DOC القديم
+    */
+
+    if (
+        extension === "doc"
+    ) {
+
+        throw new Error(
+            "ملفات DOC القديمة غير مدعومة حالياً. استخدم DOCX أو PDF أو TXT."
+        );
+
+    }
+
+
+    throw new Error(
+        "نوع الملف غير مدعوم. استخدم PDF أو DOCX أو TXT."
+    );
+
+}
+
+
+/* =========================================================
    APP STATE
    ========================================================= */
 
 let state = {
 
-    currentSection: "home",
+    currentSection:
+        "home",
+
 
     darkMode:
+        localStorage.getItem(
+            "geo_ai_dark"
+        ) === "true" ||
         localStorage.getItem(
             "ahmed_ai_dark"
         ) === "true",
 
+
     saveChats:
+        localStorage.getItem(
+            "geo_ai_save_chats"
+        ) !== "false" &&
         localStorage.getItem(
             "ahmed_ai_save_chats"
         ) !== "false",
 
-    currentChat: [],
+
+    currentChat:
+        [],
+
 
     selectedLanguage:
         localStorage.getItem(
+            "geo_ai_language"
+        ) ||
+        localStorage.getItem(
             "ahmed_ai_language"
-        ) || "ar",
+        ) ||
+        "ar",
+
 
     selectedCodingLanguage:
         "Python",
 
+
+    /*
+       الملف الحالي
+    */
+
     selectedFile:
         null,
 
+
     /*
-       الصورة الحالية التي اختارها المستخدم
-       لا يتم تخزينها في LocalStorage
-       لأنها قد تكون كبيرة الحجم.
+       النص المستخرج من الملف
+    */
+
+    selectedFileText:
+        "",
+
+
+    selectedFileName:
+        "",
+
+
+    selectedFileType:
+        "",
+
+
+    /*
+       الصورة الحالية
     */
 
     selectedImage:
         null,
 
+
     selectedImageData:
         null,
+
 
     selectedImageName:
         null
@@ -237,48 +779,74 @@ let state = {
 const pageInfo = {
 
     home: {
-        title: "الرئيسية",
-        subtitle: "مساعدك الذكي للمذاكرة والعمل"
+        title:
+            "الرئيسية",
+
+        subtitle:
+            "مساعدك الذكي للمذاكرة والعمل"
     },
+
 
     chat: {
-        title: "AI Chat",
-        subtitle: "تحدث مع Ahmed AI"
+        title:
+            "AI Chat",
+
+        subtitle:
+            "تحدث مع GEO AI"
     },
+
 
     study: {
-        title: "المذاكرة",
-        subtitle: "مدرسك الشخصي"
+        title:
+            "المذاكرة",
+
+        subtitle:
+            "مدرسك الشخصي"
     },
 
+
     gis: {
-        title: "مساعد GIS",
+        title:
+            "مساعد GIS",
+
         subtitle:
             "GIS • Remote Sensing • Surveying"
     },
 
+
     coding: {
-        title: "البرمجة",
+        title:
+            "البرمجة",
+
         subtitle:
             "Python • ArcPy • JavaScript • SQL"
     },
 
+
     files: {
-        title: "ملفاتي",
+        title:
+            "ملفاتي",
+
         subtitle:
             "إدارة ملفات المذاكرة"
     },
 
+
     tests: {
-        title: "الاختبارات",
+        title:
+            "الاختبارات",
+
         subtitle:
             "اختبر معلوماتك"
     },
 
+
     settings: {
-        title: "الإعدادات",
+        title:
+            "الإعدادات",
+
         subtitle:
-            "إعدادات Ahmed AI"
+            "إعدادات GEO AI"
     }
 
 };
@@ -288,7 +856,9 @@ const pageInfo = {
    NAVIGATION
    ========================================================= */
 
-function openSection(sectionName) {
+function openSection(
+    sectionName
+) {
 
     const section =
         $(sectionName + "Section");
@@ -298,14 +868,18 @@ function openSection(sectionName) {
 
 
     document
-        .querySelectorAll(".page-section")
-        .forEach((item) => {
+        .querySelectorAll(
+            ".page-section"
+        )
+        .forEach(
+            (item) => {
 
-            item.classList.remove(
-                "active"
-            );
+                item.classList.remove(
+                    "active"
+                );
 
-        });
+            }
+        );
 
 
     section.classList.add(
@@ -317,15 +891,17 @@ function openSection(sectionName) {
         .querySelectorAll(
             ".menu-item[data-section]"
         )
-        .forEach((item) => {
+        .forEach(
+            (item) => {
 
-            item.classList.toggle(
-                "active",
-                item.dataset.section ===
-                sectionName
-            );
+                item.classList.toggle(
+                    "active",
+                    item.dataset.section ===
+                    sectionName
+                );
 
-        });
+            }
+        );
 
 
     state.currentSection =
@@ -333,7 +909,9 @@ function openSection(sectionName) {
 
 
     const info =
-        pageInfo[sectionName];
+        pageInfo[
+            sectionName
+        ];
 
 
     if (info) {
@@ -360,11 +938,10 @@ function openSection(sectionName) {
 
 
     window.scrollTo({
-
-        top: 0,
-
-        behavior: "smooth"
-
+        top:
+            0,
+        behavior:
+            "smooth"
     });
 
 }
@@ -380,43 +957,44 @@ function setupNavigation() {
         .querySelectorAll(
             ".menu-item[data-section]"
         )
-        .forEach((button) => {
+        .forEach(
+            (button) => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    const section =
-                        button.dataset.section;
+                        openSection(
+                            button.dataset.section
+                        );
 
-                    openSection(
-                        section
-                    );
+                    }
+                );
 
-                }
-            );
-
-        });
+            }
+        );
 
 
     document
         .querySelectorAll(
             ".quick-card[data-action]"
         )
-        .forEach((card) => {
+        .forEach(
+            (card) => {
 
-            card.addEventListener(
-                "click",
-                () => {
+                card.addEventListener(
+                    "click",
+                    () => {
 
-                    openSection(
-                        card.dataset.action
-                    );
+                        openSection(
+                            card.dataset.action
+                        );
 
-                }
-            );
+                    }
+                );
 
-        });
+            }
+        );
 
 
     const newChatBtn =
@@ -543,7 +1121,7 @@ function setupTheme() {
 
 
                 localStorage.setItem(
-                    "ahmed_ai_dark",
+                    "geo_ai_dark",
                     state.darkMode
                 );
 
@@ -575,7 +1153,7 @@ function setupTheme() {
 
 
                 localStorage.setItem(
-                    "ahmed_ai_dark",
+                    "geo_ai_dark",
                     state.darkMode
                 );
 
@@ -591,7 +1169,7 @@ function setupTheme() {
 
 
 /* =========================================================
-   CHAT STORAGE - LOCAL
+   CHAT STORAGE
    ========================================================= */
 
 function saveCurrentChat() {
@@ -600,13 +1178,10 @@ function saveCurrentChat() {
 
 
     localStorage.setItem(
-
-        "ahmed_ai_current_chat",
-
+        "geo_ai_current_chat",
         JSON.stringify(
             state.currentChat
         )
-
     );
 
 }
@@ -621,6 +1196,9 @@ function loadCurrentChat() {
 
         const saved =
             localStorage.getItem(
+                "geo_ai_current_chat"
+            ) ||
+            localStorage.getItem(
                 "ahmed_ai_current_chat"
             );
 
@@ -629,7 +1207,9 @@ function loadCurrentChat() {
 
 
         const messages =
-            JSON.parse(saved);
+            JSON.parse(
+                saved
+            );
 
 
         if (!Array.isArray(messages)) {
@@ -665,25 +1245,26 @@ function renderSavedChat() {
     if (!container) return;
 
 
-    if (!state.currentChat.length) {
+    if (
+        !state.currentChat.length
+    ) {
+
         return;
+
     }
 
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
 
     state.currentChat.forEach(
         (message) => {
 
             addMessageToUI(
-
                 message.role,
-
                 message.content,
-
                 false
-
             );
 
         }
@@ -699,21 +1280,6 @@ function renderSavedChat() {
    FIREBASE CHAT SAVE
    ========================================================= */
 
-/*
-   يحفظ سؤال المستخدم + إجابة Ahmed AI
-   في:
-
-   Firestore
-   └── chats
-       ├── uid
-       ├── email
-       ├── name
-       ├── message
-       ├── response
-       ├── createdAt
-       └── createdAtClient
-*/
-
 async function saveChatToFirebase(
     userMessage,
     aiResponse
@@ -721,20 +1287,12 @@ async function saveChatToFirebase(
 
     if (!currentUser) {
 
-        console.log(
-            "Chat not saved to Firebase: no user."
-        );
-
         return;
 
     }
 
 
     if (!firebaseDB) {
-
-        console.log(
-            "Chat not saved: Firebase DB not ready."
-        );
 
         return;
 
@@ -783,32 +1341,16 @@ async function saveChatToFirebase(
         };
 
 
-        const chatRef =
-            await addDoc(
-
-                collection(
-                    firebaseDB,
-                    "chats"
-                ),
-
-                chatData
-
-            );
-
-
-        console.log(
-            "Chat saved successfully:",
-            chatRef.id
+        await addDoc(
+            collection(
+                firebaseDB,
+                "chats"
+            ),
+            chatData
         );
 
 
     } catch (error) {
-
-        /*
-           مهم:
-           لو Firebase فشل، لا نوقف Ahmed AI.
-           الرد سيظل ظاهرًا للمستخدم.
-        */
 
         console.error(
             "Firestore chat save error:",
@@ -826,7 +1368,8 @@ async function saveChatToFirebase(
 
 function newChat() {
 
-    state.currentChat = [];
+    state.currentChat =
+        [];
 
 
     state.selectedImage =
@@ -840,7 +1383,7 @@ function newChat() {
 
 
     localStorage.removeItem(
-        "ahmed_ai_current_chat"
+        "geo_ai_current_chat"
     );
 
 
@@ -859,12 +1402,13 @@ function newChat() {
                 </div>
 
                 <h2>
-                    Ahmed AI
+                    GEO AI
                 </h2>
 
                 <p>
                     أنا جاهز أساعدك في المذاكرة
-                    وGIS والبرمجة.
+                    وGIS والاستشعار عن بعد والمساحة
+                    والبرمجة.
                 </p>
 
                 <div class="suggestions">
@@ -967,11 +1511,8 @@ function addMessageToUI(
     if (save) {
 
         state.currentChat.push({
-
             role,
-
             content
-
         });
 
 
@@ -986,16 +1527,8 @@ function addMessageToUI(
 
 
 /* =========================================================
-   VISION IMAGE MESSAGE UI
+   IMAGE MESSAGE UI
    ========================================================= */
-
-/*
-   عرض الصورة داخل المحادثة.
-
-   هذه الوظيفة لا ترسل الصورة إلى السيرفر.
-   وظيفتها فقط إظهار الصورة للمستخدم
-   داخل المحادثة قبل التحليل.
-*/
 
 function addImageMessageToUI(
     imageData,
@@ -1043,10 +1576,10 @@ function addImageMessageToUI(
             <div
                 class="vision-image-wrapper"
                 style="
-                    max-width: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
+                    max-width:100%;
+                    display:flex;
+                    flex-direction:column;
+                    gap:8px;
                 "
             >
 
@@ -1054,18 +1587,18 @@ function addImageMessageToUI(
                     src="${imageData}"
                     alt="${escapeHTML(imageName)}"
                     style="
-                        max-width: 100%;
-                        max-height: 420px;
-                        object-fit: contain;
-                        border-radius: 14px;
-                        display: block;
+                        max-width:100%;
+                        max-height:420px;
+                        object-fit:contain;
+                        border-radius:14px;
+                        display:block;
                     "
                 >
 
                 <small
                     style="
-                        opacity: 0.75;
-                        display: block;
+                        opacity:0.75;
+                        display:block;
                     "
                 >
                     📷 ${escapeHTML(imageName)}
@@ -1092,12 +1625,8 @@ function addImageMessageToUI(
 
 
 /* =========================================================
-   VISION IMAGE PREVIEW
+   IMAGE PREPARATION
    ========================================================= */
-
-/*
-   عرض الصورة المحددة وتجهيزها للإرسال.
-*/
 
 function prepareSelectedImage(
     file
@@ -1141,42 +1670,42 @@ function prepareSelectedImage(
                 new FileReader();
 
 
-            reader.onload = () => {
+            reader.onload =
+                () => {
 
-                const result =
-                    reader.result;
+                    if (
+                        typeof reader.result !==
+                        "string"
+                    ) {
+
+                        reject(
+                            new Error(
+                                "تعذر قراءة الصورة."
+                            )
+                        );
+
+                        return;
+
+                    }
 
 
-                if (
-                    typeof result !==
-                    "string"
-                ) {
+                    resolve(
+                        reader.result
+                    );
+
+                };
+
+
+            reader.onerror =
+                () => {
 
                     reject(
                         new Error(
-                            "تعذر قراءة الصورة."
+                            "حدث خطأ أثناء قراءة الصورة."
                         )
                     );
 
-                    return;
-
-                }
-
-
-                resolve(result);
-
-            };
-
-
-            reader.onerror = () => {
-
-                reject(
-                    new Error(
-                        "حدث خطأ أثناء قراءة الصورة."
-                    )
-                );
-
-            };
+                };
 
 
             reader.readAsDataURL(
@@ -1192,11 +1721,6 @@ function prepareSelectedImage(
 /* =========================================================
    SET SELECTED IMAGE
    ========================================================= */
-
-/*
-   حفظ الصورة الحالية في State
-   وعرضها داخل المحادثة.
-*/
 
 async function setSelectedImage(
     file
@@ -1223,58 +1747,24 @@ async function setSelectedImage(
             file.name;
 
 
-        /*
-           الانتقال إلى المحادثة
-           حتى يرى المستخدم الصورة.
-        */
-
         openSection(
             "chat"
         );
 
 
-        /*
-           عرض الصورة داخل المحادثة
-        */
-
         addImageMessageToUI(
-
             imageData,
-
             file.name
-
         );
 
 
         showNotification(
-
             `تم تجهيز الصورة: ${file.name}`,
-
             "📷"
-
         );
 
 
-        /*
-           وضع المؤشر في خانة السؤال
-        */
-
-        const chatInput =
-            $("chatInput");
-
-
-        if (chatInput) {
-
-            setTimeout(
-                () => {
-
-                    chatInput.focus();
-
-                },
-                100
-            );
-
-        }
+        $("chatInput")?.focus();
 
 
     } catch (error) {
@@ -1286,12 +1776,9 @@ async function setSelectedImage(
 
 
         showNotification(
-
             error.message ||
             "تعذر تجهيز الصورة",
-
             "!"
-
         );
 
     }
@@ -1314,12 +1801,6 @@ function clearSelectedImage() {
     state.selectedImageName =
         null;
 
-
-    /*
-       تفريغ حقول الصور
-       حتى يمكن اختيار نفس الصورة
-       مرة أخرى إذا أراد المستخدم.
-    */
 
     const homeImageInput =
         $("homeImageInput");
@@ -1351,35 +1832,103 @@ function clearSelectedImage() {
    AI REQUEST
    ========================================================= */
 
-async function askAI(message) {
+async function askAI(
+    message,
+    options = {}
+) {
+
+    const fileText =
+        options.fileText ||
+        state.selectedFileText ||
+        "";
+
+
+    const fileName =
+        options.fileName ||
+        state.selectedFileName ||
+        "";
+
+
+    const fileType =
+        options.fileType ||
+        state.selectedFileType ||
+        "";
+
+
+    /*
+       إرسال آخر رسائل المحادثة
+       حتى يفهم AI السياق.
+    */
+
+    const context =
+        state.currentChat
+            .slice(-20)
+            .map(
+                item => ({
+                    role:
+                        item.role === "assistant"
+                            ? "assistant"
+                            : "user",
+
+                    content:
+                        String(
+                            item.content || ""
+                        ).slice(
+                            0,
+                            12000
+                        )
+                })
+            );
+
+
+    const body = {
+
+        message:
+            String(
+                message || ""
+            ).trim(),
+
+        context:
+
+            context.length
+                ? context
+                : undefined,
+
+        fileText:
+            fileText
+                ? truncateFileText(
+                    fileText
+                )
+                : undefined,
+
+        fileName:
+            fileName ||
+            undefined,
+
+        fileType:
+            fileType ||
+            undefined
+
+    };
+
 
     const response =
         await fetch(
-
             AI_API_URL,
-
             {
-
                 method:
                     "POST",
 
                 headers: {
-
                     "Content-Type":
                         "application/json"
-
                 },
 
                 body:
-                    JSON.stringify({
-
-                        message:
-                            message
-
-                    })
-
+                    JSON.stringify(
+                        body
+                    )
             }
-
         );
 
 
@@ -1391,7 +1940,7 @@ async function askAI(message) {
         data =
             await response.json();
 
-    } catch (error) {
+    } catch {
 
         throw new Error(
             "السيرفر لم يرجع بيانات صحيحة."
@@ -1403,11 +1952,8 @@ async function askAI(message) {
     if (!response.ok) {
 
         throw new Error(
-
             data?.error ||
-
             "حدث خطأ في الاتصال بالسيرفر."
-
         );
 
     }
@@ -1416,26 +1962,18 @@ async function askAI(message) {
     if (!data.success) {
 
         throw new Error(
-
             data?.error ||
-
             "تعذر الحصول على إجابة."
-
         );
 
     }
 
 
     return (
-
         data.response ||
-
         data.answer ||
-
         data.text ||
-
         ""
-
     );
 
 }
@@ -1444,11 +1982,6 @@ async function askAI(message) {
 /* =========================================================
    VISION REQUEST
    ========================================================= */
-
-/*
-   إرسال الصورة + سؤال المستخدم
-   إلى Cloudflare Worker Vision.
-*/
 
 async function askVision(
     message,
@@ -1466,35 +1999,26 @@ async function askVision(
 
     const response =
         await fetch(
-
             AI_VISION_API_URL,
-
             {
-
                 method:
                     "POST",
 
                 headers: {
-
                     "Content-Type":
                         "application/json"
-
                 },
 
                 body:
                     JSON.stringify({
-
                         message:
                             message ||
                             "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
 
                         image:
                             imageData
-
                     })
-
             }
-
         );
 
 
@@ -1506,7 +2030,7 @@ async function askVision(
         data =
             await response.json();
 
-    } catch (error) {
+    } catch {
 
         throw new Error(
             "سيرفر Vision لم يرجع بيانات صحيحة."
@@ -1518,11 +2042,8 @@ async function askVision(
     if (!response.ok) {
 
         throw new Error(
-
             data?.error ||
-
             "حدث خطأ أثناء الاتصال بخدمة Vision."
-
         );
 
     }
@@ -1531,26 +2052,18 @@ async function askVision(
     if (!data.success) {
 
         throw new Error(
-
             data?.error ||
-
             "تعذر تحليل الصورة."
-
         );
 
     }
 
 
     return (
-
         data.response ||
-
         data.answer ||
-
         data.text ||
-
         ""
-
     );
 
 }
@@ -1560,7 +2073,10 @@ async function askVision(
    SEND CHAT
    ========================================================= */
 
-async function sendChatMessage(text) {
+async function sendChatMessage(
+    text,
+    options = {}
+) {
 
     text =
         String(
@@ -1568,16 +2084,16 @@ async function sendChatMessage(text) {
         ).trim();
 
 
-    /*
-       معرفة هل هناك صورة معلقة
-    */
-
     const hasImage =
         !!state.selectedImageData;
 
 
+    const hasFile =
+        !!state.selectedFileText;
+
+
     /*
-       إذا لم يوجد نص ولا صورة
+       لا توجد رسالة ولا صورة
     */
 
     if (
@@ -1596,15 +2112,14 @@ async function sendChatMessage(text) {
 
     if (input) {
 
-        input.value = "";
+        input.value =
+            "";
 
     }
 
 
     /*
-       إذا كانت هناك صورة
-       ولم يكتب المستخدم سؤالًا
-       نستخدم سؤالًا افتراضيًا.
+       السؤال الافتراضي للصورة
     */
 
     if (
@@ -1620,17 +2135,13 @@ async function sendChatMessage(text) {
 
     /*
        إضافة سؤال المستخدم
-       فقط إذا كتب نصًا.
     */
 
     if (text) {
 
         addMessageToUI(
-
             "user",
-
             text
-
         );
 
     }
@@ -1642,33 +2153,42 @@ async function sendChatMessage(text) {
 
     const loadingMessage =
         addMessageToUI(
-
             "assistant",
 
             hasImage
                 ? "🖼️ جاري تحليل الصورة..."
-                : "🤖 جاري التفكير...",
+                : hasFile
+                    ? "📚 جاري قراءة المحاضرة والتفكير..."
+                    : "🤖 جاري التفكير...",
 
             false
-
         );
 
-
-    /*
-       حفظ نسخة من الصورة
-       قبل تنفيذ الطلب.
-    */
 
     const imageDataToSend =
         state.selectedImageData;
 
 
-    /*
-       اسم الصورة الحالي
-    */
-
     const imageNameToSend =
         state.selectedImageName;
+
+
+    const fileTextToSend =
+        options.fileText ||
+        state.selectedFileText ||
+        "";
+
+
+    const fileNameToSend =
+        options.fileName ||
+        state.selectedFileName ||
+        "";
+
+
+    const fileTypeToSend =
+        options.fileType ||
+        state.selectedFileType ||
+        "";
 
 
     try {
@@ -1677,42 +2197,55 @@ async function sendChatMessage(text) {
 
 
         /*
-           =========================================
+           ============================
            VISION
-           =========================================
+           ============================
         */
 
         if (hasImage) {
 
             answer =
                 await askVision(
-
                     text,
-
                     imageDataToSend
-
                 );
 
         }
 
+
         /*
-           =========================================
-           CHAT
-           =========================================
+           ============================
+           FILE + CHAT
+           ============================
         */
 
         else {
 
-            /*
-               طلب الرد من Worker
-            */
-
             answer =
                 await askAI(
-                    text
+                    text,
+                    {
+                        fileText:
+                            fileTextToSend,
+
+                        fileName:
+                            fileNameToSend,
+
+                        fileType:
+                            fileTypeToSend
+                    }
                 );
 
         }
+
+
+        const finalAnswer =
+            answer ||
+            (
+                hasImage
+                    ? "لم يصل تحليل للصورة."
+                    : "لم تصل إجابة."
+            );
 
 
         /*
@@ -1730,12 +2263,7 @@ async function sendChatMessage(text) {
             if (content) {
 
                 content.textContent =
-                    answer ||
-                    (
-                        hasImage
-                            ? "لم يصل تحليل للصورة."
-                            : "لم تصل إجابة."
-                    );
+                    finalAnswer;
 
             }
 
@@ -1743,7 +2271,7 @@ async function sendChatMessage(text) {
 
 
         /*
-           حفظ رد AI محليًا
+           حفظ الرد محلياً
         */
 
         state.currentChat.push({
@@ -1752,12 +2280,7 @@ async function sendChatMessage(text) {
                 "assistant",
 
             content:
-                answer ||
-                (
-                    hasImage
-                        ? "لم يصل تحليل للصورة."
-                        : "لم تصل إجابة."
-                )
+                finalAnswer
 
         });
 
@@ -1769,39 +2292,34 @@ async function sendChatMessage(text) {
 
 
         /*
-           =========================================
-           حفظ المحادثة في Firebase
-           =========================================
-
-           بالنسبة للـVision:
-           نحفظ السؤال والرد فقط.
-           الصورة نفسها لا يتم تخزينها في Firestore
-           هنا حتى لا نضع Data URL كبيرة داخل قاعدة
-           البيانات.
+           حفظ Firebase
         */
 
         await saveChatToFirebase(
 
             hasImage
                 ? (
-                    `📷 ${imageNameToSend || "صورة"}\n\n` +
-                    text
+                    `📷 ${
+                        imageNameToSend ||
+                        "صورة"
+                    }\n\n${text}`
                 )
-                : text,
+                : hasFile
+                    ? (
+                        `📄 ${
+                            fileNameToSend ||
+                            "ملف"
+                        }\n\n${text}`
+                    )
+                    : text,
 
-            answer ||
-            (
-                hasImage
-                    ? "لم يصل تحليل للصورة."
-                    : "لم تصل إجابة."
-            )
+            finalAnswer
 
         );
 
 
         /*
-           بعد انتهاء التحليل
-           نلغي الصورة المعلقة.
+           مسح الصورة بعد التحليل
         */
 
         if (hasImage) {
@@ -1878,12 +2396,8 @@ function setupChat() {
             (event) => {
 
                 if (
-
-                    event.key ===
-                        "Enter" &&
-
+                    event.key === "Enter" &&
                     !event.shiftKey
-
                 ) {
 
                     event.preventDefault();
@@ -1922,12 +2436,6 @@ function setupChat() {
                     homeInput.value.trim();
 
 
-                /*
-                   لو توجد صورة مختارة
-                   ننتقل للمحادثة ونرسلها
-                   مع السؤال.
-                */
-
                 if (
                     state.selectedImageData
                 ) {
@@ -1935,16 +2443,13 @@ function setupChat() {
                     homeInput.value =
                         "";
 
-
                     openSection(
                         "chat"
                     );
 
-
                     sendChatMessage(
                         text
                     );
-
 
                     return;
 
@@ -1957,11 +2462,9 @@ function setupChat() {
                 homeInput.value =
                     "";
 
-
                 openSection(
                     "chat"
                 );
-
 
                 sendChatMessage(
                     text
@@ -1976,12 +2479,8 @@ function setupChat() {
             (event) => {
 
                 if (
-
-                    event.key ===
-                        "Enter" &&
-
+                    event.key === "Enter" &&
                     !event.shiftKey
-
                 ) {
 
                     event.preventDefault();
@@ -1991,10 +2490,6 @@ function setupChat() {
                         homeInput.value.trim();
 
 
-                    /*
-                       لو توجد صورة مختارة
-                    */
-
                     if (
                         state.selectedImageData
                     ) {
@@ -2002,16 +2497,13 @@ function setupChat() {
                         homeInput.value =
                             "";
 
-
                         openSection(
                             "chat"
                         );
 
-
                         sendChatMessage(
                             text
                         );
-
 
                         return;
 
@@ -2024,11 +2516,9 @@ function setupChat() {
                     homeInput.value =
                         "";
 
-
                     openSection(
                         "chat"
                     );
-
 
                     sendChatMessage(
                         text
@@ -2057,38 +2547,41 @@ function setupSuggestionButtons() {
         .querySelectorAll(
             ".suggestions button"
         )
-        .forEach((button) => {
+        .forEach(
+            (button) => {
 
-            button.onclick = () => {
+                button.onclick =
+                    () => {
 
-                const text =
-                    button.textContent.trim();
-
-
-                const input =
-                    $("chatInput");
+                        const text =
+                            button.textContent.trim();
 
 
-                if (input) {
-
-                    input.value =
-                        text;
-
-                }
+                        const input =
+                            $("chatInput");
 
 
-                openSection(
-                    "chat"
-                );
+                        if (input) {
+
+                            input.value =
+                                text;
+
+                        }
 
 
-                sendChatMessage(
-                    text
-                );
+                        openSection(
+                            "chat"
+                        );
 
-            };
 
-        });
+                        sendChatMessage(
+                            text
+                        );
+
+                    };
+
+            }
+        );
 
 }
 
@@ -2103,34 +2596,35 @@ function setupGIS() {
         .querySelectorAll(
             ".subject-card"
         )
-        .forEach((card) => {
+        .forEach(
+            (card) => {
 
-            card.addEventListener(
-                "click",
-                () => {
+                card.addEventListener(
+                    "click",
+                    () => {
 
-                    const topic =
-                        card.dataset.topic;
-
-
-                    const input =
-                        $("gisInput");
+                        const topic =
+                            card.dataset.topic;
 
 
-                    if (!input) return;
+                        const input =
+                            $("gisInput");
 
 
-                    input.value =
-
-                        `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
+                        if (!input) return;
 
 
-                    input.focus();
+                        input.value =
+                            `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
 
-                }
-            );
 
-        });
+                        input.focus();
+
+                    }
+                );
+
+            }
+        );
 
 
     const button =
@@ -2161,7 +2655,6 @@ function setupGIS() {
                         "!"
                     );
 
-
                     return;
 
                 }
@@ -2173,9 +2666,7 @@ function setupGIS() {
 
 
                 sendChatMessage(
-
                     `أنت مساعد متخصص في GIS والاستشعار عن بعد والمساحة.\n\n${text}`
-
                 );
 
             }
@@ -2196,54 +2687,56 @@ function setupCoding() {
         .querySelectorAll(
             ".language-card"
         )
-        .forEach((card) => {
+        .forEach(
+            (card) => {
 
-            card.addEventListener(
-                "click",
-                () => {
+                card.addEventListener(
+                    "click",
+                    () => {
 
-                    state.selectedCodingLanguage =
-                        card.dataset.language ||
-                        "Python";
+                        state.selectedCodingLanguage =
+                            card.dataset.language ||
+                            "Python";
 
 
-                    document
-                        .querySelectorAll(
-                            ".language-card"
-                        )
-                        .forEach((item) => {
+                        document
+                            .querySelectorAll(
+                                ".language-card"
+                            )
+                            .forEach(
+                                (item) => {
 
-                            item.classList.remove(
-                                "selected"
+                                    item.classList.remove(
+                                        "selected"
+                                    );
+
+                                }
                             );
 
-                        });
+
+                        card.classList.add(
+                            "selected"
+                        );
 
 
-                    card.classList.add(
-                        "selected"
-                    );
+                        const input =
+                            $("codeInput");
 
 
-                    const input =
-                        $("codeInput");
+                        if (input) {
 
+                            input.placeholder =
+                                `مثال: اكتبلي ${state.selectedCodingLanguage} code...`;
 
-                    if (input) {
+                            input.focus();
 
-                        input.placeholder =
-
-                            `مثال: اكتبلي ${state.selectedCodingLanguage} code...`;
-
-
-                        input.focus();
+                        }
 
                     }
+                );
 
-                }
-            );
-
-        });
+            }
+        );
 
 
     const button =
@@ -2281,7 +2774,6 @@ function setupCoding() {
                         "!"
                     );
 
-
                     return;
 
                 }
@@ -2295,15 +2787,10 @@ function setupCoding() {
 
                     const answer =
                         await askAI(
-
                             `أنت مساعد برمجة متخصص.\n` +
-
                             `لغة البرمجة: ${state.selectedCodingLanguage}\n\n` +
-
                             `المطلوب:\n${request}\n\n` +
-
                             `اكتب كودًا عمليًا مع شرح مختصر.`
-
                         );
 
 
@@ -2356,7 +2843,6 @@ function setupCoding() {
                         "✓"
                     );
 
-
                 } catch {
 
                     showNotification(
@@ -2384,57 +2870,69 @@ function setupStudy() {
         .querySelectorAll(
             "[data-study-action]"
         )
-        .forEach((button) => {
+        .forEach(
+            (button) => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    const action =
-                        button.dataset.studyAction;
-
-
-                    const prompts = {
-
-                        explain:
-                            "اشرحلي الدرس بطريقة بسيطة جدًا، ثم أعطني أمثلة وأسئلة للتأكد من الفهم.",
-
-                        summary:
-                            "لخص لي الموضوع في نقاط منظمة ومهمة للمذاكرة والامتحان.",
-
-                        questions:
-                            "أنشئ لي أسئلة تدريبية متنوعة عن الموضوع مع الإجابات.",
-
-                        exam:
-                            "اختبرني في الموضوع بأسئلة واحدة واحدة، وانتظر إجابتي قبل السؤال التالي."
-
-                    };
+                        const action =
+                            button.dataset.studyAction;
 
 
-                    openSection(
-                        "chat"
-                    );
+                        const prompts = {
+
+                            explain:
+                                "اشرحلي محتوى المحاضرة بالتفصيل وبطريقة بسيطة، ثم أعطني أمثلة وأسئلة للتأكد من الفهم.",
+
+                            summary:
+                                "لخص لي محتوى المحاضرة في نقاط منظمة ومهمة للمذاكرة والامتحان.",
+
+                            questions:
+                                "استخرج من محتوى المحاضرة أسئلة تدريبية متنوعة مع الإجابات.",
+
+                            exam:
+                                "أنشئ اختباراً من محتوى المحاضرة، واسألني سؤالاً واحداً في كل مرة وانتظر إجابتي قبل السؤال التالي."
+
+                        };
 
 
-                    const input =
-                        $("chatInput");
+                        openSection(
+                            "chat"
+                        );
 
 
-                    if (input) {
-
-                        input.value =
-                            prompts[action] ||
-                            "ساعدني في المذاكرة.";
+                        const input =
+                            $("chatInput");
 
 
-                        input.focus();
+                        if (input) {
+
+                            input.value =
+                                prompts[action] ||
+                                "ساعدني في المذاكرة من محتوى المحاضرة.";
+
+
+                            input.focus();
+
+                        }
+
+
+                        showNotification(
+                            state.selectedFileText
+                                ? `سيتم استخدام الملف: ${state.selectedFileName}`
+                                : "ارفع محاضرة أولاً لاستخدام محتواها",
+                            state.selectedFileText
+                                ? "📚"
+                                : "!"
+                        );
 
                     }
+                );
 
-                }
-            );
-
-        });
+            }
+        );
 
 }
 
@@ -2466,7 +2964,7 @@ function setupFiles() {
 
             input.addEventListener(
                 "change",
-                () => {
+                async () => {
 
                     const file =
                         input.files?.[0];
@@ -2475,21 +2973,8 @@ function setupFiles() {
                     if (!file) return;
 
 
-                    state.selectedFile =
-                        file;
-
-
-                    addFileToList(
+                    await handleSelectedFile(
                         file
-                    );
-
-
-                    showNotification(
-
-                        `تم اختيار الملف: ${file.name}`,
-
-                        "✓"
-
                     );
 
                 }
@@ -2501,7 +2986,157 @@ function setupFiles() {
 }
 
 
-function addFileToList(file) {
+/* =========================================================
+   HANDLE SELECTED FILE
+   ========================================================= */
+
+async function handleSelectedFile(
+    file
+) {
+
+    try {
+
+        state.selectedFile =
+            file;
+
+        state.selectedFileText =
+            "";
+
+        state.selectedFileName =
+            file.name;
+
+        state.selectedFileType =
+            file.type ||
+            getFileExtension(
+                file.name
+            );
+
+
+        addFileToList(
+            file,
+            "⏳ جاري القراءة..."
+        );
+
+
+        showNotification(
+            `جاري قراءة ${file.name}...`,
+            "📚"
+        );
+
+
+        const text =
+            await extractFileText(
+                file
+            );
+
+
+        if (!text.trim()) {
+
+            throw new Error(
+                "لم يتم استخراج نص من الملف."
+            );
+
+        }
+
+
+        state.selectedFileText =
+            text;
+
+
+        /*
+           ننتقل للمحادثة
+           لو الملف تم اختياره من
+           Chat أو Home أو Study.
+        */
+
+        showNotification(
+            `تمت قراءة الملف بنجاح: ${file.name}`,
+            "✓"
+        );
+
+
+        /*
+           تحديث حالة الملف في القائمة
+        */
+
+        updateLatestFileStatus(
+            "✓ تمت القراءة"
+        );
+
+
+        /*
+           الانتقال تلقائياً إلى Chat
+        */
+
+        openSection(
+            "chat"
+        );
+
+
+        /*
+           إظهار رسالة للمستخدم
+        */
+
+        addMessageToUI(
+            "assistant",
+            `📚 تم تحميل الملف "${file.name}" بنجاح.\n\nأقدر الآن أساعدك في:\n- تلخيصه\n- شرحه\n- استخراج التعريفات\n- إنشاء أسئلة\n- إنشاء اختبار\n- الإجابة عن أسئلتك من محتواه`
+        );
+
+
+        /*
+           تجهيز مربع الكتابة
+        */
+
+        const input =
+            $("chatInput");
+
+
+        if (input) {
+
+            input.placeholder =
+                `اسأل GEO AI عن "${file.name}"...`;
+
+            input.focus();
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "File reading error:",
+            error
+        );
+
+
+        state.selectedFileText =
+            "";
+
+
+        updateLatestFileStatus(
+            "❌ فشلت القراءة"
+        );
+
+
+        showNotification(
+            error.message ||
+            "تعذر قراءة الملف.",
+            "!"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   ADD FILE TO LIST
+   ========================================================= */
+
+function addFileToList(
+    file,
+    status = "📄 جاهز"
+) {
 
     const list =
         $("filesList");
@@ -2533,6 +3168,10 @@ function addFileToList(file) {
         "file-item";
 
 
+    item.dataset.fileName =
+        file.name;
+
+
     item.innerHTML = `
 
         <div class="file-icon">
@@ -2547,6 +3186,8 @@ function addFileToList(file) {
 
             <small>
                 ${formatFileSize(file.size)}
+                •
+                ${escapeHTML(status)}
             </small>
 
         </div>
@@ -2561,56 +3202,105 @@ function addFileToList(file) {
 }
 
 
-function formatFileSize(bytes) {
+/* =========================================================
+   UPDATE LATEST FILE STATUS
+   ========================================================= */
+
+function updateLatestFileStatus(
+    status
+) {
+
+    const list =
+        $("filesList");
+
+
+    if (!list) return;
+
+
+    const items =
+        list.querySelectorAll(
+            ".file-item"
+        );
+
+
+    if (!items.length) return;
+
+
+    const last =
+        items[
+            items.length - 1
+        ];
+
+
+    const small =
+        last.querySelector(
+            "small"
+        );
+
+
+    if (!small) return;
+
+
+    const fileName =
+        last.dataset.fileName ||
+        "";
+
+
+    const file =
+        state.selectedFile;
+
+
+    small.textContent =
+        `${file ? formatFileSize(file.size) : ""} • ${status}`;
+
+}
+
+
+/* =========================================================
+   FORMAT FILE SIZE
+   ========================================================= */
+
+function formatFileSize(
+    bytes
+) {
 
     if (!bytes) {
+
         return "0 KB";
+
     }
 
 
     const units = [
-
         "B",
-
         "KB",
-
         "MB",
-
         "GB"
-
     ];
 
 
     const index =
-        Math.floor(
-
-            Math.log(bytes) /
-            Math.log(1024)
-
+        Math.min(
+            Math.floor(
+                Math.log(bytes) /
+                Math.log(1024)
+            ),
+            units.length - 1
         );
 
 
     return (
-
         (
-
             bytes /
-
             Math.pow(
                 1024,
                 index
             )
-
         ).toFixed(1)
-
         +
-
         " "
-
         +
-
         units[index]
-
     );
 
 }
@@ -2655,7 +3345,7 @@ function setupTests() {
                 <div class="test-loading">
 
                     🤖 جاري إنشاء اختبار
-                    ${subject}...
+                    ${escapeHTML(subject)}...
 
                 </div>
 
@@ -2664,8 +3354,34 @@ function setupTests() {
 
             try {
 
-                const answer =
-                    await askAI(
+                let prompt;
+
+
+                if (
+                    state.selectedFileText
+                ) {
+
+                    prompt =
+
+                        `أنشئ اختبارًا من محتوى الملف المرفوع.\n\n` +
+
+                        `اسم الملف: ${state.selectedFileName}\n` +
+
+                        `عدد الأسئلة: ${count}\n\n` +
+
+                        `المطلوب:\n` +
+
+                        `اجعل الأسئلة مناسبة لطالب جامعي، ` +
+
+                        `واستخدم محتوى الملف أساساً للأسئلة. ` +
+
+                        `اكتب الاختيارات والإجابة الصحيحة.\n\n` +
+
+                        `إذا لم تكن المعلومة موجودة في النص المرسل، لا تخترعها.`;
+
+                } else {
+
+                    prompt =
 
                         `أنشئ اختبارًا تعليميًا في مادة ${subject}.\n` +
 
@@ -2673,8 +3389,14 @@ function setupTests() {
 
                         `اجعل الأسئلة مناسبة لطالب جامعي، ` +
 
-                        `واكتب الاختيارات والإجابة الصحيحة.`
+                        `واكتب الاختيارات والإجابة الصحيحة.`;
 
+                }
+
+
+                const answer =
+                    await askAI(
+                        prompt
                     );
 
 
@@ -2683,7 +3405,8 @@ function setupTests() {
                     <div class="test-result">
 
                         <h2>
-                            📝 اختبار ${escapeHTML(subject)}
+                            📝 اختبار
+                            ${escapeHTML(subject)}
                         </h2>
 
                         <div class="test-content">
@@ -2700,7 +3423,8 @@ function setupTests() {
 
                     <div class="test-error">
 
-                        ❌ ${escapeHTML(error.message)}
+                        ❌
+                        ${escapeHTML(error.message)}
 
                     </div>
 
@@ -2739,24 +3463,16 @@ function setupSettings() {
 
 
                 localStorage.setItem(
-
-                    "ahmed_ai_save_chats",
-
+                    "geo_ai_save_chats",
                     state.saveChats
-
                 );
 
 
                 showNotification(
-
                     state.saveChats
-
                         ? "تم تفعيل حفظ المحادثات"
-
                         : "تم إيقاف حفظ المحادثات",
-
                     "✓"
-
                 );
 
             }
@@ -2784,11 +3500,8 @@ function setupSettings() {
 
 
                 localStorage.setItem(
-
-                    "ahmed_ai_language",
-
+                    "geo_ai_language",
                     state.selectedLanguage
-
                 );
 
 
@@ -2822,11 +3535,8 @@ function setupNotifications() {
             () => {
 
                 showNotification(
-
                     "لا توجد إشعارات جديدة",
-
                     "🔔"
-
                 );
 
             }
@@ -2855,11 +3565,8 @@ function setupWebSearch() {
         () => {
 
             showNotification(
-
                 "البحث على الإنترنت سنفعّله في المرحلة التالية",
-
                 "🌐"
-
             );
 
         }
@@ -2900,10 +3607,6 @@ function setupImages() {
                     if (!file) return;
 
 
-                    /*
-                       التأكد أن الملف صورة
-                    */
-
                     if (
                         !file.type ||
                         !file.type.startsWith(
@@ -2912,11 +3615,8 @@ function setupImages() {
                     ) {
 
                         showNotification(
-
                             "الملف المحدد ليس صورة",
-
                             "!"
-
                         );
 
 
@@ -2928,10 +3628,6 @@ function setupImages() {
 
                     }
 
-
-                    /*
-                       تجهيز الصورة
-                    */
 
                     await setSelectedImage(
                         file
@@ -2947,7 +3643,7 @@ function setupImages() {
 
 
 /* =========================================================
-   KEYBOARD SHORTCUT
+   KEYBOARD
    ========================================================= */
 
 function setupKeyboard() {
@@ -2957,13 +3653,10 @@ function setupKeyboard() {
         (event) => {
 
             if (
-
                 (event.ctrlKey ||
                  event.metaKey) &&
-
                 event.key.toLowerCase() ===
                     "k"
-
             ) {
 
                 event.preventDefault();
@@ -2991,13 +3684,9 @@ function setupKeyboard() {
 function init() {
 
     console.log(
-        "Ahmed AI initialized successfully."
+        "GEO AI initialized successfully."
     );
 
-
-    /*
-       تشغيل Firebase
-    */
 
     initializeFirebaseForChat();
 
@@ -3059,7 +3748,7 @@ if (
 
 
 /* =========================================================
-   AHMED AI INTRODUCTION
+   GEO AI INTRODUCTION
    ========================================================= */
 
 document.addEventListener(
@@ -3080,10 +3769,6 @@ document.addEventListener(
 
         if (!introScreen) return;
 
-
-        /*
-           الدخول عند الضغط على الزر
-        */
 
         if (startAI) {
 
@@ -3110,10 +3795,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-           الانتقال تلقائياً بعد 3 ثوانٍ
-        */
 
         setTimeout(
             () => {
