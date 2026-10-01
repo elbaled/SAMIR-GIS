@@ -430,6 +430,138 @@ body.auth-loading #notification {
 
 
 /* ==================================================
+   COURSES MODAL
+================================================== */
+
+.course-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.course-modal.hidden {
+    display: none;
+}
+
+.course-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(2,6,23,0.82);
+    backdrop-filter: blur(8px);
+}
+
+.course-modal-card {
+    position: relative;
+    z-index: 2;
+    width: min(700px,100%);
+    max-height: 92vh;
+    overflow-y: auto;
+    background: var(--surface,#fff);
+    color: var(--text,#0f172a);
+    border: 1px solid var(--border,#e2e8f0);
+    border-radius: 22px;
+    padding: 25px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+}
+
+.course-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.course-modal-header h2 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.course-modal-header p {
+    color: var(--text-secondary,#64748b);
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.course-modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: var(--surface-2,#f8fafc);
+    color: var(--text,#0f172a);
+    border: 1px solid var(--border,#e2e8f0);
+    font-size: 17px;
+}
+
+.course-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.course-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.course-form-group.full {
+    grid-column: 1 / -1;
+}
+
+.course-form-group label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.course-form-group input,
+.course-form-group select,
+.course-form-group textarea {
+    width: 100%;
+    border: 1px solid var(--border,#e2e8f0);
+    border-radius: 10px;
+    background: var(--surface-2,#f8fafc);
+    color: var(--text,#0f172a);
+    padding: 11px 12px;
+    font-size: 12px;
+}
+
+.course-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.course-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.course-form-actions button {
+    flex: 1;
+    min-height: 44px;
+    border-radius: 11px;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.course-cancel-btn {
+    background: var(--surface-2,#f8fafc);
+    color: var(--text,#0f172a);
+    border: 1px solid var(--border,#e2e8f0);
+}
+
+.course-save-btn {
+    background: var(--primary,#2563eb);
+    color: #fff;
+}
+
+
+/* ==================================================
    INTRO FOOTER
 ================================================== */
 
@@ -462,6 +594,27 @@ body.auth-loading #notification {
     background: rgba(255,255,255,0.05);
     font-size: 10px;
     color: #93c5fd;
+}
+
+@media (max-width:600px) {
+
+    .course-modal-card {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .course-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .course-form-group.full {
+        grid-column: auto;
+    }
+
+    .course-form-actions {
+        flex-direction: column;
+    }
+
 }
 
 </style>
@@ -533,38 +686,76 @@ body.auth-loading #notification {
     <nav class="main-menu">
 
         <button class="menu-item active" data-section="home">
+
             <span class="menu-icon">🏠</span>
+
             <span>الرئيسية</span>
+
         </button>
+
 
         <button class="menu-item" data-section="chat">
+
             <span class="menu-icon">🤖</span>
+
             <span>AI Chat</span>
+
         </button>
+
 
         <button class="menu-item" data-section="study">
+
             <span class="menu-icon">📚</span>
+
             <span>المذاكرة</span>
+
         </button>
+
 
         <button class="menu-item" data-section="gis">
+
             <span class="menu-icon">🗺️</span>
+
             <span>GIS</span>
+
         </button>
+
 
         <button class="menu-item" data-section="coding">
+
             <span class="menu-icon">💻</span>
+
             <span>البرمجة</span>
+
         </button>
+
 
         <button class="menu-item" data-section="files">
+
             <span class="menu-icon">📂</span>
+
             <span>ملفاتي</span>
+
         </button>
 
+
         <button class="menu-item" data-section="tests">
+
             <span class="menu-icon">📝</span>
+
             <span>الاختبارات</span>
+
+        </button>
+
+
+        <!-- COURSES -->
+
+        <button class="menu-item" data-section="courses">
+
+            <span class="menu-icon">🎓</span>
+
+            <span>الكورسات والدورات</span>
+
         </button>
 
     </nav>
@@ -584,7 +775,9 @@ body.auth-loading #notification {
         </button>
 
 
-        <button class="menu-item" data-section="settings">
+        <button
+            class="menu-item"
+            data-section="settings">
 
             <span class="menu-icon">⚙️</span>
 
@@ -709,9 +902,13 @@ body.auth-loading #notification {
 
     <div class="quick-actions">
 
-        <button class="quick-card" data-action="chat">
+        <button
+            class="quick-card"
+            data-action="chat">
 
-            <div class="quick-icon">🤖</div>
+            <div class="quick-icon">
+                🤖
+            </div>
 
             <div>
 
@@ -724,9 +921,13 @@ body.auth-loading #notification {
         </button>
 
 
-        <button class="quick-card" data-action="study">
+        <button
+            class="quick-card"
+            data-action="study">
 
-            <div class="quick-icon">📚</div>
+            <div class="quick-icon">
+                📚
+            </div>
 
             <div>
 
@@ -739,9 +940,13 @@ body.auth-loading #notification {
         </button>
 
 
-        <button class="quick-card" data-action="gis">
+        <button
+            class="quick-card"
+            data-action="gis">
 
-            <div class="quick-icon">🗺️</div>
+            <div class="quick-icon">
+                🗺️
+            </div>
 
             <div>
 
@@ -754,15 +959,38 @@ body.auth-loading #notification {
         </button>
 
 
-        <button class="quick-card" data-action="coding">
+        <button
+            class="quick-card"
+            data-action="coding">
 
-            <div class="quick-icon">💻</div>
+            <div class="quick-icon">
+                💻
+            </div>
 
             <div>
 
                 <h3>البرمجة</h3>
 
                 <p>Python و ArcPy</p>
+
+            </div>
+
+        </button>
+
+
+        <button
+            class="quick-card"
+            data-action="courses">
+
+            <div class="quick-icon">
+                🎓
+            </div>
+
+            <div>
+
+                <h3>الكورسات</h3>
+
+                <p>دورات GIS والمساحة والبرمجة</p>
 
             </div>
 
@@ -973,9 +1201,13 @@ body.auth-loading #notification {
 
             <div class="empty-chat">
 
-                <div class="empty-icon">🤖</div>
+                <div class="empty-icon">
+                    🤖
+                </div>
 
-                <h2>GEO AI</h2>
+                <h2>
+                    GEO AI
+                </h2>
 
                 <p>
                     أنا جاهز أساعدك في المذاكرة
@@ -1098,9 +1330,13 @@ body.auth-loading #notification {
 
         <div class="feature-card">
 
-            <div class="feature-icon">📖</div>
+            <div class="feature-icon">
+                📖
+            </div>
 
-            <h3>شرح الدرس</h3>
+            <h3>
+                شرح الدرس
+            </h3>
 
             <p>
                 ارفع المحاضرة أو اكتب الموضوع
@@ -1120,9 +1356,13 @@ body.auth-loading #notification {
 
         <div class="feature-card">
 
-            <div class="feature-icon">📝</div>
+            <div class="feature-icon">
+                📝
+            </div>
 
-            <h3>تلخيص</h3>
+            <h3>
+                تلخيص
+            </h3>
 
             <p>
                 حول ملفاتك ومحاضراتك إلى
@@ -1142,9 +1382,13 @@ body.auth-loading #notification {
 
         <div class="feature-card">
 
-            <div class="feature-icon">❓</div>
+            <div class="feature-icon">
+                ❓
+            </div>
 
-            <h3>أسئلة</h3>
+            <h3>
+                أسئلة
+            </h3>
 
             <p>
                 أنشئ أسئلة تدريبية من
@@ -1164,9 +1408,13 @@ body.auth-loading #notification {
 
         <div class="feature-card">
 
-            <div class="feature-icon">🎯</div>
+            <div class="feature-icon">
+                🎯
+            </div>
 
-            <h3>امتحان</h3>
+            <h3>
+                امتحان
+            </h3>
 
             <p>
                 اختبر نفسك في أي موضوع
@@ -1188,11 +1436,17 @@ body.auth-loading #notification {
 
     <div class="study-upload">
 
-        <div class="upload-icon">📄</div>
+        <div class="upload-icon">
+            📄
+        </div>
 
-        <h2>ارفع ملف للمذاكرة</h2>
+        <h2>
+            ارفع ملف للمذاكرة
+        </h2>
 
-        <p>PDF أو Word أو ملف نصي</p>
+        <p>
+            PDF أو Word أو ملف نصي
+        </p>
 
         <label class="upload-btn">
 
@@ -1221,7 +1475,9 @@ body.auth-loading #notification {
 
     <div class="page-header">
 
-        <h1>🗺️ مساعد GIS</h1>
+        <h1>
+            🗺️ مساعد GIS
+        </h1>
 
         <p>
             مساعد متخصص في GIS والاستشعار عن بعد والمساحة.
@@ -1232,52 +1488,139 @@ body.auth-loading #notification {
 
     <div class="subject-grid">
 
-        <button class="subject-card" data-topic="ArcGIS Pro">
+        <button
+            class="subject-card"
+            data-topic="ArcGIS Pro">
+
             <span>🗺️</span>
-            <strong>ArcGIS Pro</strong>
-            <small>Analysis • Mapping • Tools</small>
+
+            <strong>
+                ArcGIS Pro
+            </strong>
+
+            <small>
+                Analysis • Mapping • Tools
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="Network Analyst">
+
+        <button
+            class="subject-card"
+            data-topic="Network Analyst">
+
             <span>🛣️</span>
-            <strong>Network Analyst</strong>
-            <small>Routes • Network</small>
+
+            <strong>
+                Network Analyst
+            </strong>
+
+            <small>
+                Routes • Network
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="Remote Sensing">
+
+        <button
+            class="subject-card"
+            data-topic="Remote Sensing">
+
             <span>🛰️</span>
-            <strong>Remote Sensing</strong>
-            <small>Landsat • Sentinel</small>
+
+            <strong>
+                Remote Sensing
+            </strong>
+
+            <small>
+                Landsat • Sentinel
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="Surveying">
+
+        <button
+            class="subject-card"
+            data-topic="Surveying">
+
             <span>📐</span>
-            <strong>Surveying</strong>
-            <small>Surveying • Measurements</small>
+
+            <strong>
+                Surveying
+            </strong>
+
+            <small>
+                Surveying • Measurements
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="AutoCAD">
+
+        <button
+            class="subject-card"
+            data-topic="AutoCAD">
+
             <span>📐</span>
-            <strong>AutoCAD</strong>
-            <small>CAD • Drafting</small>
+
+            <strong>
+                AutoCAD
+            </strong>
+
+            <small>
+                CAD • Drafting
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="Civil 3D">
+
+        <button
+            class="subject-card"
+            data-topic="Civil 3D">
+
             <span>🏗️</span>
-            <strong>Civil 3D</strong>
-            <small>Civil Engineering</small>
+
+            <strong>
+                Civil 3D
+            </strong>
+
+            <small>
+                Civil Engineering
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="QGIS">
+
+        <button
+            class="subject-card"
+            data-topic="QGIS">
+
             <span>🌍</span>
-            <strong>QGIS</strong>
-            <small>Open Source GIS</small>
+
+            <strong>
+                QGIS
+            </strong>
+
+            <small>
+                Open Source GIS
+            </small>
+
         </button>
 
-        <button class="subject-card" data-topic="Google Earth">
+
+        <button
+            class="subject-card"
+            data-topic="Google Earth">
+
             <span>🌎</span>
-            <strong>Google Earth</strong>
-            <small>Earth Visualization</small>
+
+            <strong>
+                Google Earth
+            </strong>
+
+            <small>
+                Earth Visualization
+            </small>
+
         </button>
 
     </div>
@@ -1285,7 +1628,9 @@ body.auth-loading #notification {
 
     <div class="gis-prompt">
 
-        <h2>اسأل مساعد GIS</h2>
+        <h2>
+            اسأل مساعد GIS
+        </h2>
 
         <textarea
             id="gisInput"
@@ -1314,7 +1659,9 @@ body.auth-loading #notification {
 
     <div class="page-header">
 
-        <h1>💻 مساعد البرمجة</h1>
+        <h1>
+            💻 مساعد البرمجة
+        </h1>
 
         <p>
             اكتب الكود أو اطلب من AI إنشاء كود لك.
@@ -1331,9 +1678,12 @@ body.auth-loading #notification {
 
             🐍
 
-            <strong>Python</strong>
+            <strong>
+                Python
+            </strong>
 
         </button>
+
 
         <button
             class="language-card"
@@ -1341,9 +1691,12 @@ body.auth-loading #notification {
 
             🗺️
 
-            <strong>ArcPy</strong>
+            <strong>
+                ArcPy
+            </strong>
 
         </button>
+
 
         <button
             class="language-card"
@@ -1351,9 +1704,12 @@ body.auth-loading #notification {
 
             🟨
 
-            <strong>JavaScript</strong>
+            <strong>
+                JavaScript
+            </strong>
 
         </button>
+
 
         <button
             class="language-card"
@@ -1361,9 +1717,12 @@ body.auth-loading #notification {
 
             🌐
 
-            <strong>HTML / CSS</strong>
+            <strong>
+                HTML / CSS
+            </strong>
 
         </button>
+
 
         <button
             class="language-card"
@@ -1371,7 +1730,9 @@ body.auth-loading #notification {
 
             🗄️
 
-            <strong>SQL</strong>
+            <strong>
+                SQL
+            </strong>
 
         </button>
 
@@ -1405,7 +1766,9 @@ body.auth-loading #notification {
 
             <div class="code-header">
 
-                <span>النتيجة</span>
+                <span>
+                    النتيجة
+                </span>
 
                 <button id="copyCodeBtn">
                     📋 نسخ
@@ -1432,7 +1795,9 @@ body.auth-loading #notification {
 
     <div class="page-header">
 
-        <h1>📂 ملفاتي</h1>
+        <h1>
+            📂 ملفاتي
+        </h1>
 
         <p>
             ملفاتك المستخدمة في المذاكرة.
@@ -1445,11 +1810,17 @@ body.auth-loading #notification {
 
         <label class="big-upload">
 
-            <div>📤</div>
+            <div>
+                📤
+            </div>
 
-            <strong>ارفع ملف</strong>
+            <strong>
+                ارفع ملف
+            </strong>
 
-            <span>PDF • Word • TXT</span>
+            <span>
+                PDF • Word • TXT
+            </span>
 
             <input
                 type="file"
@@ -1491,7 +1862,9 @@ body.auth-loading #notification {
 
     <div class="page-header">
 
-        <h1>📝 الاختبارات</h1>
+        <h1>
+            📝 الاختبارات
+        </h1>
 
         <p>
             اختبر معلوماتك وطوّر مستواك.
@@ -1502,29 +1875,64 @@ body.auth-loading #notification {
 
     <div class="test-builder">
 
-        <label>المادة</label>
+        <label>
+            المادة
+        </label>
 
         <select id="testSubject">
 
-            <option>GIS</option>
-            <option>ArcGIS Pro</option>
-            <option>Remote Sensing</option>
-            <option>Python</option>
-            <option>AutoCAD</option>
-            <option>Surveying</option>
-            <option>Geography</option>
-            <option>English</option>
+            <option>
+                GIS
+            </option>
+
+            <option>
+                ArcGIS Pro
+            </option>
+
+            <option>
+                Remote Sensing
+            </option>
+
+            <option>
+                Python
+            </option>
+
+            <option>
+                AutoCAD
+            </option>
+
+            <option>
+                Surveying
+            </option>
+
+            <option>
+                Geography
+            </option>
+
+            <option>
+                English
+            </option>
 
         </select>
 
 
-        <label>عدد الأسئلة</label>
+        <label>
+            عدد الأسئلة
+        </label>
 
         <select id="testCount">
 
-            <option>5</option>
-            <option>10</option>
-            <option>20</option>
+            <option>
+                5
+            </option>
+
+            <option>
+                10
+            </option>
+
+            <option>
+                20
+            </option>
 
         </select>
 
@@ -1546,6 +1954,150 @@ body.auth-loading #notification {
 
 
 <!-- ==================================================
+     COURSES
+================================================== -->
+
+<section
+    class="page-section"
+    id="coursesSection">
+
+    <div class="page-header">
+
+        <div class="section-heading">
+
+            <div>
+
+                <h1>
+                    🎓 الكورسات والدورات
+                </h1>
+
+                <p>
+                    مجموعة دورات في المساحة و GIS والاستشعار عن بعد والبرمجة.
+                </p>
+
+            </div>
+
+
+            <!-- يظهر للمدير فقط -->
+
+            <button
+                class="primary-btn"
+                id="addCourseBtn"
+                type="button"
+                style="display:none;">
+
+                ＋ إضافة دورة
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- FILTERS -->
+
+    <div
+        class="course-filters"
+        id="courseFilters">
+
+        <button
+            class="course-filter active"
+            data-category="all"
+            type="button">
+
+            📚 الكل
+
+        </button>
+
+
+        <button
+            class="course-filter"
+            data-category="surveying"
+            type="button">
+
+            📐 المساحة
+
+        </button>
+
+
+        <button
+            class="course-filter"
+            data-category="gis"
+            type="button">
+
+            🗺️ GIS
+
+        </button>
+
+
+        <button
+            class="course-filter"
+            data-category="remote_sensing"
+            type="button">
+
+            🛰️ الاستشعار عن بعد
+
+        </button>
+
+
+        <button
+            class="course-filter"
+            data-category="programming"
+            type="button">
+
+            💻 البرمجة
+
+        </button>
+
+    </div>
+
+
+    <!-- COURSES STATUS -->
+
+    <div
+        id="coursesLoading"
+        class="courses-loading">
+
+        جاري تحميل الكورسات...
+
+    </div>
+
+
+    <!-- COURSES GRID -->
+
+    <div
+        class="courses-grid"
+        id="coursesGrid">
+
+    </div>
+
+
+    <!-- EMPTY -->
+
+    <div
+        id="coursesEmpty"
+        class="courses-empty"
+        style="display:none;">
+
+        <div>
+            🎓
+        </div>
+
+        <h3>
+            لا توجد دورات حتى الآن
+        </h3>
+
+        <p>
+            سيتم إضافة الكورسات والدورات قريبًا.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ==================================================
      SETTINGS
 ================================================== -->
 
@@ -1555,7 +2107,9 @@ body.auth-loading #notification {
 
     <div class="page-header">
 
-        <h1>⚙️ الإعدادات</h1>
+        <h1>
+            ⚙️ الإعدادات
+        </h1>
 
         <p>
             إعدادات GEO AI.
@@ -1764,7 +2318,9 @@ body.auth-loading #notification {
 
             <div class="profile-detail-box">
 
-                <span>الاسم</span>
+                <span>
+                    الاسم
+                </span>
 
                 <strong id="profileNameDetail">
                     —
@@ -1775,7 +2331,9 @@ body.auth-loading #notification {
 
             <div class="profile-detail-box">
 
-                <span>البريد الإلكتروني</span>
+                <span>
+                    البريد الإلكتروني
+                </span>
 
                 <strong id="profileEmailDetail">
                     —
@@ -1786,7 +2344,9 @@ body.auth-loading #notification {
 
             <div class="profile-detail-box">
 
-                <span>نوع الحساب</span>
+                <span>
+                    نوع الحساب
+                </span>
 
                 <strong id="profileRoleDetail">
                     مستخدم
@@ -1797,7 +2357,9 @@ body.auth-loading #notification {
 
             <div class="profile-detail-box">
 
-                <span>تاريخ إنشاء الحساب</span>
+                <span>
+                    تاريخ إنشاء الحساب
+                </span>
 
                 <strong id="profileCreatedAt">
                     —
@@ -1808,7 +2370,9 @@ body.auth-loading #notification {
 
             <div class="profile-detail-box full">
 
-                <span>معرف الحساب UID</span>
+                <span>
+                    معرف الحساب UID
+                </span>
 
                 <code id="profileUid">
                     —
@@ -1841,6 +2405,246 @@ body.auth-loading #notification {
             </button>
 
         </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==================================================
+     COURSE ADD / EDIT MODAL
+================================================== -->
+
+<div
+    id="courseModal"
+    class="course-modal hidden"
+    aria-hidden="true">
+
+    <div
+        class="course-modal-overlay"
+        id="courseModalOverlay">
+    </div>
+
+
+    <div
+        class="course-modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="courseModalTitle">
+
+        <div class="course-modal-header">
+
+            <div>
+
+                <h2 id="courseModalTitle">
+                    إضافة دورة جديدة
+                </h2>
+
+                <p>
+                    هذه النافذة متاحة للمدير فقط.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="course-modal-close"
+                id="courseModalClose">
+
+                ✕
+
+            </button>
+
+        </div>
+
+
+        <form id="courseForm">
+
+            <div class="course-form-grid">
+
+
+                <!-- TITLE -->
+
+                <div class="course-form-group full">
+
+                    <label for="courseTitleInput">
+                        اسم الدورة
+                    </label>
+
+                    <input
+                        type="text"
+                        id="courseTitleInput"
+                        placeholder="مثال: تعلم ArcGIS Pro من البداية للاحتراف"
+                        required>
+
+                </div>
+
+
+                <!-- CATEGORY -->
+
+                <div class="course-form-group">
+
+                    <label for="courseCategoryInput">
+                        القسم
+                    </label>
+
+                    <select
+                        id="courseCategoryInput"
+                        required>
+
+                        <option value="surveying">
+                            📐 المساحة
+                        </option>
+
+                        <option value="gis">
+                            🗺️ GIS
+                        </option>
+
+                        <option value="remote_sensing">
+                            🛰️ الاستشعار عن بعد
+                        </option>
+
+                        <option value="programming">
+                            💻 البرمجة
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- TYPE -->
+
+                <div class="course-form-group">
+
+                    <label for="courseTypeInput">
+                        نوع الدورة
+                    </label>
+
+                    <select
+                        id="courseTypeInput"
+                        required>
+
+                        <option value="free">
+                            🟢 مجانية
+                        </option>
+
+                        <option value="paid">
+                            🟡 مدفوعة
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- INSTRUCTOR -->
+
+                <div class="course-form-group">
+
+                    <label for="courseInstructorInput">
+                        المدرب
+                    </label>
+
+                    <input
+                        type="text"
+                        id="courseInstructorInput"
+                        placeholder="اسم المدرب">
+
+                </div>
+
+
+                <!-- PLATFORM -->
+
+                <div class="course-form-group">
+
+                    <label for="coursePlatformInput">
+                        المنصة
+                    </label>
+
+                    <input
+                        type="text"
+                        id="coursePlatformInput"
+                        placeholder="YouTube / Udemy / منصة أخرى">
+
+                </div>
+
+
+                <!-- URL -->
+
+                <div class="course-form-group full">
+
+                    <label for="courseUrlInput">
+                        رابط الدورة
+                    </label>
+
+                    <input
+                        type="url"
+                        id="courseUrlInput"
+                        placeholder="https://..."
+                        required>
+
+                </div>
+
+
+                <!-- IMAGE -->
+
+                <div class="course-form-group full">
+
+                    <label for="courseImageInput">
+                        رابط صورة الدورة
+                    </label>
+
+                    <input
+                        type="url"
+                        id="courseImageInput"
+                        placeholder="https://example.com/course-image.jpg">
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="course-form-group full">
+
+                    <label for="courseDescriptionInput">
+                        وصف الدورة
+                    </label>
+
+                    <textarea
+                        id="courseDescriptionInput"
+                        placeholder="اكتب وصفًا مختصرًا للدورة وما الذي سيتعلمه الطالب..."></textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="course-form-actions">
+
+                <button
+                    type="button"
+                    class="course-cancel-btn"
+                    id="courseFormCancel">
+
+                    إلغاء
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="course-save-btn"
+                    id="courseFormSubmit">
+
+                    حفظ الدورة
+
+                </button>
+
+            </div>
+
+        </form>
 
     </div>
 
@@ -1909,7 +2713,9 @@ body.auth-loading #notification {
         <div class="intro-loading">
 
             <span></span>
+
             <span></span>
+
             <span></span>
 
         </div>
@@ -1947,10 +2753,12 @@ import {
     db
 } from "./firebase.js";
 
+
 import {
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
 
 import {
     doc,
@@ -1961,50 +2769,66 @@ import {
 const loadingScreen =
     document.getElementById("authLoadingScreen");
 
+
 const profileMenuBtn =
     document.getElementById("profileMenuBtn");
+
 
 const userCard =
     document.getElementById("userCard");
 
+
 const profileModal =
     document.getElementById("userProfileModal");
+
 
 const profileOverlay =
     document.getElementById("userProfileOverlay");
 
+
 const profileCloseBtn =
     document.getElementById("profileCloseBtn");
+
 
 const profileCloseBottomBtn =
     document.getElementById("profileCloseBottomBtn");
 
+
 const profileLogoutBtn =
     document.getElementById("profileLogoutBtn");
+
 
 const profileAvatarLarge =
     document.getElementById("profileAvatarLarge");
 
+
 const profileDisplayName =
     document.getElementById("profileDisplayName");
+
 
 const profileDisplayEmail =
     document.getElementById("profileDisplayEmail");
 
+
 const profileNameDetail =
     document.getElementById("profileNameDetail");
+
 
 const profileEmailDetail =
     document.getElementById("profileEmailDetail");
 
+
 const profileRoleDetail =
     document.getElementById("profileRoleDetail");
+
 
 const profileRoleBadge =
     document.getElementById("profileRoleBadge");
 
+
 const profileCreatedAt =
     document.getElementById("profileCreatedAt");
+
 
 const profileUid =
     document.getElementById("profileUid");
@@ -2021,9 +2845,11 @@ function formatCreatedAt(value) {
         return "غير متوفر";
     }
 
+
     try {
 
         let date;
+
 
         if (
             value &&
@@ -2032,7 +2858,9 @@ function formatCreatedAt(value) {
 
             date = value.toDate();
 
-        } else if (value instanceof Date) {
+        } else if (
+            value instanceof Date
+        ) {
 
             date = value;
 
@@ -2042,9 +2870,16 @@ function formatCreatedAt(value) {
 
         }
 
-        if (!date || isNaN(date.getTime())) {
+
+        if (
+            !date ||
+            isNaN(date.getTime())
+        ) {
+
             return "غير متوفر";
+
         }
+
 
         return date.toLocaleDateString(
             "ar-EG",
@@ -2080,6 +2915,7 @@ function getDisplayName() {
 
     }
 
+
     if (
         currentUser &&
         currentUser.displayName
@@ -2088,6 +2924,7 @@ function getDisplayName() {
         return currentUser.displayName;
 
     }
+
 
     return "أحمد سمير";
 
@@ -2105,6 +2942,7 @@ function getRole() {
 
     }
 
+
     return "user";
 
 }
@@ -2115,18 +2953,26 @@ function updateMainUserCard() {
     const userName =
         document.getElementById("userName");
 
+
     const userEmail =
         document.getElementById("userEmail");
+
 
     const userAvatar =
         document.getElementById("userAvatar");
 
+
     const displayName =
         getDisplayName();
 
+
     if (userName) {
-        userName.textContent = displayName;
+
+        userName.textContent =
+            displayName;
+
     }
+
 
     if (userEmail) {
 
@@ -2137,6 +2983,7 @@ function updateMainUserCard() {
                 : "GIS Student";
 
     }
+
 
     if (userAvatar) {
 
@@ -2156,11 +3003,13 @@ function updateProfileModal() {
     const displayName =
         getDisplayName();
 
+
     const email =
         currentUser &&
         currentUser.email
             ? currentUser.email
             : "غير متوفر";
+
 
     const role =
         getRole();
@@ -2178,19 +3027,34 @@ function updateProfileModal() {
 
 
     if (profileDisplayName) {
-        profileDisplayName.textContent = displayName;
+
+        profileDisplayName.textContent =
+            displayName;
+
     }
+
 
     if (profileNameDetail) {
-        profileNameDetail.textContent = displayName;
+
+        profileNameDetail.textContent =
+            displayName;
+
     }
+
 
     if (profileDisplayEmail) {
-        profileDisplayEmail.textContent = email;
+
+        profileDisplayEmail.textContent =
+            email;
+
     }
 
+
     if (profileEmailDetail) {
-        profileEmailDetail.textContent = email;
+
+        profileEmailDetail.textContent =
+            email;
+
     }
 
 
@@ -2201,14 +3065,18 @@ function updateProfileModal() {
             profileRoleBadge.textContent =
                 "🛡️ مدير النظام";
 
+
             profileRoleBadge.className =
                 "profile-badge profile-badge-admin";
 
         }
 
+
         if (profileRoleDetail) {
+
             profileRoleDetail.textContent =
                 "مدير النظام";
+
         }
 
     } else {
@@ -2218,14 +3086,18 @@ function updateProfileModal() {
             profileRoleBadge.textContent =
                 "👤 مستخدم";
 
+
             profileRoleBadge.className =
                 "profile-badge profile-badge-user";
 
         }
 
+
         if (profileRoleDetail) {
+
             profileRoleDetail.textContent =
                 "مستخدم";
+
         }
 
     }
@@ -2259,18 +3131,25 @@ function openProfile() {
         return;
     }
 
+
     updateProfileModal();
+
 
     if (profileModal) {
 
-        profileModal.classList.remove("hidden");
+        profileModal.classList.remove(
+            "hidden"
+        );
+
 
         profileModal.setAttribute(
             "aria-hidden",
             "false"
         );
 
-        document.body.style.overflow = "hidden";
+
+        document.body.style.overflow =
+            "hidden";
 
     }
 
@@ -2281,7 +3160,10 @@ function closeProfile() {
 
     if (profileModal) {
 
-        profileModal.classList.add("hidden");
+        profileModal.classList.add(
+            "hidden"
+        );
+
 
         profileModal.setAttribute(
             "aria-hidden",
@@ -2290,7 +3172,9 @@ function closeProfile() {
 
     }
 
-    document.body.style.overflow = "";
+
+    document.body.style.overflow =
+        "";
 
 }
 
@@ -2371,12 +3255,16 @@ if (profileLogoutBtn) {
 
             try {
 
-                profileLogoutBtn.disabled = true;
+                profileLogoutBtn.disabled =
+                    true;
+
 
                 profileLogoutBtn.textContent =
                     "جاري تسجيل الخروج...";
 
+
                 await signOut(auth);
+
 
                 window.location.replace(
                     "login.html"
@@ -2389,10 +3277,14 @@ if (profileLogoutBtn) {
                     error
                 );
 
-                profileLogoutBtn.disabled = false;
+
+                profileLogoutBtn.disabled =
+                    false;
+
 
                 profileLogoutBtn.textContent =
                     "🚪 تسجيل الخروج";
+
 
                 alert(
                     "حدث خطأ أثناء تسجيل الخروج."
@@ -2421,7 +3313,8 @@ onAuthStateChanged(
         }
 
 
-        currentUser = user;
+        currentUser =
+            user;
 
 
         try {
@@ -2432,6 +3325,7 @@ onAuthStateChanged(
                     "users",
                     user.uid
                 );
+
 
             const userSnap =
                 await getDoc(userRef);
@@ -2445,6 +3339,7 @@ onAuthStateChanged(
             } else {
 
                 currentUserData = {};
+
 
                 console.warn(
                     "User document not found."
@@ -2468,6 +3363,7 @@ onAuthStateChanged(
                 loadingScreen.classList.add(
                     "hidden"
                 );
+
 
                 setTimeout(
                     () => {
@@ -2495,6 +3391,7 @@ onAuthStateChanged(
                 error
             );
 
+
             window.location.replace(
                 "login.html"
             );
@@ -2516,7 +3413,6 @@ onAuthStateChanged(
 
 <!-- ==================================================
      INTRO CONTROLLER
-     مستقل عن app.js
 ================================================== -->
 
 <script>
@@ -2524,10 +3420,15 @@ onAuthStateChanged(
 (function () {
 
     const introScreen =
-        document.getElementById("introScreen");
+        document.getElementById(
+            "introScreen"
+        );
+
 
     const startAI =
-        document.getElementById("startAI");
+        document.getElementById(
+            "startAI"
+        );
 
 
     if (!introScreen) {
@@ -2538,29 +3439,40 @@ onAuthStateChanged(
     function closeIntro() {
 
         if (
-            introScreen.classList.contains("hidden")
+            introScreen.classList.contains(
+                "hidden"
+            )
         ) {
+
             return;
+
         }
 
 
-        introScreen.classList.add("hidden");
+        introScreen.classList.add(
+            "hidden"
+        );
 
-        document.body.style.overflow = "";
+
+        document.body.style.overflow =
+            "";
 
 
-        setTimeout(function () {
+        setTimeout(
+            function () {
 
-            if (
-                introScreen &&
-                introScreen.parentNode
-            ) {
+                if (
+                    introScreen &&
+                    introScreen.parentNode
+                ) {
 
-                introScreen.remove();
+                    introScreen.remove();
 
-            }
+                }
 
-        }, 450);
+            },
+            450
+        );
 
     }
 
@@ -2583,8 +3495,6 @@ onAuthStateChanged(
     }
 
 
-    /* إغلاق تلقائي بعد 5 ثوانٍ */
-
     setTimeout(
         function () {
 
@@ -2601,4 +3511,4 @@ onAuthStateChanged(
 
 </body>
 
-    </html>
+</html>
