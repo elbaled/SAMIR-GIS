@@ -1,5 +1,6 @@
 /* =========================================================
    GEO AI - Main Application
+   Complete Fixed Version
    Compatible with latest index.html
    ========================================================= */
 
@@ -18,16 +19,14 @@ const VISION_API_URL =
 
 
 /* =========================================================
-   FIREBASE IMPORTS
+   FIREBASE
 ========================================================= */
 
 let firebaseAuth = null;
 let firebaseDb = null;
-
 let firebaseModules = null;
 
 let currentFirebaseUser = null;
-
 let currentUserRole = "user";
 
 
@@ -50,10 +49,13 @@ async function initializeFirebase() {
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
             );
 
+
         firebaseModules = {
+
             ...firebaseAppModule,
             ...firebaseAuthModule,
             ...firebaseFirestoreModule
+
         };
 
 
@@ -92,7 +94,9 @@ async function initializeFirebase() {
 
 
         firebaseAuth =
-            firebaseAuthModule.getAuth(app);
+            firebaseAuthModule.getAuth(
+                app
+            );
 
 
         firebaseDb =
@@ -101,12 +105,8 @@ async function initializeFirebase() {
             );
 
 
-        if (firebaseAuth.currentUser) {
-
-            currentFirebaseUser =
-                firebaseAuth.currentUser;
-
-        }
+        currentFirebaseUser =
+            firebaseAuth.currentUser || null;
 
 
         return true;
@@ -140,25 +140,19 @@ let editingCourseId = null;
 let coursesCache = [];
 
 let currentChatImage = null;
-
 let currentChatFile = null;
 
 let currentHomeImage = null;
-
 let currentHomeFile = null;
 
 let currentStudyFile = null;
-
 let currentMainFile = null;
 
 let isSendingMessage = false;
-
 let isGeneratingCode = false;
-
 let isGeneratingTest = false;
 
 let currentTestData = null;
-
 let currentTestAnswers = {};
 
 let currentConversationId = null;
@@ -171,92 +165,57 @@ let currentConversationId = null;
 const pageInfo = {
 
     home: {
-
         title: "الرئيسية",
-
         subtitle:
             "مساعدك الذكي للمذاكرة والعمل"
-
     },
-
 
     chat: {
-
         title: "AI Chat",
-
         subtitle:
             "تحدث مع GEO AI في أي موضوع"
-
     },
-
 
     study: {
-
         title: "المذاكرة",
-
         subtitle:
             "شرح وتلخيص وأسئلة واختبارات"
-
     },
-
 
     gis: {
-
         title: "مساعد GIS",
-
         subtitle:
             "GIS • Remote Sensing • Surveying"
-
     },
-
 
     coding: {
-
         title: "مساعد البرمجة",
-
         subtitle:
             "Python • ArcPy • JavaScript • SQL"
-
     },
-
 
     files: {
-
         title: "ملفاتي",
-
         subtitle:
             "ملفاتك المستخدمة في المذاكرة"
-
     },
-
 
     tests: {
-
         title: "الاختبارات",
-
         subtitle:
             "اختبر معلوماتك وطوّر مستواك"
-
     },
-
 
     courses: {
-
         title: "الكورسات والدورات",
-
         subtitle:
             "مساحة • GIS • استشعار عن بعد • برمجة"
-
     },
 
-
     settings: {
-
         title: "الإعدادات",
-
         subtitle:
             "تحكم في إعدادات GEO AI"
-
     }
 
 };
@@ -268,21 +227,27 @@ const pageInfo = {
 
 function $(selector) {
 
-    return document.querySelector(selector);
+    return document.querySelector(
+        selector
+    );
 
 }
 
 
 function $$(selector) {
 
-    return document.querySelectorAll(selector);
+    return document.querySelectorAll(
+        selector
+    );
 
 }
 
 
 function getElement(id) {
 
-    return document.getElementById(id);
+    return document.getElementById(
+        id
+    );
 
 }
 
@@ -297,13 +262,19 @@ function showNotification(
 ) {
 
     const notification =
-        getElement("notification");
+        getElement(
+            "notification"
+        );
 
     const notificationText =
-        getElement("notificationText");
+        getElement(
+            "notificationText"
+        );
 
     const notificationIcon =
-        getElement("notificationIcon");
+        getElement(
+            "notificationIcon"
+        );
 
 
     if (!notification) {
@@ -411,7 +382,9 @@ function escapeHTML(value) {
 
 
     const div =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
 
     div.textContent =
@@ -427,12 +400,16 @@ function escapeHTML(value) {
    URL VALIDATION
 ========================================================= */
 
-function isValidHttpUrl(value) {
+function isValidHttpUrl(
+    value
+) {
 
     try {
 
         const url =
-            new URL(value);
+            new URL(
+                value
+            );
 
 
         return (
@@ -467,7 +444,8 @@ function formatDate(value) {
 
         if (
             value &&
-            typeof value.toDate === "function"
+            typeof value.toDate ===
+                "function"
         ) {
 
             date =
@@ -483,7 +461,9 @@ function formatDate(value) {
         } else {
 
             date =
-                new Date(value);
+                new Date(
+                    value
+                );
 
         }
 
@@ -522,10 +502,14 @@ function formatDate(value) {
    NAVIGATION
 ========================================================= */
 
-function navigateTo(sectionName) {
+function navigateTo(
+    sectionName
+) {
 
     if (
-        !pageInfo[sectionName]
+        !pageInfo[
+            sectionName
+        ]
     ) {
 
         return;
@@ -554,7 +538,8 @@ function navigateTo(sectionName) {
 
     const targetSection =
         getElement(
-            sectionName + "Section"
+            sectionName +
+            "Section"
         );
 
 
@@ -574,33 +559,26 @@ function navigateTo(sectionName) {
     menuItems.forEach(
         item => {
 
-            if (
+            item.classList.toggle(
+                "active",
                 item.dataset.section ===
-                sectionName
-            ) {
-
-                item.classList.add(
-                    "active"
-                );
-
-            } else {
-
-                item.classList.remove(
-                    "active"
-                );
-
-            }
+                    sectionName
+            );
 
         }
     );
 
 
     const pageTitle =
-        getElement("pageTitle");
+        getElement(
+            "pageTitle"
+        );
 
 
     const pageSubtitle =
-        getElement("pageSubtitle");
+        getElement(
+            "pageSubtitle"
+        );
 
 
     if (pageTitle) {
@@ -645,6 +623,16 @@ function navigateTo(sectionName) {
 
     }
 
+
+    if (
+        sectionName ===
+        "chat"
+    ) {
+
+        prepareChatForNavigation();
+
+    }
+
 }
 
 
@@ -665,12 +653,8 @@ function setupNavigation() {
                 "click",
                 () => {
 
-                    const section =
-                        item.dataset.section;
-
-
                     navigateTo(
-                        section
+                        item.dataset.section
                     );
 
                 }
@@ -691,12 +675,8 @@ function setupNavigation() {
                 "click",
                 () => {
 
-                    const action =
-                        card.dataset.action;
-
-
                     navigateTo(
-                        action
+                        card.dataset.action
                     );
 
                 }
@@ -727,7 +707,9 @@ function setupNavigation() {
         event => {
 
             const sidebar =
-                getElement("sidebar");
+                getElement(
+                    "sidebar"
+                );
 
 
             if (!sidebar) {
@@ -769,7 +751,9 @@ function setupNavigation() {
 function toggleMobileSidebar() {
 
     const sidebar =
-        getElement("sidebar");
+        getElement(
+            "sidebar"
+        );
 
 
     if (!sidebar) {
@@ -787,7 +771,9 @@ function toggleMobileSidebar() {
 function closeMobileSidebar() {
 
     const sidebar =
-        getElement("sidebar");
+        getElement(
+            "sidebar"
+        );
 
 
     if (!sidebar) {
@@ -809,8 +795,9 @@ function closeMobileSidebar() {
 function setupTheme() {
 
     const themeBtn =
-        getElement("themeBtn");
-
+        getElement(
+            "themeBtn"
+        );
 
     const darkModeToggle =
         getElement(
@@ -891,7 +878,9 @@ function toggleTheme() {
 }
 
 
-function setTheme(theme) {
+function setTheme(
+    theme
+) {
 
     const isDark =
         theme === "dark";
@@ -933,7 +922,9 @@ function setTheme(theme) {
 function updateThemeButton() {
 
     const themeBtn =
-        getElement("themeBtn");
+        getElement(
+            "themeBtn"
+        );
 
 
     if (!themeBtn) {
@@ -999,84 +990,63 @@ function newChat() {
     currentHomeFile =
         null;
 
+
     currentConversationId =
         createConversationId();
 
 
-    const chatInput =
-        getElement("chatInput");
+    const inputs = [
+
+        "chatInput",
+        "homeChatInput"
+
+    ];
 
 
-    const homeChatInput =
-        getElement(
-            "homeChatInput"
-        );
+    inputs.forEach(
+        id => {
+
+            const input =
+                getElement(id);
 
 
-    const chatImageInput =
-        getElement(
-            "chatImageInput"
-        );
+            if (input) {
+
+                input.value =
+                    "";
+
+            }
+
+        }
+    );
 
 
-    const chatFileInput =
-        getElement(
-            "chatFileInput"
-        );
+    const fileInputs = [
+
+        "chatImageInput",
+        "chatFileInput",
+        "homeImageInput",
+        "homeFileInput"
+
+    ];
 
 
-    const homeImageInput =
-        getElement(
-            "homeImageInput"
-        );
+    fileInputs.forEach(
+        id => {
+
+            const input =
+                getElement(id);
 
 
-    const homeFileInput =
-        getElement(
-            "homeFileInput"
-        );
+            if (input) {
 
+                input.value =
+                    "";
 
-    if (chatInput) {
+            }
 
-        chatInput.value = "";
-
-    }
-
-
-    if (homeChatInput) {
-
-        homeChatInput.value = "";
-
-    }
-
-
-    if (chatImageInput) {
-
-        chatImageInput.value = "";
-
-    }
-
-
-    if (chatFileInput) {
-
-        chatFileInput.value = "";
-
-    }
-
-
-    if (homeImageInput) {
-
-        homeImageInput.value = "";
-
-    }
-
-
-    if (homeFileInput) {
-
-        homeFileInput.value = "";
-
-    }
+        }
+    );
 
 
     resetChatMessages();
@@ -1087,7 +1057,9 @@ function newChat() {
     );
 
 
-    navigateTo("chat");
+    navigateTo(
+        "chat"
+    );
 
 
     showNotification(
@@ -1105,7 +1077,10 @@ function createConversationId() {
         "_" +
         Math.random()
             .toString(36)
-            .substring(2, 9)
+            .substring(
+                2,
+                9
+            )
     );
 
 }
@@ -1168,7 +1143,7 @@ function resetChatMessages() {
 
 
 /* =========================================================
-   CHAT SUGGESTIONS
+   SUGGESTIONS
 ========================================================= */
 
 function setupSuggestionButtons() {
@@ -1179,6 +1154,20 @@ function setupSuggestionButtons() {
 
     suggestions.forEach(
         button => {
+
+            if (
+                button.dataset.geoBound ===
+                "true"
+            ) {
+
+                return;
+
+            }
+
+
+            button.dataset.geoBound =
+                "true";
+
 
             button.addEventListener(
                 "click",
@@ -1281,7 +1270,9 @@ function setupTextareaEnter() {
    FILE READER
 ========================================================= */
 
-async function readTextFile(file) {
+async function readTextFile(
+    file
+) {
 
     if (!file) {
         return "";
@@ -1327,27 +1318,36 @@ async function callAI(
             currentConversationId,
 
         mode:
-            options.mode || "general",
+            options.mode ||
+            "general",
 
         language:
+            localStorage.getItem(
+                "geo_ai_language"
+            ) ||
             "ar",
 
         webSearch:
             Boolean(
-                options.webSearch
+                options.webSearch ??
+                isWebSearchEnabled()
             ),
 
         context:
-            options.context || "",
+            options.context ||
+            "",
 
         fileName:
-            options.fileName || "",
+            options.fileName ||
+            "",
 
         fileContent:
-            options.fileContent || "",
+            options.fileContent ||
+            "",
 
         image:
-            options.image || null
+            options.image ||
+            null
 
     };
 
@@ -1356,7 +1356,9 @@ async function callAI(
         await fetch(
             AI_API_URL,
             {
-                method: "POST",
+
+                method:
+                    "POST",
 
                 headers: {
                     "Content-Type":
@@ -1367,6 +1369,7 @@ async function callAI(
                     JSON.stringify(
                         payload
                     )
+
             }
         );
 
@@ -1400,7 +1403,9 @@ async function callAI(
    AI RESPONSE EXTRACTION
 ========================================================= */
 
-function extractAIText(data) {
+function extractAIText(
+    data
+) {
 
     if (!data) {
         return "";
@@ -1420,31 +1425,25 @@ function extractAIText(data) {
     const possibleFields = [
 
         data.answer,
-
         data.response,
-
         data.message,
-
         data.reply,
-
         data.text,
-
         data.content,
-
         data.result,
-
         data.output
 
     ];
 
 
     for (
-        const value of possibleFields
+        const value of
+        possibleFields
     ) {
 
         if (
             typeof value ===
-            "string" &&
+                "string" &&
             value.trim()
         ) {
 
@@ -1500,10 +1499,12 @@ function extractAIText(data) {
 
 
 /* =========================================================
-   MARKDOWN PARSER
+   MARKDOWN / CODE FORMAT
 ========================================================= */
 
-function formatAIResponse(text) {
+function formatAIResponse(
+    text
+) {
 
     if (!text) {
         return "";
@@ -1511,17 +1512,19 @@ function formatAIResponse(text) {
 
 
     let value =
-        escapeHTML(text);
+        escapeHTML(
+            text
+        );
 
 
     value =
         value.replace(
             /```([a-zA-Z0-9_+#.-]*)\n([\s\S]*?)```/g,
-            function (
+            (
                 match,
                 language,
                 code
-            ) {
+            ) => {
 
                 const lang =
                     language ||
@@ -1541,7 +1544,9 @@ function formatAIResponse(text) {
                         <div class="geo-code-header">
 
                             <span>
-                                ${escapeHTML(lang)}
+                                ${escapeHTML(
+                                    lang
+                                )}
                             </span>
 
                             <button
@@ -1616,7 +1621,7 @@ function formatAIResponse(text) {
 
     value =
         value.replace(
-            /(<li>.*<\/li>)/gs,
+            /(<li>.*?<\/li>)/gs,
             "<ul>$1</ul>"
         );
 
@@ -1678,7 +1683,9 @@ function addUserMessage(
             </div>
 
             <div class="message-text">
-                ${escapeHTML(message)}
+                ${escapeHTML(
+                    message
+                )}
             </div>
 
         </div>
@@ -1737,7 +1744,9 @@ function addAIMessage(
             </div>
 
             <div class="message-text">
-                ${formatAIResponse(message)}
+                ${formatAIResponse(
+                    message
+                )}
             </div>
 
         </div>
@@ -1879,6 +1888,20 @@ function attachCodeCopyButtons(
     buttons.forEach(
         button => {
 
+            if (
+                button.dataset.bound ===
+                "true"
+            ) {
+
+                return;
+
+            }
+
+
+            button.dataset.bound =
+                "true";
+
+
             button.addEventListener(
                 "click",
                 async () => {
@@ -1998,18 +2021,15 @@ function setupChat() {
             "chatSendBtn"
         );
 
-
     const homeSendBtn =
         getElement(
             "homeSendBtn"
         );
 
-
     const gisSendBtn =
         getElement(
             "gisSendBtn"
         );
-
 
     const codeSendBtn =
         getElement(
@@ -2068,144 +2088,111 @@ function setupChat() {
 
 function setupChatFileInputs() {
 
-    const chatImageInput =
-        getElement(
-            "chatImageInput"
-        );
+    const inputs = {
+
+        chatImageInput:
+            "currentChatImage",
+
+        chatFileInput:
+            "currentChatFile",
+
+        homeImageInput:
+            "currentHomeImage",
+
+        homeFileInput:
+            "currentHomeFile"
+
+    };
 
 
-    const chatFileInput =
-        getElement(
-            "chatFileInput"
-        );
+    Object.entries(
+        inputs
+    ).forEach(
+        (
+            [
+                id,
+                stateName
+            ]
+        ) => {
+
+            const input =
+                getElement(
+                    id
+                );
 
 
-    const homeImageInput =
-        getElement(
-            "homeImageInput"
-        );
+            if (!input) {
+                return;
+            }
 
 
-    const homeFileInput =
-        getElement(
-            "homeFileInput"
-        );
+            input.addEventListener(
+                "change",
+                event => {
+
+                    const file =
+                        event.target.files[0] ||
+                        null;
 
 
-    if (chatImageInput) {
+                    if (
+                        stateName ===
+                        "currentChatImage"
+                    ) {
 
-        chatImageInput.addEventListener(
-            "change",
-            event => {
+                        currentChatImage =
+                            file;
 
-                const file =
-                    event.target.files[0];
-
-
-                currentChatImage =
-                    file || null;
+                    }
 
 
-                if (file) {
+                    if (
+                        stateName ===
+                        "currentChatFile"
+                    ) {
 
-                    showNotification(
-                        "تم اختيار الصورة: " +
-                        file.name
-                    );
+                        currentChatFile =
+                            file;
+
+                    }
+
+
+                    if (
+                        stateName ===
+                        "currentHomeImage"
+                    ) {
+
+                        currentHomeImage =
+                            file;
+
+                    }
+
+
+                    if (
+                        stateName ===
+                        "currentHomeFile"
+                    ) {
+
+                        currentHomeFile =
+                            file;
+
+                    }
+
+
+                    if (file) {
+
+                        showNotification(
+                            "تم اختيار الملف: " +
+                            file.name
+                        );
+
+                    }
 
                 }
+            );
 
-            }
-        );
-
-    }
-
-
-    if (chatFileInput) {
-
-        chatFileInput.addEventListener(
-            "change",
-            event => {
-
-                const file =
-                    event.target.files[0];
-
-
-                currentChatFile =
-                    file || null;
-
-
-                if (file) {
-
-                    showNotification(
-                        "تم اختيار الملف: " +
-                        file.name
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    if (homeImageInput) {
-
-        homeImageInput.addEventListener(
-            "change",
-            event => {
-
-                const file =
-                    event.target.files[0];
-
-
-                currentHomeImage =
-                    file || null;
-
-
-                if (file) {
-
-                    showNotification(
-                        "تم اختيار الصورة: " +
-                        file.name
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    if (homeFileInput) {
-
-        homeFileInput.addEventListener(
-            "change",
-            event => {
-
-                const file =
-                    event.target.files[0];
-
-
-                currentHomeFile =
-                    file || null;
-
-
-                if (file) {
-
-                    showNotification(
-                        "تم اختيار الملف: " +
-                        file.name
-                    );
-
-                }
-
-            }
-        );
-
-    }
+        }
+    );
 
 }
 
@@ -2307,6 +2294,7 @@ async function sendChatMessage() {
             await callAI(
                 finalMessage,
                 {
+
                     mode:
                         "general",
 
@@ -2320,6 +2308,7 @@ async function sendChatMessage() {
 
                     fileContent:
                         fileContent
+
                 }
             );
 
@@ -2341,13 +2330,17 @@ async function sendChatMessage() {
         );
 
 
+        await saveConversationMessage(
+            finalMessage,
+            answer
+        );
+
+
         currentChatImage =
             null;
 
-
         currentChatFile =
             null;
-
 
     } catch (error) {
 
@@ -2421,7 +2414,9 @@ async function sendHomeMessage() {
     }
 
 
-    navigateTo("chat");
+    navigateTo(
+        "chat"
+    );
 
 
     const chatInput =
@@ -2479,7 +2474,9 @@ function fileToDataURL(
 
             if (!file) {
 
-                resolve(null);
+                resolve(
+                    null
+                );
 
                 return;
 
@@ -2603,7 +2600,9 @@ async function sendGISMessage() {
         "";
 
 
-    navigateTo("chat");
+    navigateTo(
+        "chat"
+    );
 
 
     const chatInput =
@@ -2802,11 +2801,13 @@ ${request}
             await callAI(
                 prompt,
                 {
+
                     mode:
                         "coding",
 
                     context:
                         "Programming assistant. Focus on clean copy-ready code."
+
                 }
             );
 
@@ -2824,7 +2825,6 @@ ${request}
             );
 
         }
-
 
     } catch (error) {
 
@@ -2882,7 +2882,8 @@ async function copyGeneratedCode() {
 
     if (codeBlocks.length) {
 
-        let allCode = "";
+        let allCode =
+            "";
 
 
         codeBlocks.forEach(
@@ -2942,12 +2943,8 @@ function setupStudy() {
                 "click",
                 () => {
 
-                    const action =
-                        button.dataset.studyAction;
-
-
                     handleStudyAction(
-                        action
+                        button.dataset.studyAction
                     );
 
                 }
@@ -2982,7 +2979,10 @@ function setupStudy() {
                         "تم اختيار ملف المذاكرة"
                     );
 
-                    navigateTo("chat");
+
+                    navigateTo(
+                        "chat"
+                    );
 
 
                     const chatInput =
@@ -3036,7 +3036,9 @@ function handleStudyAction(
     };
 
 
-    navigateTo("chat");
+    navigateTo(
+        "chat"
+    );
 
 
     const chatInput =
@@ -3050,6 +3052,7 @@ function handleStudyAction(
         chatInput.value =
             prompts[action] ||
             "ساعدني في مذاكرة هذا الموضوع.";
+
 
         chatInput.focus();
 
@@ -3126,6 +3129,19 @@ async function createTest() {
         Number(
             countElement.value
         );
+
+
+    if (!subject) {
+
+        showNotification(
+            "اكتب اسم المادة أولاً",
+            "warning"
+        );
+
+
+        return;
+
+    }
 
 
     isGeneratingTest =
@@ -3268,7 +3284,8 @@ function parseGeneratedTest(
         );
 
 
-    const questions = [];
+    const questions =
+        [];
 
 
     blocks.forEach(
@@ -3316,10 +3333,12 @@ function parseGeneratedTest(
 
 
             while (
-                (match =
-                    optionRegex.exec(
-                        beforeAnswer
-                    )) !== null
+                (
+                    match =
+                        optionRegex.exec(
+                            beforeAnswer
+                        )
+                ) !== null
             ) {
 
                 options.push({
@@ -3354,9 +3373,11 @@ function parseGeneratedTest(
                     question:
                         questionText,
 
-                    options,
+                    options:
+                        options,
 
-                    answer
+                    answer:
+                        answer
 
                 });
 
@@ -3394,7 +3415,8 @@ function renderTest(
         {};
 
 
-    container.innerHTML = "";
+    container.innerHTML =
+        "";
 
 
     questions.forEach(
@@ -3413,7 +3435,8 @@ function renderTest(
                 "test-question";
 
 
-            let optionsHTML = "";
+            let optionsHTML =
+                "";
 
 
             question.options.forEach(
@@ -3432,6 +3455,7 @@ function renderTest(
                                 data-question="${index}">
 
                             <span>
+
                                 <strong>
                                     ${escapeHTML(
                                         option.letter
@@ -3461,9 +3485,11 @@ function renderTest(
                 </div>
 
                 <h3>
+
                     ${escapeHTML(
                         question.question
                     )}
+
                 </h3>
 
                 <div class="test-options">
@@ -3528,9 +3554,11 @@ function gradeTest(
     questions
 ) {
 
-    let score = 0;
+    let score =
+        0;
 
-    let answered = 0;
+    let answered =
+        0;
 
 
     questions.forEach(
@@ -3572,7 +3600,8 @@ function gradeTest(
                 (
                     score /
                     questions.length
-                ) * 100
+                ) *
+                100
             )
             : 0;
 
@@ -3594,19 +3623,26 @@ function gradeTest(
         </h2>
 
         <p>
+
             حصلت على
+
             <strong>
                 ${score}
             </strong>
+
             من
+
             <strong>
                 ${questions.length}
             </strong>
+
         </p>
 
         <p>
+
             الإجابات التي تم حلها:
             ${answered}
+
         </p>
 
         <strong>
@@ -3656,7 +3692,8 @@ function setupFiles() {
 
 
                 currentMainFile =
-                    file || null;
+                    file ||
+                    null;
 
 
                 if (file) {
@@ -3815,13 +3852,17 @@ function loadLocalFiles() {
                         </strong>
 
                         <small>
+
                             ${formatFileSize(
                                 file.size
                             )}
+
                             •
+
                             ${formatDate(
                                 file.date
                             )}
+
                         </small>
 
                     </div>
@@ -3855,14 +3896,10 @@ function loadLocalFiles() {
                 "click",
                 () => {
 
-                    const index =
+                    deleteLocalFile(
                         Number(
                             button.dataset.fileIndex
-                        );
-
-
-                    deleteLocalFile(
-                        index
+                        )
                     );
 
                 }
@@ -3929,14 +3966,17 @@ function formatFileSize(
         bytes < 1024
     ) {
 
-        return bytes +
-            " B";
+        return (
+            bytes +
+            " B"
+        );
 
     }
 
 
     if (
-        bytes < 1024 * 1024
+        bytes <
+        1024 * 1024
     ) {
 
         return (
@@ -3967,23 +4007,43 @@ function formatFileSize(
 const COURSE_CATEGORIES = {
 
     surveying: {
-        label: "المساحة",
-        icon: "📐"
+
+        label:
+            "المساحة",
+
+        icon:
+            "📐"
+
     },
 
     gis: {
-        label: "GIS",
-        icon: "🗺️"
+
+        label:
+            "GIS",
+
+        icon:
+            "🗺️"
+
     },
 
     remote_sensing: {
-        label: "الاستشعار عن بعد",
-        icon: "🛰️"
+
+        label:
+            "الاستشعار عن بعد",
+
+        icon:
+            "🛰️"
+
     },
 
     programming: {
-        label: "البرمجة",
-        icon: "💻"
+
+        label:
+            "البرمجة",
+
+        icon:
+            "💻"
+
     }
 
 };
@@ -4158,20 +4218,31 @@ function updateAdminCourseUI() {
     }
 
 
-    if (
+    const isAdmin =
         currentUserRole ===
-        "admin"
-    ) {
+        "admin";
 
-        addCourseBtn.style.display =
-            "inline-flex";
 
-    } else {
+    addCourseBtn.style.display =
+        isAdmin
+            ? "inline-flex"
+            : "none";
 
-        addCourseBtn.style.display =
-            "none";
 
-    }
+    const adminActions =
+        $$(".course-admin-actions");
+
+
+    adminActions.forEach(
+        element => {
+
+            element.style.display =
+                isAdmin
+                    ? ""
+                    : "none";
+
+        }
+    );
 
 }
 
@@ -4255,7 +4326,7 @@ async function loadCourses() {
         } catch (orderError) {
 
             console.warn(
-                "Course order query failed. Loading without order:",
+                "Course order query failed:",
                 orderError
             );
 
@@ -4285,7 +4356,6 @@ async function loadCourses() {
 
 
         renderCourses();
-
 
     } catch (error) {
 
@@ -4399,16 +4469,20 @@ function renderCourses() {
 
 
     grid.innerHTML =
-        filtered.map(
-            course =>
-                createCourseCard(
-                    course
-                )
-        )
-        .join("");
+        filtered
+            .map(
+                course =>
+                    createCourseCard(
+                        course
+                    )
+            )
+            .join("");
 
 
     attachCourseCardEvents();
+
+
+    updateAdminCourseUI();
 
 }
 
@@ -4562,6 +4636,12 @@ function createCourseCard(
             : "";
 
 
+    const validCourseUrl =
+        isValidHttpUrl(
+            course.url
+        );
+
+
     return `
 
         <article
@@ -4571,7 +4651,6 @@ function createCourseCard(
             )}">
 
             ${imageHTML}
-
 
             <div class="course-card-body">
 
@@ -4628,9 +4707,13 @@ function createCourseCard(
                 ${
                     date
                         ? `
+
                             <div class="course-date">
+
                                 📅 ${date}
+
                             </div>
+
                         `
                         : ""
                 }
@@ -4638,30 +4721,37 @@ function createCourseCard(
 
                 <div class="course-card-bottom">
 
-                    <a
-                        class="course-open-btn"
-                        href="${escapeHTML(
-                            isValidHttpUrl(
-                                course.url
-                            )
-                                ? course.url
-                                : "#"
-                        )}"
-                        ${
-                            isValidHttpUrl(
-                                course.url
-                            )
-                                ? 'target="_blank" rel="noopener noreferrer"'
-                                : ""
-                        }>
+                    ${
+                        validCourseUrl
+                            ? `
 
-                        فتح الدورة
+                                <a
+                                    class="course-open-btn"
+                                    href="${escapeHTML(
+                                        course.url
+                                    )}"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
 
-                        <span>
-                            ↗
-                        </span>
+                                    فتح الدورة
 
-                    </a>
+                                    <span>
+                                        ↗
+                                    </span>
+
+                                </a>
+
+                            `
+                            : `
+
+                                <span class="course-open-btn disabled">
+
+                                    الرابط غير متاح
+
+                                </span>
+
+                            `
+                    }
 
                 </div>
 
@@ -4696,12 +4786,8 @@ function attachCourseCardEvents() {
                 "click",
                 () => {
 
-                    const id =
-                        button.dataset.courseId;
-
-
                     editCourse(
-                        id
+                        button.dataset.courseId
                     );
 
                 }
@@ -4724,12 +4810,8 @@ function attachCourseCardEvents() {
                 "click",
                 () => {
 
-                    const id =
-                        button.dataset.courseId;
-
-
                     deleteCourse(
-                        id
+                        button.dataset.courseId
                     );
 
                 }
@@ -4952,4 +5034,2157 @@ function closeCourseModal() {
     }
 
 
-   
+    const title =
+        getElement(
+            "courseModalTitle"
+        );
+
+
+    if (title) {
+
+        title.textContent =
+            "إضافة دورة جديدة";
+
+    }
+
+}
+
+
+/* =========================================================
+   SET INPUT VALUE
+========================================================= */
+
+function setInputValue(
+    id,
+    value
+) {
+
+    const element =
+        getElement(
+            id
+        );
+
+
+    if (!element) {
+        return;
+    }
+
+
+    element.value =
+        value === null ||
+        value === undefined
+            ? ""
+            : value;
+
+}
+
+
+/* =========================================================
+   EDIT COURSE
+========================================================= */
+
+function editCourse(
+    courseId
+) {
+
+    if (
+        currentUserRole !==
+        "admin"
+    ) {
+
+        showNotification(
+            "هذه العملية متاحة للمدير فقط",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    const course =
+        coursesCache.find(
+            item =>
+                item.id ===
+                courseId
+        );
+
+
+    if (!course) {
+
+        showNotification(
+            "لم يتم العثور على الدورة",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    openCourseModal(
+        course
+    );
+
+}
+
+
+/* =========================================================
+   DELETE COURSE
+========================================================= */
+
+async function deleteCourse(
+    courseId
+) {
+
+    if (
+        currentUserRole !==
+        "admin"
+    ) {
+
+        showNotification(
+            "هذه العملية متاحة للمدير فقط",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        !firebaseDb ||
+        !firebaseModules
+    ) {
+
+        showNotification(
+            "Firebase غير متصل",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    const course =
+        coursesCache.find(
+            item =>
+                item.id ===
+                courseId
+        );
+
+
+    if (!course) {
+
+        showNotification(
+            "الدورة غير موجودة",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    const confirmed =
+        window.confirm(
+            `هل أنت متأكد من حذف دورة "${course.title || "هذه الدورة"}"؟`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            doc,
+            deleteDoc
+        } =
+            firebaseModules;
+
+
+        await deleteDoc(
+            doc(
+                firebaseDb,
+                "courses",
+                courseId
+            )
+        );
+
+
+        coursesCache =
+            coursesCache.filter(
+                item =>
+                    item.id !==
+                    courseId
+            );
+
+
+        renderCourses();
+
+
+        showNotification(
+            "تم حذف الدورة بنجاح"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Delete course error:",
+            error
+        );
+
+
+        if (
+            error &&
+            error.code ===
+                "permission-denied"
+        ) {
+
+            showNotification(
+                "ليس لديك صلاحية حذف الدورة",
+                "error"
+            );
+
+        } else {
+
+            showNotification(
+                "حدث خطأ أثناء حذف الدورة",
+                "error"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   SAVE COURSE
+========================================================= */
+
+async function saveCourse(
+    event
+) {
+
+    event.preventDefault();
+
+
+    if (
+        currentUserRole !==
+        "admin"
+    ) {
+
+        showNotification(
+            "هذه العملية متاحة للمدير فقط",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        !firebaseDb ||
+        !firebaseModules
+    ) {
+
+        showNotification(
+            "Firebase غير متصل",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    const title =
+        getElement(
+            "courseTitleInput"
+        )?.value.trim() ||
+        "";
+
+
+    const category =
+        getElement(
+            "courseCategoryInput"
+        )?.value ||
+        "surveying";
+
+
+    const type =
+        getElement(
+            "courseTypeInput"
+        )?.value ||
+        "free";
+
+
+    const instructor =
+        getElement(
+            "courseInstructorInput"
+        )?.value.trim() ||
+        "";
+
+
+    const platform =
+        getElement(
+            "coursePlatformInput"
+        )?.value.trim() ||
+        "";
+
+
+    const url =
+        getElement(
+            "courseUrlInput"
+        )?.value.trim() ||
+        "";
+
+
+    const imageUrl =
+        getElement(
+            "courseImageInput"
+        )?.value.trim() ||
+        "";
+
+
+    const description =
+        getElement(
+            "courseDescriptionInput"
+        )?.value.trim() ||
+        "";
+
+
+    if (!title) {
+
+        showNotification(
+            "اكتب اسم الدورة",
+            "warning"
+        );
+
+
+        getElement(
+            "courseTitleInput"
+        )?.focus();
+
+
+        return;
+
+    }
+
+
+    if (
+        !COURSE_CATEGORIES[
+            category
+        ]
+    ) {
+
+        showNotification(
+            "اختر تصنيف الدورة",
+            "warning"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        !url ||
+        !isValidHttpUrl(
+            url
+        )
+    ) {
+
+        showNotification(
+            "اكتب رابط دورة صحيح يبدأ بـ https:// أو http://",
+            "warning"
+        );
+
+
+        getElement(
+            "courseUrlInput"
+        )?.focus();
+
+
+        return;
+
+    }
+
+
+    if (
+        imageUrl &&
+        !isValidHttpUrl(
+            imageUrl
+        )
+    ) {
+
+        showNotification(
+            "رابط الصورة غير صحيح",
+            "warning"
+        );
+
+
+        getElement(
+            "courseImageInput"
+        )?.focus();
+
+
+        return;
+
+    }
+
+
+    const submitButton =
+        getElement(
+            "courseFormSubmit"
+        );
+
+
+    const originalButtonText =
+        submitButton
+            ? submitButton.textContent
+            : "";
+
+
+    if (submitButton) {
+
+        submitButton.disabled =
+            true;
+
+
+        submitButton.textContent =
+            editingCourseId
+                ? "جاري التعديل..."
+                : "جاري الإضافة...";
+
+    }
+
+
+    try {
+
+        const {
+            collection,
+            addDoc,
+            doc,
+            updateDoc,
+            serverTimestamp
+        } =
+            firebaseModules;
+
+
+        const now =
+            Date.now();
+
+
+        const baseData = {
+
+            title:
+                title,
+
+            category:
+                category,
+
+            type:
+                type === "paid"
+                    ? "paid"
+                    : "free",
+
+            instructor:
+                instructor,
+
+            platform:
+                platform,
+
+            url:
+                url,
+
+            imageUrl:
+                imageUrl,
+
+            description:
+                description,
+
+            updatedAt:
+                serverTimestamp(),
+
+            updatedAtClient:
+                now
+
+        };
+
+
+        if (editingCourseId) {
+
+            await updateDoc(
+                doc(
+                    firebaseDb,
+                    "courses",
+                    editingCourseId
+                ),
+                baseData
+            );
+
+
+            coursesCache =
+                coursesCache.map(
+                    course => {
+
+                        if (
+                            course.id !==
+                            editingCourseId
+                        ) {
+
+                            return course;
+
+                        }
+
+
+                        return {
+
+                            ...course,
+
+                            ...baseData,
+
+                            updatedAtClient:
+                                now
+
+                        };
+
+                    }
+                );
+
+
+            showNotification(
+                "تم تعديل الدورة بنجاح"
+            );
+
+        } else {
+
+            const newCourse = {
+
+                ...baseData,
+
+                createdBy:
+                    currentFirebaseUser
+                        ? currentFirebaseUser.uid
+                        : "",
+
+                createdByEmail:
+                    currentFirebaseUser
+                        ? (
+                            currentFirebaseUser.email ||
+                            ""
+                        )
+                        : "",
+
+                createdAt:
+                    serverTimestamp(),
+
+                createdAtClient:
+                    now,
+
+                order:
+                    coursesCache.length +
+                    1
+
+            };
+
+
+            const reference =
+                await addDoc(
+                    collection(
+                        firebaseDb,
+                        "courses"
+                    ),
+                    newCourse
+                );
+
+
+            coursesCache.unshift({
+
+                id:
+                    reference.id,
+
+                ...newCourse,
+
+                createdAtClient:
+                    now
+
+            });
+
+
+            showNotification(
+                "تمت إضافة الدورة بنجاح"
+            );
+
+        }
+
+
+        renderCourses();
+
+
+        closeCourseModal();
+
+    } catch (error) {
+
+        console.error(
+            "Save course error:",
+            error
+        );
+
+
+        if (
+            error &&
+            error.code ===
+                "permission-denied"
+        ) {
+
+            showNotification(
+                "ليس لديك صلاحية إضافة أو تعديل الدورات",
+                "error"
+            );
+
+        } else {
+
+            showNotification(
+                "حدث خطأ أثناء حفظ الدورة",
+                "error"
+            );
+
+        }
+
+    } finally {
+
+        if (submitButton) {
+
+            submitButton.disabled =
+                false;
+
+
+            submitButton.textContent =
+                originalButtonText ||
+                "حفظ الدورة";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   COURSE FILTER DEFAULT
+========================================================= */
+
+function setupCourseFilterDefault() {
+
+    const filters =
+        $$(".course-filter");
+
+
+    filters.forEach(
+        button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.category ===
+                    "all"
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   LOCAL CHAT STORAGE
+========================================================= */
+
+function saveChatLocally(
+    userMessage,
+    aiResponse
+) {
+
+    try {
+
+        const enabled =
+            localStorage.getItem(
+                "geo_ai_save_chats"
+            );
+
+
+        if (
+            enabled ===
+            "false"
+        ) {
+
+            return;
+
+        }
+
+
+        const existingRaw =
+            localStorage.getItem(
+                "geo_ai_current_chat"
+            );
+
+
+        let messages =
+            [];
+
+
+        if (existingRaw) {
+
+            try {
+
+                const parsed =
+                    JSON.parse(
+                        existingRaw
+                    );
+
+
+                if (
+                    Array.isArray(
+                        parsed
+                    )
+                ) {
+
+                    messages =
+                        parsed;
+
+                }
+
+            } catch (error) {
+
+                messages =
+                    [];
+
+            }
+
+        }
+
+
+        messages.push({
+
+            role:
+                "user",
+
+            content:
+                userMessage,
+
+            timestamp:
+                new Date().toISOString()
+
+        });
+
+
+        messages.push({
+
+            role:
+                "assistant",
+
+            content:
+                aiResponse ||
+                "",
+
+            timestamp:
+                new Date().toISOString()
+
+        });
+
+
+        localStorage.setItem(
+            "geo_ai_current_chat",
+            JSON.stringify(
+                messages
+            )
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Local chat save error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD LOCAL CHAT
+========================================================= */
+
+function loadLocalChat() {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                "geo_ai_current_chat"
+            );
+
+
+        if (!raw) {
+
+            resetChatMessages();
+
+            return;
+
+        }
+
+
+        const messages =
+            JSON.parse(
+                raw
+            );
+
+
+        if (
+            !Array.isArray(
+                messages
+            ) ||
+            !messages.length
+        ) {
+
+            resetChatMessages();
+
+            return;
+
+        }
+
+
+        chatMessages.innerHTML =
+            "";
+
+
+        messages.forEach(
+            message => {
+
+                if (
+                    message.role ===
+                    "user"
+                ) {
+
+                    addUserMessage(
+                        message.content ||
+                        ""
+                    );
+
+                } else {
+
+                    addAIMessage(
+                        message.content ||
+                        ""
+                    );
+
+                }
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Load local chat error:",
+            error
+        );
+
+
+        resetChatMessages();
+
+    }
+
+}
+
+
+/* =========================================================
+   REMOVE EMPTY CHAT
+========================================================= */
+
+function removeEmptyChat() {
+
+    const empty =
+        document.querySelector(
+            "#chatMessages .empty-chat"
+        );
+
+
+    if (empty) {
+
+        empty.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   SCROLL CHAT
+========================================================= */
+
+function scrollChatToBottom() {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    setTimeout(
+        () => {
+
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+
+        },
+        30
+    );
+
+}
+
+
+/* =========================================================
+   FILE DESCRIPTION
+========================================================= */
+
+function getFileDescription(
+    file
+) {
+
+    if (!file) {
+        return "";
+    }
+
+
+    return (
+        `اسم الملف: ${file.name}\n` +
+        `نوع الملف: ${file.type || "غير معروف"}\n` +
+        `الحجم: ${formatFileSize(file.size)}`
+    );
+
+}
+
+
+/* =========================================================
+   HOME QUICK ACTIONS
+========================================================= */
+
+function setupHomeActions() {
+
+    const quickCards =
+        $$(".quick-card[data-action]");
+
+
+    quickCards.forEach(
+        card => {
+
+            card.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key ===
+                        "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+
+                        navigateTo(
+                            card.dataset.action
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   WEB SEARCH
+========================================================= */
+
+function setupWebSearch() {
+
+    const webSearchBtn =
+        getElement(
+            "webSearchBtn"
+        );
+
+
+    if (!webSearchBtn) {
+        return;
+    }
+
+
+    webSearchBtn.addEventListener(
+        "click",
+        () => {
+
+            webSearchBtn.classList.toggle(
+                "active"
+            );
+
+
+            const enabled =
+                webSearchBtn.classList.contains(
+                    "active"
+                );
+
+
+            webSearchBtn.setAttribute(
+                "aria-pressed",
+                String(
+                    enabled
+                )
+            );
+
+
+            showNotification(
+                enabled
+                    ? "تم تفعيل البحث في الويب"
+                    : "تم إيقاف البحث في الويب"
+            );
+
+        }
+    );
+
+}
+
+
+function isWebSearchEnabled() {
+
+    const button =
+        getElement(
+            "webSearchBtn"
+        );
+
+
+    if (!button) {
+        return false;
+    }
+
+
+    return button.classList.contains(
+        "active"
+    );
+
+}
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function setupSettings() {
+
+    const saveChatsToggle =
+        getElement(
+            "saveChatsToggle"
+        );
+
+
+    const languageSelect =
+        getElement(
+            "languageSelect"
+        );
+
+
+    const savedChats =
+        localStorage.getItem(
+            "geo_ai_save_chats"
+        );
+
+
+    if (saveChatsToggle) {
+
+        saveChatsToggle.checked =
+            savedChats !==
+            "false";
+
+
+        saveChatsToggle.addEventListener(
+            "change",
+            () => {
+
+                localStorage.setItem(
+                    "geo_ai_save_chats",
+                    saveChatsToggle.checked
+                        ? "true"
+                        : "false"
+                );
+
+
+                showNotification(
+                    saveChatsToggle.checked
+                        ? "تم تفعيل حفظ المحادثات"
+                        : "تم إيقاف حفظ المحادثات"
+                );
+
+            }
+        );
+
+    }
+
+
+    const savedLanguage =
+        localStorage.getItem(
+            "geo_ai_language"
+        );
+
+
+    if (
+        languageSelect &&
+        savedLanguage
+    ) {
+
+        languageSelect.value =
+            savedLanguage;
+
+    }
+
+
+    if (languageSelect) {
+
+        languageSelect.addEventListener(
+            "change",
+            () => {
+
+                localStorage.setItem(
+                    "geo_ai_language",
+                    languageSelect.value
+                );
+
+
+                showNotification(
+                    "تم حفظ اللغة"
+                );
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function setupProfile() {
+
+    const profileButton =
+        getElement(
+            "profileButton"
+        );
+
+
+    const profileMenu =
+        getElement(
+            "profileMenu"
+        );
+
+
+    const profileModal =
+        getElement(
+            "profileModal"
+        );
+
+
+    const profileModalClose =
+        getElement(
+            "profileModalClose"
+        );
+
+
+    if (
+        profileButton &&
+        profileMenu
+    ) {
+
+        profileButton.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+
+                profileMenu.classList.toggle(
+                    "show"
+                );
+
+            }
+        );
+
+    }
+
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                profileMenu &&
+                !profileMenu.contains(
+                    event.target
+                ) &&
+                !event.target.closest(
+                    "#profileButton"
+                )
+            ) {
+
+                profileMenu.classList.remove(
+                    "show"
+                );
+
+            }
+
+        }
+    );
+
+
+    if (profileModalClose) {
+
+        profileModalClose.addEventListener(
+            "click",
+            closeProfileModal
+        );
+
+    }
+
+
+    if (profileModal) {
+
+        profileModal.addEventListener(
+            "click",
+            event => {
+
+                if (
+                    event.target ===
+                    profileModal
+                ) {
+
+                    closeProfileModal();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    const profileOpenButton =
+        getElement(
+            "profileOpenButton"
+        );
+
+
+    if (profileOpenButton) {
+
+        profileOpenButton.addEventListener(
+            "click",
+            () => {
+
+                if (profileMenu) {
+
+                    profileMenu.classList.remove(
+                        "show"
+                    );
+
+                }
+
+
+                openProfileModal();
+
+            }
+        );
+
+    }
+
+}
+
+
+function openProfileModal() {
+
+    const modal =
+        getElement(
+            "profileModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    const nameElement =
+        getElement(
+            "profileName"
+        );
+
+
+    const emailElement =
+        getElement(
+            "profileEmail"
+        );
+
+
+    const roleElement =
+        getElement(
+            "profileRole"
+        );
+
+
+    if (currentFirebaseUser) {
+
+        if (nameElement) {
+
+            nameElement.textContent =
+                currentFirebaseUser.displayName ||
+                "مستخدم GEO AI";
+
+        }
+
+
+        if (emailElement) {
+
+            emailElement.textContent =
+                currentFirebaseUser.email ||
+                "";
+
+        }
+
+    }
+
+
+    if (roleElement) {
+
+        roleElement.textContent =
+            currentUserRole ===
+            "admin"
+                ? "مدير"
+                : "مستخدم";
+
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+}
+
+
+function closeProfileModal() {
+
+    const modal =
+        getElement(
+            "profileModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "hidden"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function setupLogout() {
+
+    const logoutButton =
+        getElement(
+            "logoutButton"
+        );
+
+
+    if (!logoutButton) {
+        return;
+    }
+
+
+    logoutButton.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                if (
+                    firebaseAuth &&
+                    firebaseModules &&
+                    typeof firebaseModules.signOut ===
+                        "function"
+                ) {
+
+                    await firebaseModules.signOut(
+                        firebaseAuth
+                    );
+
+                }
+
+
+                currentFirebaseUser =
+                    null;
+
+
+                currentUserRole =
+                    "user";
+
+
+                window.location.href =
+                    "login.html";
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+
+                showNotification(
+                    "تعذر تسجيل الخروج",
+                    "error"
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   FIREBASE AUTH STATE
+========================================================= */
+
+function setupFirebaseAuthListener() {
+
+    if (
+        !firebaseAuth ||
+        !firebaseModules ||
+        typeof firebaseModules.onAuthStateChanged !==
+            "function"
+    ) {
+
+        return;
+
+    }
+
+
+    firebaseModules.onAuthStateChanged(
+        firebaseAuth,
+        async user => {
+
+            currentFirebaseUser =
+                user ||
+                null;
+
+
+            if (!user) {
+
+                currentUserRole =
+                    "user";
+
+
+                updateAdminCourseUI();
+
+
+                return;
+
+            }
+
+
+            try {
+
+                const {
+                    doc,
+                    getDoc
+                } =
+                    firebaseModules;
+
+
+                const userReference =
+                    doc(
+                        firebaseDb,
+                        "users",
+                        user.uid
+                    );
+
+
+                const userSnapshot =
+                    await getDoc(
+                        userReference
+                    );
+
+
+                if (
+                    userSnapshot.exists()
+                ) {
+
+                    const userData =
+                        userSnapshot.data();
+
+
+                    currentUserRole =
+                        userData.role ||
+                        "user";
+
+                } else {
+
+                    currentUserRole =
+                        "user";
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "User role error:",
+                    error
+                );
+
+
+                currentUserRole =
+                    "user";
+
+            }
+
+
+            updateAdminCourseUI();
+
+
+            if (
+                coursesCache.length
+            ) {
+
+                renderCourses();
+
+            }
+
+
+            if (
+                currentSection ===
+                "courses"
+            ) {
+
+                loadCourses();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   LOAD CURRENT USER
+========================================================= */
+
+async function loadCurrentFirebaseUser() {
+
+    if (
+        !firebaseAuth ||
+        !firebaseModules
+    ) {
+
+        return;
+
+    }
+
+
+    const user =
+        firebaseAuth.currentUser;
+
+
+    if (!user) {
+
+        currentFirebaseUser =
+            null;
+
+        currentUserRole =
+            "user";
+
+        updateAdminCourseUI();
+
+        return;
+
+    }
+
+
+    currentFirebaseUser =
+        user;
+
+
+    try {
+
+        const {
+            doc,
+            getDoc
+        } =
+            firebaseModules;
+
+
+        const reference =
+            doc(
+                firebaseDb,
+                "users",
+                user.uid
+            );
+
+
+        const snapshot =
+            await getDoc(
+                reference
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            const data =
+                snapshot.data();
+
+
+            currentUserRole =
+                data.role ||
+                "user";
+
+        } else {
+
+            currentUserRole =
+                "user";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Current user load error:",
+            error
+        );
+
+
+        currentUserRole =
+            "user";
+
+    }
+
+
+    updateAdminCourseUI();
+
+}
+
+
+/* =========================================================
+   SAVE CHAT TO FIRESTORE
+========================================================= */
+
+async function saveChatToFirestore(
+    userMessage,
+    aiResponse
+) {
+
+    if (
+        !firebaseDb ||
+        !firebaseModules ||
+        !currentFirebaseUser
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const {
+            collection,
+            addDoc,
+            serverTimestamp
+        } =
+            firebaseModules;
+
+
+        await addDoc(
+            collection(
+                firebaseDb,
+                "chats"
+            ),
+            {
+
+                uid:
+                    currentFirebaseUser.uid,
+
+                email:
+                    currentFirebaseUser.email ||
+                    "",
+
+                name:
+                    currentFirebaseUser.displayName ||
+                    "",
+
+                conversationId:
+                    currentConversationId,
+
+                message:
+                    userMessage,
+
+                response:
+                    aiResponse ||
+                    "",
+
+                createdAt:
+                    serverTimestamp(),
+
+                createdAtClient:
+                    Date.now()
+
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Save chat Firestore error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   SAVE CONVERSATION MESSAGE
+========================================================= */
+
+async function saveConversationMessage(
+    userMessage,
+    aiResponse
+) {
+
+    await saveChatToFirestore(
+        userMessage,
+        aiResponse
+    );
+
+}
+
+
+/* =========================================================
+   KEYBOARD SHORTCUTS
+========================================================= */
+
+function setupKeyboardShortcuts() {
+
+    document.addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                (
+                    event.ctrlKey ||
+                    event.metaKey
+                ) &&
+                event.key.toLowerCase() ===
+                    "k"
+            ) {
+
+                event.preventDefault();
+
+
+                navigateTo(
+                    "chat"
+                );
+
+
+                const input =
+                    getElement(
+                        "chatInput"
+                    );
+
+
+                if (input) {
+
+                    input.focus();
+
+                }
+
+            }
+
+
+            if (
+                event.key ===
+                "Escape"
+            ) {
+
+                closeMobileSidebar();
+
+
+                closeCourseModal();
+
+
+                closeProfileModal();
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   IMAGE ATTACHMENT
+========================================================= */
+
+function createImageAttachmentHTML(
+    file
+) {
+
+    if (!file) {
+        return "";
+    }
+
+
+    return `
+
+        <div class="message-attachment">
+
+            🖼️
+
+            <span>
+
+                ${escapeHTML(
+                    file.name
+                )}
+
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   FILE ATTACHMENT
+========================================================= */
+
+function createFileAttachmentHTML(
+    file
+) {
+
+    if (!file) {
+        return "";
+    }
+
+
+    return `
+
+        <div class="message-attachment">
+
+            📎
+
+            <span>
+
+                ${escapeHTML(
+                    file.name
+                )}
+
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   AUTO RESIZE
+========================================================= */
+
+function setupAutoResize() {
+
+    const textareas =
+        $$(
+            "#chatInput, #homeChatInput, #gisInput, #codeInput"
+        );
+
+
+    textareas.forEach(
+        textarea => {
+
+            textarea.addEventListener(
+                "input",
+                () => {
+
+                    textarea.style.height =
+                        "auto";
+
+
+                    textarea.style.height =
+                        Math.min(
+                            textarea.scrollHeight,
+                            180
+                        ) +
+                        "px";
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   PREPARE CHAT
+========================================================= */
+
+function prepareChatForNavigation() {
+
+    const input =
+        getElement(
+            "chatInput"
+        );
+
+
+    if (input) {
+
+        setTimeout(
+            () => {
+
+                input.focus();
+
+            },
+            50
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GLOBAL ERROR HANDLING
+========================================================= */
+
+window.addEventListener(
+    "error",
+    event => {
+
+        console.error(
+            "GEO AI Global error:",
+            event.error ||
+            event.message
+        );
+
+    }
+);
+
+
+window.addEventListener(
+    "unhandledrejection",
+    event => {
+
+        console.error(
+            "GEO AI Promise error:",
+            event.reason
+        );
+
+    }
+);
+
+
+/* =========================================================
+   INITIALIZE GEO AI
+========================================================= */
+
+async function initializeGEOAI() {
+
+    console.log(
+        "GEO AI initializing..."
+    );
+
+
+    currentConversationId =
+        createConversationId();
+
+
+    setupNavigation();
+
+    setupTheme();
+
+    setupNewChat();
+
+    setupTextareaEnter();
+
+    setupChat();
+
+    setupGIS();
+
+    setupCoding();
+
+    setupStudy();
+
+    setupTests();
+
+    setupFiles();
+
+    setupCourses();
+
+    setupCourseFilterDefault();
+
+    setupHomeActions();
+
+    setupWebSearch();
+
+    setupSettings();
+
+    setupProfile();
+
+    setupLogout();
+
+    setupKeyboardShortcuts();
+
+    setupAutoResize();
+
+    setupSuggestionButtons();
+
+
+    resetChatMessages();
+
+
+    loadLocalChat();
+
+
+    navigateTo(
+        "home"
+    );
+
+
+    const firebaseReady =
+        await initializeFirebase();
+
+
+    if (firebaseReady) {
+
+        setupFirebaseAuthListener();
+
+
+        await loadCurrentFirebaseUser();
+
+
+        updateAdminCourseUI();
+
+
+        loadCourses();
+
+    } else {
+
+        console.warn(
+            "GEO AI started without Firebase."
+        );
+
+
+        updateAdminCourseUI();
+
+    }
+
+
+    console.log(
+        "GEO AI initialized successfully."
+    );
+
+}
+
+
+/* =========================================================
+   START APPLICATION
+========================================================= */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeGEOAI
+    );
+
+} else {
+
+    initializeGEOAI();
+
+}
