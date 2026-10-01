@@ -1,5 +1,6 @@
 /* =========================================================
-   GEO AI - Main Application 
+   GEO AI - Main Application
+   Compatible with latest index.html
    ========================================================= */
 
 "use strict";
@@ -7,84 +8,108 @@
 
 /* =========================================================
    CONFIG
-   ========================================================= */
+========================================================= */
 
-// رابط Ahmed AI Worker
 const AI_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/chat";
 
-
-/* =========================================================
-   VISION CONFIG
-   ========================================================= */
-
-// رابط GEO AI Vision Worker
-const AI_VISION_API_URL =
+const VISION_API_URL =
     "https://shy-reciahmed-ai-apipe-7386.123456789012345678o01234567898.workers.dev/api/vision";
 
 
 /* =========================================================
-   FIREBASE STATE
-   ========================================================= */
+   FIREBASE IMPORTS
+========================================================= */
 
 let firebaseAuth = null;
-let firebaseDB = null;
-let currentUser = null;
+let firebaseDb = null;
 
-let firebaseReady = false;
+let firebaseModules = null;
+
+let currentFirebaseUser = null;
+
+let currentUserRole = "user";
 
 
-/* =========================================================
-   FIREBASE INITIALIZATION
-   ========================================================= */
-
-async function initializeFirebaseForChat() {
+async function initializeFirebase() {
 
     try {
 
-        const firebaseModule =
-            await import("./firebase.js");
+        const firebaseAppModule =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js"
+            );
 
-        firebaseAuth =
-            firebaseModule.auth;
-
-        firebaseDB =
-            firebaseModule.db;
-
-
-        const authModule =
+        const firebaseAuthModule =
             await import(
                 "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js"
             );
 
+        const firebaseFirestoreModule =
+            await import(
+                "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
+            );
 
-        authModule.onAuthStateChanged(
-            firebaseAuth,
-            (user) => {
+        firebaseModules = {
+            ...firebaseAppModule,
+            ...firebaseAuthModule,
+            ...firebaseFirestoreModule
+        };
 
-                currentUser = user || null;
 
-                firebaseReady =
-                    !!currentUser;
+        const firebaseConfig = {
 
-                if (currentUser) {
+            apiKey:
+                "AIzaSyDL9xUDi2pm66m5Ow85c0feZs4btaoPgEo",
 
-                    console.log(
-                        "Ahmed AI Firebase user:",
-                        currentUser.email
-                    );
+            authDomain:
+                "ahmed-c5cdf.firebaseapp.com",
 
-                } else {
+            projectId:
+                "ahmed-c5cdf",
 
-                    console.log(
-                        "Ahmed AI: no authenticated user."
-                    );
+            storageBucket:
+                "ahmed-c5cdf.firebasestorage.app",
 
-                }
+            messagingSenderId:
+                "4671644989",
 
-            }
-        );
+            appId:
+                "1:4671644989:web:886b792cae0d95a58c9154",
 
+            measurementId:
+                "G-ST0VNS98E7"
+
+        };
+
+
+        const app =
+            firebaseAppModule.getApps().length
+                ? firebaseAppModule.getApp()
+                : firebaseAppModule.initializeApp(
+                    firebaseConfig
+                );
+
+
+        firebaseAuth =
+            firebaseAuthModule.getAuth(app);
+
+
+        firebaseDb =
+            firebaseFirestoreModule.getFirestore(
+                app
+            );
+
+
+        if (firebaseAuth.currentUser) {
+
+            currentFirebaseUser =
+                firebaseAuth.currentUser;
+
+        }
+
+
+        return true;
 
     } catch (error) {
 
@@ -93,7 +118,7 @@ async function initializeFirebaseForChat() {
             error
         );
 
-        firebaseReady = false;
+        return false;
 
     }
 
@@ -101,80 +126,323 @@ async function initializeFirebaseForChat() {
 
 
 /* =========================================================
-   HELPERS
-   ========================================================= */
+   GLOBAL STATE
+========================================================= */
 
-const $ = (id) => document.getElementById(id);
+let currentSection = "home";
+
+let selectedCodingLanguage = "Python";
+
+let selectedCourseCategory = "all";
+
+let editingCourseId = null;
+
+let coursesCache = [];
+
+let currentChatImage = null;
+
+let currentChatFile = null;
+
+let currentHomeImage = null;
+
+let currentHomeFile = null;
+
+let currentStudyFile = null;
+
+let currentMainFile = null;
+
+let isSendingMessage = false;
+
+let isGeneratingCode = false;
+
+let isGeneratingTest = false;
+
+let currentTestData = null;
+
+let currentTestAnswers = {};
+
+let currentConversationId = null;
 
 
-function showNotification(message, icon = "✓") {
+/* =========================================================
+   PAGE INFORMATION
+========================================================= */
 
-    const notification =
-        $("notification");
+const pageInfo = {
 
-    const text =
-        $("notificationText");
+    home: {
 
-    const notificationIcon =
-        $("notificationIcon");
+        title: "الرئيسية",
+
+        subtitle:
+            "مساعدك الذكي للمذاكرة والعمل"
+
+    },
 
 
-    if (!notification) return;
+    chat: {
+
+        title: "AI Chat",
+
+        subtitle:
+            "تحدث مع GEO AI في أي موضوع"
+
+    },
 
 
-    if (text) {
-        text.textContent = message;
+    study: {
+
+        title: "المذاكرة",
+
+        subtitle:
+            "شرح وتلخيص وأسئلة واختبارات"
+
+    },
+
+
+    gis: {
+
+        title: "مساعد GIS",
+
+        subtitle:
+            "GIS • Remote Sensing • Surveying"
+
+    },
+
+
+    coding: {
+
+        title: "مساعد البرمجة",
+
+        subtitle:
+            "Python • ArcPy • JavaScript • SQL"
+
+    },
+
+
+    files: {
+
+        title: "ملفاتي",
+
+        subtitle:
+            "ملفاتك المستخدمة في المذاكرة"
+
+    },
+
+
+    tests: {
+
+        title: "الاختبارات",
+
+        subtitle:
+            "اختبر معلوماتك وطوّر مستواك"
+
+    },
+
+
+    courses: {
+
+        title: "الكورسات والدورات",
+
+        subtitle:
+            "مساحة • GIS • استشعار عن بعد • برمجة"
+
+    },
+
+
+    settings: {
+
+        title: "الإعدادات",
+
+        subtitle:
+            "تحكم في إعدادات GEO AI"
+
     }
 
-
-    if (notificationIcon) {
-        notificationIcon.textContent = icon;
-    }
+};
 
 
-    notification.classList.add("show");
+/* =========================================================
+   DOM HELPERS
+========================================================= */
 
+function $(selector) {
 
-    clearTimeout(
-        window.notificationTimer
-    );
-
-
-    window.notificationTimer =
-        setTimeout(() => {
-
-            notification.classList.remove(
-                "show"
-            );
-
-        }, 2500);
+    return document.querySelector(selector);
 
 }
 
 
-function escapeHTML(text) {
+function $$(selector) {
+
+    return document.querySelectorAll(selector);
+
+}
+
+
+function getElement(id) {
+
+    return document.getElementById(id);
+
+}
+
+
+/* =========================================================
+   NOTIFICATION
+========================================================= */
+
+function showNotification(
+    message,
+    type = "success"
+) {
+
+    const notification =
+        getElement("notification");
+
+    const notificationText =
+        getElement("notificationText");
+
+    const notificationIcon =
+        getElement("notificationIcon");
+
+
+    if (!notification) {
+        return;
+    }
+
+
+    if (notificationText) {
+
+        notificationText.textContent =
+            message;
+
+    }
+
+
+    if (notificationIcon) {
+
+        if (type === "error") {
+
+            notificationIcon.textContent =
+                "✕";
+
+        } else if (type === "warning") {
+
+            notificationIcon.textContent =
+                "!";
+
+        } else {
+
+            notificationIcon.textContent =
+                "✓";
+
+        }
+
+    }
+
+
+    notification.classList.remove(
+        "show",
+        "error",
+        "warning"
+    );
+
+
+    if (type === "error") {
+
+        notification.classList.add(
+            "error"
+        );
+
+    }
+
+
+    if (type === "warning") {
+
+        notification.classList.add(
+            "warning"
+        );
+
+    }
+
+
+    void notification.offsetWidth;
+
+
+    notification.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        window.geoNotificationTimer
+    );
+
+
+    window.geoNotificationTimer =
+        setTimeout(
+            () => {
+
+                notification.classList.remove(
+                    "show"
+                );
+
+            },
+            3500
+        );
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
 
     const div =
         document.createElement("div");
 
+
     div.textContent =
-        text;
+        String(value);
+
 
     return div.innerHTML;
 
 }
 
 
-function scrollChatToBottom() {
+/* =========================================================
+   URL VALIDATION
+========================================================= */
 
-    const chat =
-        $("chatMessages");
+function isValidHttpUrl(value) {
+
+    try {
+
+        const url =
+            new URL(value);
 
 
-    if (chat) {
+        return (
+            url.protocol === "http:" ||
+            url.protocol === "https:"
+        );
 
-        chat.scrollTop =
-            chat.scrollHeight;
+    } catch (error) {
+
+        return false;
 
     }
 
@@ -182,176 +450,175 @@ function scrollChatToBottom() {
 
 
 /* =========================================================
-   APP STATE
-   ========================================================= */
+   DATE FORMAT
+========================================================= */
 
-let state = {
+function formatDate(value) {
 
-    currentSection: "home",
-
-    darkMode:
-        localStorage.getItem(
-            "ahmed_ai_dark"
-        ) === "true",
-
-    saveChats:
-        localStorage.getItem(
-            "ahmed_ai_save_chats"
-        ) !== "false",
-
-    currentChat: [],
-
-    selectedLanguage:
-        localStorage.getItem(
-            "ahmed_ai_language"
-        ) || "ar",
-
-    selectedCodingLanguage:
-        "Python",
-
-    selectedFile:
-        null,
-
-    /*
-       الصورة الحالية التي اختارها المستخدم
-       لا يتم تخزينها في LocalStorage
-       لأنها قد تكون كبيرة الحجم.
-    */
-
-    selectedImage:
-        null,
-
-    selectedImageData:
-        null,
-
-    selectedImageName:
-        null
-
-};
-
-
-/* =========================================================
-   PAGE INFORMATION
-   ========================================================= */
-
-const pageInfo = {
-
-    home: {
-        title: "الرئيسية",
-        subtitle: "مساعدك الذكي للمذاكرة والعمل"
-    },
-
-    chat: {
-        title: "AI Chat",
-        subtitle: "تحدث مع Ahmed AI"
-    },
-
-    study: {
-        title: "المذاكرة",
-        subtitle: "مدرسك الشخصي"
-    },
-
-    gis: {
-        title: "مساعد GIS",
-        subtitle:
-            "GIS • Remote Sensing • Surveying"
-    },
-
-    coding: {
-        title: "البرمجة",
-        subtitle:
-            "Python • ArcPy • JavaScript • SQL"
-    },
-
-    files: {
-        title: "ملفاتي",
-        subtitle:
-            "إدارة ملفات المذاكرة"
-    },
-
-    tests: {
-        title: "الاختبارات",
-        subtitle:
-            "اختبر معلوماتك"
-    },
-
-    settings: {
-        title: "الإعدادات",
-        subtitle:
-            "إعدادات Ahmed AI"
+    if (!value) {
+        return "";
     }
 
-};
+
+    try {
+
+        let date;
+
+
+        if (
+            value &&
+            typeof value.toDate === "function"
+        ) {
+
+            date =
+                value.toDate();
+
+        } else if (
+            value instanceof Date
+        ) {
+
+            date =
+                value;
+
+        } else {
+
+            date =
+                new Date(value);
+
+        }
+
+
+        if (
+            !date ||
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
+        return date.toLocaleDateString(
+            "ar-EG",
+            {
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            }
+        );
+
+    } catch (error) {
+
+        return "";
+
+    }
+
+}
 
 
 /* =========================================================
    NAVIGATION
-   ========================================================= */
+========================================================= */
 
-function openSection(sectionName) {
+function navigateTo(sectionName) {
 
-    const section =
-        $(sectionName + "Section");
+    if (
+        !pageInfo[sectionName]
+    ) {
 
+        return;
 
-    if (!section) return;
-
-
-    document
-        .querySelectorAll(".page-section")
-        .forEach((item) => {
-
-            item.classList.remove(
-                "active"
-            );
-
-        });
+    }
 
 
-    section.classList.add(
-        "active"
-    );
-
-
-    document
-        .querySelectorAll(
-            ".menu-item[data-section]"
-        )
-        .forEach((item) => {
-
-            item.classList.toggle(
-                "active",
-                item.dataset.section ===
-                sectionName
-            );
-
-        });
-
-
-    state.currentSection =
+    currentSection =
         sectionName;
 
 
-    const info =
-        pageInfo[sectionName];
+    const sections =
+        $$(".page-section");
 
 
-    if (info) {
+    sections.forEach(
+        section => {
 
-        if ($("pageTitle")) {
-
-            $("pageTitle").textContent =
-                info.title;
-
-        }
-
-
-        if ($("pageSubtitle")) {
-
-            $("pageSubtitle").textContent =
-                info.subtitle;
+            section.classList.remove(
+                "active"
+            );
 
         }
+    );
+
+
+    const targetSection =
+        getElement(
+            sectionName + "Section"
+        );
+
+
+    if (targetSection) {
+
+        targetSection.classList.add(
+            "active"
+        );
+
+    }
+
+
+    const menuItems =
+        $$(".menu-item[data-section]");
+
+
+    menuItems.forEach(
+        item => {
+
+            if (
+                item.dataset.section ===
+                sectionName
+            ) {
+
+                item.classList.add(
+                    "active"
+                );
+
+            } else {
+
+                item.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+    );
+
+
+    const pageTitle =
+        getElement("pageTitle");
+
+
+    const pageSubtitle =
+        getElement("pageSubtitle");
+
+
+    if (pageTitle) {
+
+        pageTitle.textContent =
+            pageInfo[
+                sectionName
+            ].title;
+
+    }
+
+
+    if (pageSubtitle) {
+
+        pageSubtitle.textContent =
+            pageInfo[
+                sectionName
+            ].subtitle;
 
     }
 
@@ -359,760 +626,118 @@ function openSection(sectionName) {
     closeMobileSidebar();
 
 
-    window.scrollTo({
+    if (
+        sectionName ===
+        "courses"
+    ) {
 
-        top: 0,
+        loadCourses();
 
-        behavior: "smooth"
+    }
 
-    });
+
+    if (
+        sectionName ===
+        "files"
+    ) {
+
+        loadLocalFiles();
+
+    }
 
 }
 
 
 /* =========================================================
    SIDEBAR
-   ========================================================= */
+========================================================= */
 
 function setupNavigation() {
 
-    document
-        .querySelectorAll(
-            ".menu-item[data-section]"
-        )
-        .forEach((button) => {
+    const menuItems =
+        $$(".menu-item[data-section]");
 
-            button.addEventListener(
+
+    menuItems.forEach(
+        item => {
+
+            item.addEventListener(
                 "click",
                 () => {
 
                     const section =
-                        button.dataset.section;
+                        item.dataset.section;
 
-                    openSection(
+
+                    navigateTo(
                         section
                     );
 
                 }
             );
 
-        });
+        }
+    );
 
 
-    document
-        .querySelectorAll(
-            ".quick-card[data-action]"
-        )
-        .forEach((card) => {
+    const quickCards =
+        $$(".quick-card[data-action]");
+
+
+    quickCards.forEach(
+        card => {
 
             card.addEventListener(
                 "click",
                 () => {
 
-                    openSection(
-                        card.dataset.action
+                    const action =
+                        card.dataset.action;
+
+
+                    navigateTo(
+                        action
                     );
 
                 }
             );
 
-        });
-
-
-    const newChatBtn =
-        $("newChatBtn");
-
-
-    if (newChatBtn) {
-
-        newChatBtn.addEventListener(
-            "click",
-            () => {
-
-                newChat();
-
-                openSection(
-                    "chat"
-                );
-
-            }
-        );
-
-    }
+        }
+    );
 
 
     const mobileMenuBtn =
-        $("mobileMenuBtn");
+        getElement(
+            "mobileMenuBtn"
+        );
 
 
     if (mobileMenuBtn) {
 
         mobileMenuBtn.addEventListener(
             "click",
-            () => {
+            toggleMobileSidebar
+        );
 
-                const sidebar =
-                    $("sidebar");
+    }
 
 
-                if (sidebar) {
+    document.addEventListener(
+        "click",
+        event => {
 
-                    sidebar.classList.toggle(
-                        "open"
-                    );
+            const sidebar =
+                getElement("sidebar");
 
-                }
 
+            if (!sidebar) {
+                return;
             }
-        );
 
-    }
 
-}
-
-
-function closeMobileSidebar() {
-
-    const sidebar =
-        $("sidebar");
-
-
-    if (sidebar) {
-
-        sidebar.classList.remove(
-            "open"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   THEME
-   ========================================================= */
-
-function applyTheme() {
-
-    if (state.darkMode) {
-
-        document.body.classList.add(
-            "dark"
-        );
-
-    } else {
-
-        document.body.classList.remove(
-            "dark"
-        );
-
-    }
-
-
-    const toggle =
-        $("darkModeToggle");
-
-
-    if (toggle) {
-
-        toggle.checked =
-            state.darkMode;
-
-    }
-
-}
-
-
-function setupTheme() {
-
-    applyTheme();
-
-
-    const themeBtn =
-        $("themeBtn");
-
-
-    if (themeBtn) {
-
-        themeBtn.addEventListener(
-            "click",
-            () => {
-
-                state.darkMode =
-                    !state.darkMode;
-
-
-                localStorage.setItem(
-                    "ahmed_ai_dark",
-                    state.darkMode
-                );
-
-
-                applyTheme();
-
-            }
-        );
-
-    }
-
-
-    const darkModeToggle =
-        $("darkModeToggle");
-
-
-    if (darkModeToggle) {
-
-        darkModeToggle.checked =
-            state.darkMode;
-
-
-        darkModeToggle.addEventListener(
-            "change",
-            () => {
-
-                state.darkMode =
-                    darkModeToggle.checked;
-
-
-                localStorage.setItem(
-                    "ahmed_ai_dark",
-                    state.darkMode
-                );
-
-
-                applyTheme();
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CHAT STORAGE - LOCAL
-   ========================================================= */
-
-function saveCurrentChat() {
-
-    if (!state.saveChats) return;
-
-
-    localStorage.setItem(
-
-        "ahmed_ai_current_chat",
-
-        JSON.stringify(
-            state.currentChat
-        )
-
-    );
-
-}
-
-
-function loadCurrentChat() {
-
-    if (!state.saveChats) return;
-
-
-    try {
-
-        const saved =
-            localStorage.getItem(
-                "ahmed_ai_current_chat"
-            );
-
-
-        if (!saved) return;
-
-
-        const messages =
-            JSON.parse(saved);
-
-
-        if (!Array.isArray(messages)) {
-            return;
-        }
-
-
-        state.currentChat =
-            messages;
-
-
-        renderSavedChat();
-
-
-    } catch (error) {
-
-        console.error(
-            "Chat load error:",
-            error
-        );
-
-    }
-
-}
-
-
-function renderSavedChat() {
-
-    const container =
-        $("chatMessages");
-
-
-    if (!container) return;
-
-
-    if (!state.currentChat.length) {
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    state.currentChat.forEach(
-        (message) => {
-
-            addMessageToUI(
-
-                message.role,
-
-                message.content,
-
-                false
-
-            );
-
-        }
-    );
-
-
-    scrollChatToBottom();
-
-}
-
-
-/* =========================================================
-   FIREBASE CHAT SAVE
-   ========================================================= */
-
-/*
-   يحفظ سؤال المستخدم + إجابة Ahmed AI
-   في:
-
-   Firestore
-   └── chats
-       ├── uid
-       ├── email
-       ├── name
-       ├── message
-       ├── response
-       ├── createdAt
-       └── createdAtClient
-*/
-
-async function saveChatToFirebase(
-    userMessage,
-    aiResponse
-) {
-
-    if (!currentUser) {
-
-        console.log(
-            "Chat not saved to Firebase: no user."
-        );
-
-        return;
-
-    }
-
-
-    if (!firebaseDB) {
-
-        console.log(
-            "Chat not saved: Firebase DB not ready."
-        );
-
-        return;
-
-    }
-
-
-    try {
-
-        const firestoreModule =
-            await import(
-                "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
-            );
-
-
-        const {
-            collection,
-            addDoc,
-            serverTimestamp
-        } = firestoreModule;
-
-
-        const chatData = {
-
-            uid:
-                currentUser.uid,
-
-            email:
-                currentUser.email || "",
-
-            name:
-                currentUser.displayName ||
-                "مستخدم",
-
-            message:
-                userMessage,
-
-            response:
-                aiResponse,
-
-            createdAt:
-                serverTimestamp(),
-
-            createdAtClient:
-                new Date().toISOString()
-
-        };
-
-
-        const chatRef =
-            await addDoc(
-
-                collection(
-                    firebaseDB,
-                    "chats"
-                ),
-
-                chatData
-
-            );
-
-
-        console.log(
-            "Chat saved successfully:",
-            chatRef.id
-        );
-
-
-    } catch (error) {
-
-        /*
-           مهم:
-           لو Firebase فشل، لا نوقف Ahmed AI.
-           الرد سيظل ظاهرًا للمستخدم.
-        */
-
-        console.error(
-            "Firestore chat save error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   NEW CHAT
-   ========================================================= */
-
-function newChat() {
-
-    state.currentChat = [];
-
-
-    state.selectedImage =
-        null;
-
-    state.selectedImageData =
-        null;
-
-    state.selectedImageName =
-        null;
-
-
-    localStorage.removeItem(
-        "ahmed_ai_current_chat"
-    );
-
-
-    const chatMessages =
-        $("chatMessages");
-
-
-    if (chatMessages) {
-
-        chatMessages.innerHTML = `
-
-            <div class="empty-chat">
-
-                <div class="empty-icon">
-                    🤖
-                </div>
-
-                <h2>
-                    Ahmed AI
-                </h2>
-
-                <p>
-                    أنا جاهز أساعدك في المذاكرة
-                    وGIS والبرمجة.
-                </p>
-
-                <div class="suggestions">
-
-                    <button>
-                        اشرحلي ArcGIS Pro
-                    </button>
-
-                    <button>
-                        علمني Python
-                    </button>
-
-                    <button>
-                        اشرحلي Remote Sensing
-                    </button>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        setupSuggestionButtons();
-
-    }
-
-
-    showNotification(
-        "تم إنشاء محادثة جديدة",
-        "✓"
-    );
-
-}
-
-
-/* =========================================================
-   CHAT UI
-   ========================================================= */
-
-function addMessageToUI(
-    role,
-    content,
-    save = true
-) {
-
-    const container =
-        $("chatMessages");
-
-
-    if (!container) return null;
-
-
-    const empty =
-        container.querySelector(
-            ".empty-chat"
-        );
-
-
-    if (empty) {
-
-        empty.remove();
-
-    }
-
-
-    const message =
-        document.createElement(
-            "div"
-        );
-
-
-    message.className =
-        role === "user"
-            ? "message user-message"
-            : "message ai-message";
-
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-            ${role === "user" ? "أ" : "🤖"}
-        </div>
-
-        <div class="message-content">
-            ${escapeHTML(content)}
-        </div>
-
-    `;
-
-
-    container.appendChild(
-        message
-    );
-
-
-    scrollChatToBottom();
-
-
-    if (save) {
-
-        state.currentChat.push({
-
-            role,
-
-            content
-
-        });
-
-
-        saveCurrentChat();
-
-    }
-
-
-    return message;
-
-}
-
-
-/* =========================================================
-   VISION IMAGE MESSAGE UI
-   ========================================================= */
-
-/*
-   عرض الصورة داخل المحادثة.
-
-   هذه الوظيفة لا ترسل الصورة إلى السيرفر.
-   وظيفتها فقط إظهار الصورة للمستخدم
-   داخل المحادثة قبل التحليل.
-*/
-
-function addImageMessageToUI(
-    imageData,
-    imageName = "الصورة"
-) {
-
-    const container =
-        $("chatMessages");
-
-
-    if (!container) return null;
-
-
-    const empty =
-        container.querySelector(
-            ".empty-chat"
-        );
-
-
-    if (empty) {
-
-        empty.remove();
-
-    }
-
-
-    const message =
-        document.createElement(
-            "div"
-        );
-
-
-    message.className =
-        "message user-message vision-image-message";
-
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-            أ
-        </div>
-
-        <div class="message-content">
-
-            <div
-                class="vision-image-wrapper"
-                style="
-                    max-width: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                "
-            >
-
-                <img
-                    src="${imageData}"
-                    alt="${escapeHTML(imageName)}"
-                    style="
-                        max-width: 100%;
-                        max-height: 420px;
-                        object-fit: contain;
-                        border-radius: 14px;
-                        display: block;
-                    "
-                >
-
-                <small
-                    style="
-                        opacity: 0.75;
-                        display: block;
-                    "
-                >
-                    📷 ${escapeHTML(imageName)}
-                </small>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    container.appendChild(
-        message
-    );
-
-
-    scrollChatToBottom();
-
-
-    return message;
-
-}
-
-
-/* =========================================================
-   VISION IMAGE PREVIEW
-   ========================================================= */
-
-/*
-   عرض الصورة المحددة وتجهيزها للإرسال.
-*/
-
-function prepareSelectedImage(
-    file
-) {
-
-    return new Promise(
-        (resolve, reject) => {
-
-            if (!file) {
-
-                reject(
-                    new Error(
-                        "لم يتم اختيار صورة."
-                    )
-                );
+            if (
+                window.innerWidth > 900
+            ) {
 
                 return;
 
@@ -1120,17 +745,1741 @@ function prepareSelectedImage(
 
 
             if (
-                !file.type ||
-                !file.type.startsWith(
-                    "image/"
+                sidebar.classList.contains(
+                    "open"
+                ) &&
+                !sidebar.contains(
+                    event.target
+                ) &&
+                !event.target.closest(
+                    "#mobileMenuBtn"
                 )
             ) {
 
-                reject(
-                    new Error(
-                        "الملف المحدد ليس صورة."
-                    )
+                closeMobileSidebar();
+
+            }
+
+        }
+    );
+
+}
+
+
+function toggleMobileSidebar() {
+
+    const sidebar =
+        getElement("sidebar");
+
+
+    if (!sidebar) {
+        return;
+    }
+
+
+    sidebar.classList.toggle(
+        "open"
+    );
+
+}
+
+
+function closeMobileSidebar() {
+
+    const sidebar =
+        getElement("sidebar");
+
+
+    if (!sidebar) {
+        return;
+    }
+
+
+    sidebar.classList.remove(
+        "open"
+    );
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function setupTheme() {
+
+    const themeBtn =
+        getElement("themeBtn");
+
+
+    const darkModeToggle =
+        getElement(
+            "darkModeToggle"
+        );
+
+
+    const savedTheme =
+        localStorage.getItem(
+            "geo_ai_theme"
+        );
+
+
+    if (
+        savedTheme === "dark"
+    ) {
+
+        document.body.classList.add(
+            "dark-mode"
+        );
+
+    }
+
+
+    updateThemeButton();
+
+
+    if (themeBtn) {
+
+        themeBtn.addEventListener(
+            "click",
+            toggleTheme
+        );
+
+    }
+
+
+    if (darkModeToggle) {
+
+        darkModeToggle.checked =
+            document.body.classList.contains(
+                "dark-mode"
+            );
+
+
+        darkModeToggle.addEventListener(
+            "change",
+            () => {
+
+                setTheme(
+                    darkModeToggle.checked
+                        ? "dark"
+                        : "light"
                 );
+
+            }
+        );
+
+    }
+
+}
+
+
+function toggleTheme() {
+
+    const isDark =
+        document.body.classList.contains(
+            "dark-mode"
+        );
+
+
+    setTheme(
+        isDark
+            ? "light"
+            : "dark"
+    );
+
+}
+
+
+function setTheme(theme) {
+
+    const isDark =
+        theme === "dark";
+
+
+    document.body.classList.toggle(
+        "dark-mode",
+        isDark
+    );
+
+
+    localStorage.setItem(
+        "geo_ai_theme",
+        isDark
+            ? "dark"
+            : "light"
+    );
+
+
+    const darkModeToggle =
+        getElement(
+            "darkModeToggle"
+        );
+
+
+    if (darkModeToggle) {
+
+        darkModeToggle.checked =
+            isDark;
+
+    }
+
+
+    updateThemeButton();
+
+}
+
+
+function updateThemeButton() {
+
+    const themeBtn =
+        getElement("themeBtn");
+
+
+    if (!themeBtn) {
+        return;
+    }
+
+
+    const isDark =
+        document.body.classList.contains(
+            "dark-mode"
+        );
+
+
+    themeBtn.textContent =
+        isDark
+            ? "☀️"
+            : "🌙";
+
+
+    themeBtn.title =
+        isDark
+            ? "الوضع الفاتح"
+            : "الوضع الليلي";
+
+}
+
+
+/* =========================================================
+   NEW CHAT
+========================================================= */
+
+function setupNewChat() {
+
+    const newChatBtn =
+        getElement(
+            "newChatBtn"
+        );
+
+
+    if (newChatBtn) {
+
+        newChatBtn.addEventListener(
+            "click",
+            newChat
+        );
+
+    }
+
+}
+
+
+function newChat() {
+
+    currentChatImage =
+        null;
+
+    currentChatFile =
+        null;
+
+    currentHomeImage =
+        null;
+
+    currentHomeFile =
+        null;
+
+    currentConversationId =
+        createConversationId();
+
+
+    const chatInput =
+        getElement("chatInput");
+
+
+    const homeChatInput =
+        getElement(
+            "homeChatInput"
+        );
+
+
+    const chatImageInput =
+        getElement(
+            "chatImageInput"
+        );
+
+
+    const chatFileInput =
+        getElement(
+            "chatFileInput"
+        );
+
+
+    const homeImageInput =
+        getElement(
+            "homeImageInput"
+        );
+
+
+    const homeFileInput =
+        getElement(
+            "homeFileInput"
+        );
+
+
+    if (chatInput) {
+
+        chatInput.value = "";
+
+    }
+
+
+    if (homeChatInput) {
+
+        homeChatInput.value = "";
+
+    }
+
+
+    if (chatImageInput) {
+
+        chatImageInput.value = "";
+
+    }
+
+
+    if (chatFileInput) {
+
+        chatFileInput.value = "";
+
+    }
+
+
+    if (homeImageInput) {
+
+        homeImageInput.value = "";
+
+    }
+
+
+    if (homeFileInput) {
+
+        homeFileInput.value = "";
+
+    }
+
+
+    resetChatMessages();
+
+
+    localStorage.removeItem(
+        "geo_ai_current_chat"
+    );
+
+
+    navigateTo("chat");
+
+
+    showNotification(
+        "تم إنشاء محادثة جديدة"
+    );
+
+}
+
+
+function createConversationId() {
+
+    return (
+        "chat_" +
+        Date.now() +
+        "_" +
+        Math.random()
+            .toString(36)
+            .substring(2, 9)
+    );
+
+}
+
+
+function resetChatMessages() {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    chatMessages.innerHTML = `
+
+        <div class="empty-chat">
+
+            <div class="empty-icon">
+                🤖
+            </div>
+
+            <h2>
+                GEO AI
+            </h2>
+
+            <p>
+                أنا جاهز أساعدك في المذاكرة
+                وGIS والبرمجة.
+            </p>
+
+            <div class="suggestions">
+
+                <button type="button">
+                    اشرحلي ArcGIS Pro
+                </button>
+
+                <button type="button">
+                    علمني Python
+                </button>
+
+                <button type="button">
+                    اشرحلي Remote Sensing
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    setupSuggestionButtons();
+
+}
+
+
+/* =========================================================
+   CHAT SUGGESTIONS
+========================================================= */
+
+function setupSuggestionButtons() {
+
+    const suggestions =
+        $$(".suggestions button");
+
+
+    suggestions.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const chatInput =
+                        getElement(
+                            "chatInput"
+                        );
+
+
+                    if (chatInput) {
+
+                        chatInput.value =
+                            button.textContent.trim();
+
+
+                        chatInput.focus();
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   TEXTAREA ENTER
+========================================================= */
+
+function setupTextareaEnter() {
+
+    const textareas =
+        $$(
+            "#chatInput, #homeChatInput, #gisInput, #codeInput"
+        );
+
+
+    textareas.forEach(
+        textarea => {
+
+            textarea.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key === "Enter" &&
+                        !event.shiftKey
+                    ) {
+
+                        event.preventDefault();
+
+
+                        if (
+                            textarea.id ===
+                            "chatInput"
+                        ) {
+
+                            sendChatMessage();
+
+                        } else if (
+                            textarea.id ===
+                            "homeChatInput"
+                        ) {
+
+                            sendHomeMessage();
+
+                        } else if (
+                            textarea.id ===
+                            "gisInput"
+                        ) {
+
+                            sendGISMessage();
+
+                        } else if (
+                            textarea.id ===
+                            "codeInput"
+                        ) {
+
+                            generateCode();
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   FILE READER
+========================================================= */
+
+async function readTextFile(file) {
+
+    if (!file) {
+        return "";
+    }
+
+
+    const name =
+        file.name.toLowerCase();
+
+
+    if (
+        name.endsWith(".txt")
+    ) {
+
+        return await file.text();
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   AI REQUEST
+========================================================= */
+
+async function callAI(
+    message,
+    options = {}
+) {
+
+    const payload = {
+
+        message:
+            message || "",
+
+        prompt:
+            message || "",
+
+        conversationId:
+            currentConversationId,
+
+        mode:
+            options.mode || "general",
+
+        language:
+            "ar",
+
+        webSearch:
+            Boolean(
+                options.webSearch
+            ),
+
+        context:
+            options.context || "",
+
+        fileName:
+            options.fileName || "",
+
+        fileContent:
+            options.fileContent || "",
+
+        image:
+            options.image || null
+
+    };
+
+
+    const response =
+        await fetch(
+            AI_API_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+            }
+        );
+
+
+    if (!response.ok) {
+
+        const errorText =
+            await response.text();
+
+
+        throw new Error(
+            errorText ||
+            `HTTP ${response.status}`
+        );
+
+    }
+
+
+    const data =
+        await response.json();
+
+
+    return extractAIText(
+        data
+    );
+
+}
+
+
+/* =========================================================
+   AI RESPONSE EXTRACTION
+========================================================= */
+
+function extractAIText(data) {
+
+    if (!data) {
+        return "";
+    }
+
+
+    if (
+        typeof data ===
+        "string"
+    ) {
+
+        return data;
+
+    }
+
+
+    const possibleFields = [
+
+        data.answer,
+
+        data.response,
+
+        data.message,
+
+        data.reply,
+
+        data.text,
+
+        data.content,
+
+        data.result,
+
+        data.output
+
+    ];
+
+
+    for (
+        const value of possibleFields
+    ) {
+
+        if (
+            typeof value ===
+            "string" &&
+            value.trim()
+        ) {
+
+            return value;
+
+        }
+
+    }
+
+
+    if (
+        data.choices &&
+        Array.isArray(
+            data.choices
+        ) &&
+        data.choices.length
+    ) {
+
+        const choice =
+            data.choices[0];
+
+
+        if (
+            choice.message &&
+            typeof choice.message.content ===
+                "string"
+        ) {
+
+            return choice.message.content;
+
+        }
+
+
+        if (
+            typeof choice.text ===
+                "string"
+        ) {
+
+            return choice.text;
+
+        }
+
+    }
+
+
+    return JSON.stringify(
+        data,
+        null,
+        2
+    );
+
+}
+
+
+/* =========================================================
+   MARKDOWN PARSER
+========================================================= */
+
+function formatAIResponse(text) {
+
+    if (!text) {
+        return "";
+    }
+
+
+    let value =
+        escapeHTML(text);
+
+
+    value =
+        value.replace(
+            /```([a-zA-Z0-9_+#.-]*)\n([\s\S]*?)```/g,
+            function (
+                match,
+                language,
+                code
+            ) {
+
+                const lang =
+                    language ||
+                    "code";
+
+
+                const encodedCode =
+                    encodeURIComponent(
+                        code
+                    );
+
+
+                return `
+
+                    <div class="geo-code-block">
+
+                        <div class="geo-code-header">
+
+                            <span>
+                                ${escapeHTML(lang)}
+                            </span>
+
+                            <button
+                                type="button"
+                                class="geo-copy-btn"
+                                data-code="${encodedCode}">
+
+                                📋 نسخ الكود
+
+                            </button>
+
+                        </div>
+
+                        <pre><code>${code}</code></pre>
+
+                    </div>
+
+                `;
+
+            }
+        );
+
+
+    value =
+        value.replace(
+            /`([^`]+)`/g,
+            "<code class=\"inline-code\">$1</code>"
+        );
+
+
+    value =
+        value.replace(
+            /^### (.*)$/gm,
+            "<h4>$1</h4>"
+        );
+
+
+    value =
+        value.replace(
+            /^## (.*)$/gm,
+            "<h3>$1</h3>"
+        );
+
+
+    value =
+        value.replace(
+            /^# (.*)$/gm,
+            "<h2>$1</h2>"
+        );
+
+
+    value =
+        value.replace(
+            /\*\*(.*?)\*\*/g,
+            "<strong>$1</strong>"
+        );
+
+
+    value =
+        value.replace(
+            /\*(.*?)\*/g,
+            "<em>$1</em>"
+        );
+
+
+    value =
+        value.replace(
+            /^[-•] (.*)$/gm,
+            "<li>$1</li>"
+        );
+
+
+    value =
+        value.replace(
+            /(<li>.*<\/li>)/gs,
+            "<ul>$1</ul>"
+        );
+
+
+    value =
+        value.replace(
+            /\n/g,
+            "<br>"
+        );
+
+
+    return value;
+
+}
+
+
+/* =========================================================
+   MESSAGE BUBBLES
+========================================================= */
+
+function addUserMessage(
+    message
+) {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    removeEmptyChat();
+
+
+    const messageElement =
+        document.createElement(
+            "div"
+        );
+
+
+    messageElement.className =
+        "chat-message user-message";
+
+
+    messageElement.innerHTML = `
+
+        <div class="message-avatar">
+            👤
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-role">
+                أنت
+            </div>
+
+            <div class="message-text">
+                ${escapeHTML(message)}
+            </div>
+
+        </div>
+
+    `;
+
+
+    chatMessages.appendChild(
+        messageElement
+    );
+
+
+    scrollChatToBottom();
+
+}
+
+
+function addAIMessage(
+    message
+) {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return;
+    }
+
+
+    removeEmptyChat();
+
+
+    const messageElement =
+        document.createElement(
+            "div"
+        );
+
+
+    messageElement.className =
+        "chat-message ai-message";
+
+
+    messageElement.innerHTML = `
+
+        <div class="message-avatar">
+            🤖
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-role">
+                GEO AI
+            </div>
+
+            <div class="message-text">
+                ${formatAIResponse(message)}
+            </div>
+
+        </div>
+
+    `;
+
+
+    chatMessages.appendChild(
+        messageElement
+    );
+
+
+    attachCodeCopyButtons(
+        messageElement
+    );
+
+
+    scrollChatToBottom();
+
+}
+
+
+function addLoadingMessage() {
+
+    const chatMessages =
+        getElement(
+            "chatMessages"
+        );
+
+
+    if (!chatMessages) {
+        return null;
+    }
+
+
+    removeEmptyChat();
+
+
+    const id =
+        "ai-loading-" +
+        Date.now();
+
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+
+    element.id =
+        id;
+
+
+    element.className =
+        "chat-message ai-message";
+
+
+    element.innerHTML = `
+
+        <div class="message-avatar">
+            🤖
+        </div>
+
+        <div class="message-content">
+
+            <div class="message-role">
+                GEO AI
+            </div>
+
+            <div class="message-text">
+
+                <span class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    chatMessages.appendChild(
+        element
+    );
+
+
+    scrollChatToBottom();
+
+
+    return id;
+
+}
+
+
+function removeLoadingMessage(
+    id
+) {
+
+    if (!id) {
+        return;
+    }
+
+
+    const element =
+        getElement(id);
+
+
+    if (element) {
+
+        element.remove();
+
+    }
+
+}
+
+
+/* =========================================================
+   CODE COPY
+========================================================= */
+
+function attachCodeCopyButtons(
+    container
+) {
+
+    if (!container) {
+        return;
+    }
+
+
+    const buttons =
+        container.querySelectorAll(
+            ".geo-copy-btn"
+        );
+
+
+    buttons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                async () => {
+
+                    try {
+
+                        const encoded =
+                            button.dataset.code ||
+                            "";
+
+
+                        const code =
+                            decodeURIComponent(
+                                encoded
+                            );
+
+
+                        await copyText(
+                            code
+                        );
+
+
+                        button.textContent =
+                            "✓ تم النسخ";
+
+
+                        setTimeout(
+                            () => {
+
+                                button.textContent =
+                                    "📋 نسخ الكود";
+
+                            },
+                            1500
+                        );
+
+                    } catch (error) {
+
+                        showNotification(
+                            "تعذر نسخ الكود",
+                            "error"
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+async function copyText(
+    text
+) {
+
+    if (
+        navigator.clipboard &&
+        window.isSecureContext
+    ) {
+
+        await navigator.clipboard.writeText(
+            text
+        );
+
+        return;
+
+    }
+
+
+    const textarea =
+        document.createElement(
+            "textarea"
+        );
+
+
+    textarea.value =
+        text;
+
+
+    textarea.style.position =
+        "fixed";
+
+
+    textarea.style.opacity =
+        "0";
+
+
+    document.body.appendChild(
+        textarea
+    );
+
+
+    textarea.select();
+
+
+    document.execCommand(
+        "copy"
+    );
+
+
+    textarea.remove();
+
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+function setupChat() {
+
+    const chatSendBtn =
+        getElement(
+            "chatSendBtn"
+        );
+
+
+    const homeSendBtn =
+        getElement(
+            "homeSendBtn"
+        );
+
+
+    const gisSendBtn =
+        getElement(
+            "gisSendBtn"
+        );
+
+
+    const codeSendBtn =
+        getElement(
+            "codeSendBtn"
+        );
+
+
+    if (chatSendBtn) {
+
+        chatSendBtn.addEventListener(
+            "click",
+            sendChatMessage
+        );
+
+    }
+
+
+    if (homeSendBtn) {
+
+        homeSendBtn.addEventListener(
+            "click",
+            sendHomeMessage
+        );
+
+    }
+
+
+    if (gisSendBtn) {
+
+        gisSendBtn.addEventListener(
+            "click",
+            sendGISMessage
+        );
+
+    }
+
+
+    if (codeSendBtn) {
+
+        codeSendBtn.addEventListener(
+            "click",
+            generateCode
+        );
+
+    }
+
+
+    setupChatFileInputs();
+
+}
+
+
+/* =========================================================
+   CHAT FILE INPUTS
+========================================================= */
+
+function setupChatFileInputs() {
+
+    const chatImageInput =
+        getElement(
+            "chatImageInput"
+        );
+
+
+    const chatFileInput =
+        getElement(
+            "chatFileInput"
+        );
+
+
+    const homeImageInput =
+        getElement(
+            "homeImageInput"
+        );
+
+
+    const homeFileInput =
+        getElement(
+            "homeFileInput"
+        );
+
+
+    if (chatImageInput) {
+
+        chatImageInput.addEventListener(
+            "change",
+            event => {
+
+                const file =
+                    event.target.files[0];
+
+
+                currentChatImage =
+                    file || null;
+
+
+                if (file) {
+
+                    showNotification(
+                        "تم اختيار الصورة: " +
+                        file.name
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (chatFileInput) {
+
+        chatFileInput.addEventListener(
+            "change",
+            event => {
+
+                const file =
+                    event.target.files[0];
+
+
+                currentChatFile =
+                    file || null;
+
+
+                if (file) {
+
+                    showNotification(
+                        "تم اختيار الملف: " +
+                        file.name
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (homeImageInput) {
+
+        homeImageInput.addEventListener(
+            "change",
+            event => {
+
+                const file =
+                    event.target.files[0];
+
+
+                currentHomeImage =
+                    file || null;
+
+
+                if (file) {
+
+                    showNotification(
+                        "تم اختيار الصورة: " +
+                        file.name
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    if (homeFileInput) {
+
+        homeFileInput.addEventListener(
+            "change",
+            event => {
+
+                const file =
+                    event.target.files[0];
+
+
+                currentHomeFile =
+                    file || null;
+
+
+                if (file) {
+
+                    showNotification(
+                        "تم اختيار الملف: " +
+                        file.name
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CHAT SEND
+========================================================= */
+
+async function sendChatMessage() {
+
+    if (isSendingMessage) {
+        return;
+    }
+
+
+    const input =
+        getElement(
+            "chatInput"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    const message =
+        input.value.trim();
+
+
+    if (
+        !message &&
+        !currentChatImage &&
+        !currentChatFile
+    ) {
+
+        showNotification(
+            "اكتب رسالة أولاً",
+            "warning"
+        );
+
+
+        return;
+
+    }
+
+
+    isSendingMessage =
+        true;
+
+
+    input.value =
+        "";
+
+
+    let fileContent =
+        "";
+
+
+    if (currentChatFile) {
+
+        fileContent =
+            await readTextFile(
+                currentChatFile
+            );
+
+    }
+
+
+    const imageData =
+        currentChatImage
+            ? await fileToDataURL(
+                currentChatImage
+            )
+            : null;
+
+
+    const finalMessage =
+        message ||
+        (
+            currentChatImage
+                ? "حلل الصورة المرفقة."
+                : "حلل الملف المرفق."
+        );
+
+
+    addUserMessage(
+        finalMessage
+    );
+
+
+    const loadingId =
+        addLoadingMessage();
+
+
+    try {
+
+        const answer =
+            await callAI(
+                finalMessage,
+                {
+                    mode:
+                        "general",
+
+                    image:
+                        imageData,
+
+                    fileName:
+                        currentChatFile
+                            ? currentChatFile.name
+                            : "",
+
+                    fileContent:
+                        fileContent
+                }
+            );
+
+
+        removeLoadingMessage(
+            loadingId
+        );
+
+
+        addAIMessage(
+            answer ||
+            "لم أستطع الحصول على إجابة."
+        );
+
+
+        saveChatLocally(
+            finalMessage,
+            answer
+        );
+
+
+        currentChatImage =
+            null;
+
+
+        currentChatFile =
+            null;
+
+
+    } catch (error) {
+
+        console.error(
+            "Chat error:",
+            error
+        );
+
+
+        removeLoadingMessage(
+            loadingId
+        );
+
+
+        addAIMessage(
+            "حدث خطأ أثناء الاتصال بـ GEO AI.\n\n" +
+            "تأكد من اتصال الإنترنت ثم حاول مرة أخرى."
+        );
+
+
+        showNotification(
+            "حدث خطأ في الاتصال",
+            "error"
+        );
+
+    } finally {
+
+        isSendingMessage =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   HOME SEND
+========================================================= */
+
+async function sendHomeMessage() {
+
+    const input =
+        getElement(
+            "homeChatInput"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    const message =
+        input.value.trim();
+
+
+    if (
+        !message &&
+        !currentHomeImage &&
+        !currentHomeFile
+    ) {
+
+        showNotification(
+            "اكتب سؤالك أولاً",
+            "warning"
+        );
+
+
+        return;
+
+    }
+
+
+    navigateTo("chat");
+
+
+    const chatInput =
+        getElement(
+            "chatInput"
+        );
+
+
+    if (chatInput) {
+
+        chatInput.value =
+            message;
+
+    }
+
+
+    currentChatImage =
+        currentHomeImage;
+
+
+    currentChatFile =
+        currentHomeFile;
+
+
+    currentHomeImage =
+        null;
+
+
+    currentHomeFile =
+        null;
+
+
+    input.value =
+        "";
+
+
+    await sendChatMessage();
+
+}
+
+
+/* =========================================================
+   FILE TO DATA URL
+========================================================= */
+
+function fileToDataURL(
+    file
+) {
+
+    return new Promise(
+        (
+            resolve,
+            reject
+        ) => {
+
+            if (!file) {
+
+                resolve(null);
 
                 return;
 
@@ -1141,42 +2490,24 @@ function prepareSelectedImage(
                 new FileReader();
 
 
-            reader.onload = () => {
+            reader.onload =
+                () => {
 
-                const result =
-                    reader.result;
-
-
-                if (
-                    typeof result !==
-                    "string"
-                ) {
-
-                    reject(
-                        new Error(
-                            "تعذر قراءة الصورة."
-                        )
+                    resolve(
+                        reader.result
                     );
 
-                    return;
-
-                }
+                };
 
 
-                resolve(result);
+            reader.onerror =
+                () => {
 
-            };
+                    reject(
+                        reader.error
+                    );
 
-
-            reader.onerror = () => {
-
-                reject(
-                    new Error(
-                        "حدث خطأ أثناء قراءة الصورة."
-                    )
-                );
-
-            };
+                };
 
 
             reader.readAsDataURL(
@@ -1190,1050 +2521,39 @@ function prepareSelectedImage(
 
 
 /* =========================================================
-   SET SELECTED IMAGE
-   ========================================================= */
-
-/*
-   حفظ الصورة الحالية في State
-   وعرضها داخل المحادثة.
-*/
-
-async function setSelectedImage(
-    file
-) {
-
-    if (!file) return;
-
-
-    try {
-
-        const imageData =
-            await prepareSelectedImage(
-                file
-            );
-
-
-        state.selectedImage =
-            file;
-
-        state.selectedImageData =
-            imageData;
-
-        state.selectedImageName =
-            file.name;
-
-
-        /*
-           الانتقال إلى المحادثة
-           حتى يرى المستخدم الصورة.
-        */
-
-        openSection(
-            "chat"
-        );
-
-
-        /*
-           عرض الصورة داخل المحادثة
-        */
-
-        addImageMessageToUI(
-
-            imageData,
-
-            file.name
-
-        );
-
-
-        showNotification(
-
-            `تم تجهيز الصورة: ${file.name}`,
-
-            "📷"
-
-        );
-
-
-        /*
-           وضع المؤشر في خانة السؤال
-        */
-
-        const chatInput =
-            $("chatInput");
-
-
-        if (chatInput) {
-
-            setTimeout(
-                () => {
-
-                    chatInput.focus();
-
-                },
-                100
-            );
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Image preparation error:",
-            error
-        );
-
-
-        showNotification(
-
-            error.message ||
-            "تعذر تجهيز الصورة",
-
-            "!"
-
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CLEAR SELECTED IMAGE
-   ========================================================= */
-
-function clearSelectedImage() {
-
-    state.selectedImage =
-        null;
-
-    state.selectedImageData =
-        null;
-
-    state.selectedImageName =
-        null;
-
-
-    /*
-       تفريغ حقول الصور
-       حتى يمكن اختيار نفس الصورة
-       مرة أخرى إذا أراد المستخدم.
-    */
-
-    const homeImageInput =
-        $("homeImageInput");
-
-
-    const chatImageInput =
-        $("chatImageInput");
-
-
-    if (homeImageInput) {
-
-        homeImageInput.value =
-            "";
-
-    }
-
-
-    if (chatImageInput) {
-
-        chatImageInput.value =
-            "";
-
-    }
-
-}
-
-
-/* =========================================================
-   AI REQUEST
-   ========================================================= */
-
-async function askAI(message) {
-
-    const response =
-        await fetch(
-
-            AI_API_URL,
-
-            {
-
-                method:
-                    "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        message:
-                            message
-
-                    })
-
-            }
-
-        );
-
-
-    let data;
-
-
-    try {
-
-        data =
-            await response.json();
-
-    } catch (error) {
-
-        throw new Error(
-            "السيرفر لم يرجع بيانات صحيحة."
-        );
-
-    }
-
-
-    if (!response.ok) {
-
-        throw new Error(
-
-            data?.error ||
-
-            "حدث خطأ في الاتصال بالسيرفر."
-
-        );
-
-    }
-
-
-    if (!data.success) {
-
-        throw new Error(
-
-            data?.error ||
-
-            "تعذر الحصول على إجابة."
-
-        );
-
-    }
-
-
-    return (
-
-        data.response ||
-
-        data.answer ||
-
-        data.text ||
-
-        ""
-
-    );
-
-}
-
-
-/* =========================================================
-   VISION REQUEST
-   ========================================================= */
-
-/*
-   إرسال الصورة + سؤال المستخدم
-   إلى Cloudflare Worker Vision.
-*/
-
-async function askVision(
-    message,
-    imageData
-) {
-
-    if (!imageData) {
-
-        throw new Error(
-            "لم يتم تجهيز الصورة."
-        );
-
-    }
-
-
-    const response =
-        await fetch(
-
-            AI_VISION_API_URL,
-
-            {
-
-                method:
-                    "POST",
-
-                headers: {
-
-                    "Content-Type":
-                        "application/json"
-
-                },
-
-                body:
-                    JSON.stringify({
-
-                        message:
-                            message ||
-                            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.",
-
-                        image:
-                            imageData
-
-                    })
-
-            }
-
-        );
-
-
-    let data;
-
-
-    try {
-
-        data =
-            await response.json();
-
-    } catch (error) {
-
-        throw new Error(
-            "سيرفر Vision لم يرجع بيانات صحيحة."
-        );
-
-    }
-
-
-    if (!response.ok) {
-
-        throw new Error(
-
-            data?.error ||
-
-            "حدث خطأ أثناء الاتصال بخدمة Vision."
-
-        );
-
-    }
-
-
-    if (!data.success) {
-
-        throw new Error(
-
-            data?.error ||
-
-            "تعذر تحليل الصورة."
-
-        );
-
-    }
-
-
-    return (
-
-        data.response ||
-
-        data.answer ||
-
-        data.text ||
-
-        ""
-
-    );
-
-}
-
-
-/* =========================================================
-   SEND CHAT
-   ========================================================= */
-
-async function sendChatMessage(text) {
-
-    text =
-        String(
-            text || ""
-        ).trim();
-
-
-    /*
-       معرفة هل هناك صورة معلقة
-    */
-
-    const hasImage =
-        !!state.selectedImageData;
-
-
-    /*
-       إذا لم يوجد نص ولا صورة
-    */
-
-    if (
-        !text &&
-        !hasImage
-    ) {
-
-        return;
-
-    }
-
-
-    const input =
-        $("chatInput");
-
-
-    if (input) {
-
-        input.value = "";
-
-    }
-
-
-    /*
-       إذا كانت هناك صورة
-       ولم يكتب المستخدم سؤالًا
-       نستخدم سؤالًا افتراضيًا.
-    */
-
-    if (
-        hasImage &&
-        !text
-    ) {
-
-        text =
-            "حلل هذه الصورة بالتفصيل واشرح لي ما الذي يظهر فيها.";
-
-    }
-
-
-    /*
-       إضافة سؤال المستخدم
-       فقط إذا كتب نصًا.
-    */
-
-    if (text) {
-
-        addMessageToUI(
-
-            "user",
-
-            text
-
-        );
-
-    }
-
-
-    /*
-       رسالة التحميل
-    */
-
-    const loadingMessage =
-        addMessageToUI(
-
-            "assistant",
-
-            hasImage
-                ? "🖼️ جاري تحليل الصورة..."
-                : "🤖 جاري التفكير...",
-
-            false
-
-        );
-
-
-    /*
-       حفظ نسخة من الصورة
-       قبل تنفيذ الطلب.
-    */
-
-    const imageDataToSend =
-        state.selectedImageData;
-
-
-    /*
-       اسم الصورة الحالي
-    */
-
-    const imageNameToSend =
-        state.selectedImageName;
-
-
-    try {
-
-        let answer;
-
-
-        /*
-           =========================================
-           VISION
-           =========================================
-        */
-
-        if (hasImage) {
-
-            answer =
-                await askVision(
-
-                    text,
-
-                    imageDataToSend
-
-                );
-
-        }
-
-        /*
-           =========================================
-           CHAT
-           =========================================
-        */
-
-        else {
-
-            /*
-               طلب الرد من Worker
-            */
-
-            answer =
-                await askAI(
-                    text
-                );
-
-        }
-
-
-        /*
-           تحديث رسالة التحميل
-        */
-
-        if (loadingMessage) {
-
-            const content =
-                loadingMessage.querySelector(
-                    ".message-content"
-                );
-
-
-            if (content) {
-
-                content.textContent =
-                    answer ||
-                    (
-                        hasImage
-                            ? "لم يصل تحليل للصورة."
-                            : "لم تصل إجابة."
-                    );
-
-            }
-
-        }
-
-
-        /*
-           حفظ رد AI محليًا
-        */
-
-        state.currentChat.push({
-
-            role:
-                "assistant",
-
-            content:
-                answer ||
-                (
-                    hasImage
-                        ? "لم يصل تحليل للصورة."
-                        : "لم تصل إجابة."
-                )
-
-        });
-
-
-        saveCurrentChat();
-
-
-        scrollChatToBottom();
-
-
-        /*
-           =========================================
-           حفظ المحادثة في Firebase
-           =========================================
-
-           بالنسبة للـVision:
-           نحفظ السؤال والرد فقط.
-           الصورة نفسها لا يتم تخزينها في Firestore
-           هنا حتى لا نضع Data URL كبيرة داخل قاعدة
-           البيانات.
-        */
-
-        await saveChatToFirebase(
-
-            hasImage
-                ? (
-                    `📷 ${imageNameToSend || "صورة"}\n\n` +
-                    text
-                )
-                : text,
-
-            answer ||
-            (
-                hasImage
-                    ? "لم يصل تحليل للصورة."
-                    : "لم تصل إجابة."
-            )
-
-        );
-
-
-        /*
-           بعد انتهاء التحليل
-           نلغي الصورة المعلقة.
-        */
-
-        if (hasImage) {
-
-            clearSelectedImage();
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "AI Error:",
-            error
-        );
-
-
-        if (loadingMessage) {
-
-            const content =
-                loadingMessage.querySelector(
-                    ".message-content"
-                );
-
-
-            if (content) {
-
-                content.textContent =
-                    "❌ " +
-                    error.message;
-
-            }
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   CHAT EVENTS
-   ========================================================= */
-
-function setupChat() {
-
-    const sendButton =
-        $("chatSendBtn");
-
-
-    const input =
-        $("chatInput");
-
-
-    if (
-        sendButton &&
-        input
-    ) {
-
-        sendButton.addEventListener(
-            "click",
-            () => {
-
-                sendChatMessage(
-                    input.value
-                );
-
-            }
-        );
-
-
-        input.addEventListener(
-            "keydown",
-            (event) => {
-
-                if (
-
-                    event.key ===
-                        "Enter" &&
-
-                    !event.shiftKey
-
-                ) {
-
-                    event.preventDefault();
-
-
-                    sendChatMessage(
-                        input.value
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    const homeSendButton =
-        $("homeSendBtn");
-
-
-    const homeInput =
-        $("homeChatInput");
-
-
-    if (
-        homeSendButton &&
-        homeInput
-    ) {
-
-        homeSendButton.addEventListener(
-            "click",
-            () => {
-
-                const text =
-                    homeInput.value.trim();
-
-
-                /*
-                   لو توجد صورة مختارة
-                   ننتقل للمحادثة ونرسلها
-                   مع السؤال.
-                */
-
-                if (
-                    state.selectedImageData
-                ) {
-
-                    homeInput.value =
-                        "";
-
-
-                    openSection(
-                        "chat"
-                    );
-
-
-                    sendChatMessage(
-                        text
-                    );
-
-
-                    return;
-
-                }
-
-
-                if (!text) return;
-
-
-                homeInput.value =
-                    "";
-
-
-                openSection(
-                    "chat"
-                );
-
-
-                sendChatMessage(
-                    text
-                );
-
-            }
-        );
-
-
-        homeInput.addEventListener(
-            "keydown",
-            (event) => {
-
-                if (
-
-                    event.key ===
-                        "Enter" &&
-
-                    !event.shiftKey
-
-                ) {
-
-                    event.preventDefault();
-
-
-                    const text =
-                        homeInput.value.trim();
-
-
-                    /*
-                       لو توجد صورة مختارة
-                    */
-
-                    if (
-                        state.selectedImageData
-                    ) {
-
-                        homeInput.value =
-                            "";
-
-
-                        openSection(
-                            "chat"
-                        );
-
-
-                        sendChatMessage(
-                            text
-                        );
-
-
-                        return;
-
-                    }
-
-
-                    if (!text) return;
-
-
-                    homeInput.value =
-                        "";
-
-
-                    openSection(
-                        "chat"
-                    );
-
-
-                    sendChatMessage(
-                        text
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    setupSuggestionButtons();
-
-}
-
-
-/* =========================================================
-   SUGGESTIONS
-   ========================================================= */
-
-function setupSuggestionButtons() {
-
-    document
-        .querySelectorAll(
-            ".suggestions button"
-        )
-        .forEach((button) => {
-
-            button.onclick = () => {
-
-                const text =
-                    button.textContent.trim();
-
-
-                const input =
-                    $("chatInput");
-
-
-                if (input) {
-
-                    input.value =
-                        text;
-
-                }
-
-
-                openSection(
-                    "chat"
-                );
-
-
-                sendChatMessage(
-                    text
-                );
-
-            };
-
-        });
-
-}
-
-
-/* =========================================================
    GIS
-   ========================================================= */
+========================================================= */
 
 function setupGIS() {
 
-    document
-        .querySelectorAll(
-            ".subject-card"
-        )
-        .forEach((card) => {
+    const subjectCards =
+        $$(".subject-card");
+
+
+    subjectCards.forEach(
+        card => {
 
             card.addEventListener(
                 "click",
                 () => {
 
                     const topic =
-                        card.dataset.topic;
+                        card.dataset.topic ||
+                        card.textContent.trim();
 
 
                     const input =
-                        $("gisInput");
-
-
-                    if (!input) return;
-
-
-                    input.value =
-
-                        `اشرحلي ${topic} بالتفصيل وبطريقة مناسبة لطالب GIS، مع أمثلة عملية.`;
-
-
-                    input.focus();
-
-                }
-            );
-
-        });
-
-
-    const button =
-        $("gisSendBtn");
-
-
-    if (button) {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const input =
-                    $("gisInput");
-
-
-                if (!input) return;
-
-
-                const text =
-                    input.value.trim();
-
-
-                if (!text) {
-
-                    showNotification(
-                        "اكتب سؤالك أولاً",
-                        "!"
-                    );
-
-
-                    return;
-
-                }
-
-
-                openSection(
-                    "chat"
-                );
-
-
-                sendChatMessage(
-
-                    `أنت مساعد متخصص في GIS والاستشعار عن بعد والمساحة.\n\n${text}`
-
-                );
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   CODING
-   ========================================================= */
-
-function setupCoding() {
-
-    document
-        .querySelectorAll(
-            ".language-card"
-        )
-        .forEach((card) => {
-
-            card.addEventListener(
-                "click",
-                () => {
-
-                    state.selectedCodingLanguage =
-                        card.dataset.language ||
-                        "Python";
-
-
-                    document
-                        .querySelectorAll(
-                            ".language-card"
-                        )
-                        .forEach((item) => {
-
-                            item.classList.remove(
-                                "selected"
-                            );
-
-                        });
-
-
-                    card.classList.add(
-                        "selected"
-                    );
-
-
-                    const input =
-                        $("codeInput");
+                        getElement(
+                            "gisInput"
+                        );
 
 
                     if (input) {
 
-                        input.placeholder =
-
-                            `مثال: اكتبلي ${state.selectedCodingLanguage} code...`;
+                        input.value =
+                            "اشرحلي " +
+                            topic +
+                            " بالتفصيل وبطريقة عملية للمبتدئ.";
 
 
                         input.focus();
@@ -2243,130 +2563,151 @@ function setupCoding() {
                 }
             );
 
-        });
+        }
+    );
+
+}
 
 
-    const button =
-        $("codeSendBtn");
+async function sendGISMessage() {
+
+    const input =
+        getElement(
+            "gisInput"
+        );
 
 
-    if (button) {
-
-        button.addEventListener(
-            "click",
-            async () => {
-
-                const input =
-                    $("codeInput");
+    if (!input) {
+        return;
+    }
 
 
-                const output =
-                    $("codeOutput");
+    const message =
+        input.value.trim();
 
 
-                if (
-                    !input ||
-                    !output
-                ) return;
+    if (!message) {
+
+        showNotification(
+            "اكتب سؤالك في GIS أولاً",
+            "warning"
+        );
 
 
-                const request =
-                    input.value.trim();
+        return;
+
+    }
 
 
-                if (!request) {
+    input.value =
+        "";
 
-                    showNotification(
-                        "اكتب المطلوب من AI أولاً",
-                        "!"
+
+    navigateTo("chat");
+
+
+    const chatInput =
+        getElement(
+            "chatInput"
+        );
+
+
+    if (chatInput) {
+
+        chatInput.value =
+            message;
+
+    }
+
+
+    await sendChatMessage();
+
+}
+
+
+/* =========================================================
+   CODING
+========================================================= */
+
+function setupCoding() {
+
+    const languageCards =
+        $$(".language-card");
+
+
+    languageCards.forEach(
+        card => {
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    selectedCodingLanguage =
+                        card.dataset.language ||
+                        "Python";
+
+
+                    languageCards.forEach(
+                        item => {
+
+                            item.classList.remove(
+                                "active"
+                            );
+
+                        }
                     );
 
 
-                    return;
-
-                }
-
-
-                output.textContent =
-                    "🤖 جاري إنشاء الكود...";
+                    card.classList.add(
+                        "active"
+                    );
 
 
-                try {
-
-                    const answer =
-                        await askAI(
-
-                            `أنت مساعد برمجة متخصص.\n` +
-
-                            `لغة البرمجة: ${state.selectedCodingLanguage}\n\n` +
-
-                            `المطلوب:\n${request}\n\n` +
-
-                            `اكتب كودًا عمليًا مع شرح مختصر.`
-
+                    const input =
+                        getElement(
+                            "codeInput"
                         );
 
 
-                    output.textContent =
-                        answer ||
-                        "لم يتم إنشاء الكود.";
+                    if (input) {
 
-                } catch (error) {
+                        input.placeholder =
+                            "مثال: اكتبلي كود " +
+                            selectedCodingLanguage +
+                            " ...";
 
-                    output.textContent =
-                        "❌ " +
-                        error.message;
+
+                        input.focus();
+
+                    }
 
                 }
+            );
 
-            }
+        }
+    );
+
+
+    const copyCodeBtn =
+        getElement(
+            "copyCodeBtn"
+        );
+
+
+    if (copyCodeBtn) {
+
+        copyCodeBtn.addEventListener(
+            "click",
+            copyGeneratedCode
         );
 
     }
 
 
-    const copyButton =
-        $("copyCodeBtn");
+    if (languageCards.length) {
 
-
-    if (copyButton) {
-
-        copyButton.addEventListener(
-            "click",
-            async () => {
-
-                const output =
-                    $("codeOutput");
-
-
-                if (!output) return;
-
-
-                try {
-
-                    await navigator
-                        .clipboard
-                        .writeText(
-                            output.textContent
-                        );
-
-
-                    showNotification(
-                        "تم نسخ الكود",
-                        "✓"
-                    );
-
-
-                } catch {
-
-                    showNotification(
-                        "تعذر نسخ الكود",
-                        "!"
-                    );
-
-                }
-
-            }
+        languageCards[0].classList.add(
+            "active"
         );
 
     }
@@ -2375,16 +2716,227 @@ function setupCoding() {
 
 
 /* =========================================================
+   GENERATE CODE
+========================================================= */
+
+async function generateCode() {
+
+    if (isGeneratingCode) {
+        return;
+    }
+
+
+    const input =
+        getElement(
+            "codeInput"
+        );
+
+
+    if (!input) {
+        return;
+    }
+
+
+    const request =
+        input.value.trim();
+
+
+    if (!request) {
+
+        showNotification(
+            "اكتب المطلوب من الكود أولاً",
+            "warning"
+        );
+
+
+        return;
+
+    }
+
+
+    isGeneratingCode =
+        true;
+
+
+    const output =
+        getElement(
+            "codeOutput"
+        );
+
+
+    if (output) {
+
+        output.innerHTML =
+            "جاري إنشاء الكود...";
+
+    }
+
+
+    try {
+
+        const prompt = `
+
+أنت مساعد برمجة محترف داخل GEO AI.
+
+لغة البرمجة المطلوبة:
+${selectedCodingLanguage}
+
+طلب المستخدم:
+${request}
+
+المطلوب:
+
+1. أعطني الكود جاهزًا للنسخ.
+2. ضع الكود داخل code block.
+3. اكتب اسم اللغة بعد علامات ``` مباشرة.
+4. لا تضع شرحًا داخل صندوق الكود.
+5. بعد الكود اكتب شرحًا مختصرًا وواضحًا.
+6. إذا كان الطلب متعلقًا بـ GIS فاستخدم ArcPy عند الحاجة.
+7. لا تختصر الكود المطلوب.
+8. إذا كان هناك أكثر من ملف أو أكثر من جزء للكود، افصلهم في code blocks واضحة.
+
+`;
+
+
+        const answer =
+            await callAI(
+                prompt,
+                {
+                    mode:
+                        "coding",
+
+                    context:
+                        "Programming assistant. Focus on clean copy-ready code."
+                }
+            );
+
+
+        if (output) {
+
+            output.innerHTML =
+                formatAIResponse(
+                    answer
+                );
+
+
+            attachCodeCopyButtons(
+                output
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Code generation error:",
+            error
+        );
+
+
+        if (output) {
+
+            output.textContent =
+                "حدث خطأ أثناء إنشاء الكود.";
+
+        }
+
+
+        showNotification(
+            "حدث خطأ أثناء إنشاء الكود",
+            "error"
+        );
+
+    } finally {
+
+        isGeneratingCode =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   COPY GENERATED CODE
+========================================================= */
+
+async function copyGeneratedCode() {
+
+    const output =
+        getElement(
+            "codeOutput"
+        );
+
+
+    if (!output) {
+        return;
+    }
+
+
+    const codeBlocks =
+        output.querySelectorAll(
+            "pre code"
+        );
+
+
+    if (codeBlocks.length) {
+
+        let allCode = "";
+
+
+        codeBlocks.forEach(
+            block => {
+
+                allCode +=
+                    block.textContent +
+                    "\n\n";
+
+            }
+        );
+
+
+        await copyText(
+            allCode.trim()
+        );
+
+
+        showNotification(
+            "تم نسخ الكود"
+        );
+
+
+        return;
+
+    }
+
+
+    await copyText(
+        output.innerText
+    );
+
+
+    showNotification(
+        "تم النسخ"
+    );
+
+}
+
+
+/* =========================================================
    STUDY
-   ========================================================= */
+========================================================= */
 
 function setupStudy() {
 
-    document
-        .querySelectorAll(
+    const studyButtons =
+        $$(
             "[data-study-action]"
-        )
-        .forEach((button) => {
+        );
+
+
+    studyButtons.forEach(
+        button => {
 
             button.addEventListener(
                 "click",
@@ -2394,102 +2946,8 @@ function setupStudy() {
                         button.dataset.studyAction;
 
 
-                    const prompts = {
-
-                        explain:
-                            "اشرحلي الدرس بطريقة بسيطة جدًا، ثم أعطني أمثلة وأسئلة للتأكد من الفهم.",
-
-                        summary:
-                            "لخص لي الموضوع في نقاط منظمة ومهمة للمذاكرة والامتحان.",
-
-                        questions:
-                            "أنشئ لي أسئلة تدريبية متنوعة عن الموضوع مع الإجابات.",
-
-                        exam:
-                            "اختبرني في الموضوع بأسئلة واحدة واحدة، وانتظر إجابتي قبل السؤال التالي."
-
-                    };
-
-
-                    openSection(
-                        "chat"
-                    );
-
-
-                    const input =
-                        $("chatInput");
-
-
-                    if (input) {
-
-                        input.value =
-                            prompts[action] ||
-                            "ساعدني في المذاكرة.";
-
-
-                        input.focus();
-
-                    }
-
-                }
-            );
-
-        });
-
-}
-
-
-/* =========================================================
-   FILES
-   ========================================================= */
-
-function setupFiles() {
-
-    const inputs = [
-
-        $("mainFileInput"),
-
-        $("studyFileInput"),
-
-        $("homeFileInput"),
-
-        $("chatFileInput")
-
-    ];
-
-
-    inputs.forEach(
-        (input) => {
-
-            if (!input) return;
-
-
-            input.addEventListener(
-                "change",
-                () => {
-
-                    const file =
-                        input.files?.[0];
-
-
-                    if (!file) return;
-
-
-                    state.selectedFile =
-                        file;
-
-
-                    addFileToList(
-                        file
-                    );
-
-
-                    showNotification(
-
-                        `تم اختيار الملف: ${file.name}`,
-
-                        "✓"
-
+                    handleStudyAction(
+                        action
                     );
 
                 }
@@ -2498,651 +2956,2000 @@ function setupFiles() {
         }
     );
 
-}
 
-
-function addFileToList(file) {
-
-    const list =
-        $("filesList");
-
-
-    if (!list) return;
-
-
-    const empty =
-        list.querySelector(
-            ".empty-files"
+    const studyFileInput =
+        getElement(
+            "studyFileInput"
         );
 
 
-    if (empty) {
+    if (studyFileInput) {
 
-        empty.remove();
+        studyFileInput.addEventListener(
+            "change",
+            event => {
+
+                currentStudyFile =
+                    event.target.files[0] ||
+                    null;
+
+
+                if (
+                    currentStudyFile
+                ) {
+
+                    showNotification(
+                        "تم اختيار ملف المذاكرة"
+                    );
+
+                    navigateTo("chat");
+
+
+                    const chatInput =
+                        getElement(
+                            "chatInput"
+                        );
+
+
+                    if (chatInput) {
+
+                        chatInput.value =
+                            "حلل الملف المرفق واشرح محتواه لي بطريقة بسيطة.";
+
+                    }
+
+
+                    currentChatFile =
+                        currentStudyFile;
+
+
+                    sendChatMessage();
+
+                }
+
+            }
+        );
 
     }
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "file-item";
-
-
-    item.innerHTML = `
-
-        <div class="file-icon">
-            📄
-        </div>
-
-        <div class="file-info">
-
-            <strong>
-                ${escapeHTML(file.name)}
-            </strong>
-
-            <small>
-                ${formatFileSize(file.size)}
-            </small>
-
-        </div>
-
-    `;
-
-
-    list.appendChild(
-        item
-    );
 
 }
 
 
-function formatFileSize(bytes) {
+function handleStudyAction(
+    action
+) {
 
-    if (!bytes) {
-        return "0 KB";
-    }
+    const prompts = {
+
+        explain:
+            "اشرح لي الموضوع أو المحاضرة التي سأرسلها بالتفصيل وبطريقة بسيطة ومنظمة.",
+
+        summary:
+            "لخص لي المحتوى الذي سأرسله في نقاط واضحة ومنظمة مع أهم المصطلحات.",
+
+        questions:
+            "أنشئ لي أسئلة تدريبية متنوعة من المحتوى الذي سأرسله مع الإجابات.",
+
+        exam:
+            "أنشئ لي اختبارًا تدريبيًا من المحتوى الذي سأرسله."
+
+    };
 
 
-    const units = [
-
-        "B",
-
-        "KB",
-
-        "MB",
-
-        "GB"
-
-    ];
+    navigateTo("chat");
 
 
-    const index =
-        Math.floor(
-
-            Math.log(bytes) /
-            Math.log(1024)
-
+    const chatInput =
+        getElement(
+            "chatInput"
         );
 
 
-    return (
+    if (chatInput) {
 
-        (
+        chatInput.value =
+            prompts[action] ||
+            "ساعدني في مذاكرة هذا الموضوع.";
 
-            bytes /
+        chatInput.focus();
 
-            Math.pow(
-                1024,
-                index
-            )
-
-        ).toFixed(1)
-
-        +
-
-        " "
-
-        +
-
-        units[index]
-
-    );
+    }
 
 }
 
 
 /* =========================================================
    TESTS
-   ========================================================= */
+========================================================= */
 
 function setupTests() {
 
-    const button =
-        $("createTestBtn");
+    const createTestBtn =
+        getElement(
+            "createTestBtn"
+        );
 
 
-    if (!button) return;
+    if (createTestBtn) {
+
+        createTestBtn.addEventListener(
+            "click",
+            createTest
+        );
+
+    }
+
+}
 
 
-    button.addEventListener(
-        "click",
-        async () => {
+async function createTest() {
 
-            const subject =
-                $("testSubject")?.value ||
-                "GIS";
+    if (isGeneratingTest) {
+        return;
+    }
 
 
-            const count =
-                $("testCount")?.value ||
-                "5";
+    const subjectElement =
+        getElement(
+            "testSubject"
+        );
 
 
-            const container =
-                $("testContainer");
+    const countElement =
+        getElement(
+            "testCount"
+        );
 
 
-            if (!container) return;
+    const container =
+        getElement(
+            "testContainer"
+        );
 
+
+    if (
+        !subjectElement ||
+        !countElement ||
+        !container
+    ) {
+
+        return;
+
+    }
+
+
+    const subject =
+        subjectElement.value;
+
+
+    const count =
+        Number(
+            countElement.value
+        );
+
+
+    isGeneratingTest =
+        true;
+
+
+    container.innerHTML = `
+
+        <div class="test-loading">
+
+            📝 جاري إنشاء الاختبار...
+
+        </div>
+
+    `;
+
+
+    try {
+
+        const prompt = `
+
+أنشئ اختبارًا تدريبيًا باللغة العربية.
+
+المادة:
+${subject}
+
+عدد الأسئلة:
+${count}
+
+أريد الاختبار بهذا الشكل:
+
+QUESTION 1:
+السؤال
+
+A) اختيار
+B) اختيار
+C) اختيار
+D) اختيار
+
+ANSWER:
+الحرف الصحيح
+
+ثم السؤال التالي.
+
+اجعل الأسئلة مناسبة لطالب جامعي مبتدئ إلى متوسط.
+
+`;
+
+
+        const answer =
+            await callAI(
+                prompt,
+                {
+                    mode:
+                        "test"
+                }
+            );
+
+
+        currentTestData =
+            parseGeneratedTest(
+                answer
+            );
+
+
+        if (
+            currentTestData.length
+        ) {
+
+            renderTest(
+                currentTestData
+            );
+
+        } else {
 
             container.innerHTML = `
 
-                <div class="test-loading">
+                <div class="test-result">
 
-                    🤖 جاري إنشاء اختبار
-                    ${subject}...
+                    ${formatAIResponse(
+                        answer
+                    )}
+
+                </div>
+
+            `;
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Test error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <div class="test-error">
+
+                حدث خطأ أثناء إنشاء الاختبار.
+
+            </div>
+
+        `;
+
+
+        showNotification(
+            "تعذر إنشاء الاختبار",
+            "error"
+        );
+
+    } finally {
+
+        isGeneratingTest =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   PARSE TEST
+========================================================= */
+
+function parseGeneratedTest(
+    text
+) {
+
+    if (!text) {
+        return [];
+    }
+
+
+    const blocks =
+        text.split(
+            /QUESTION\s*\d+\s*:/i
+        );
+
+
+    const questions = [];
+
+
+    blocks.forEach(
+        block => {
+
+            const clean =
+                block.trim();
+
+
+            if (!clean) {
+                return;
+            }
+
+
+            const answerMatch =
+                clean.match(
+                    /ANSWER\s*:\s*([ABCD])/i
+                );
+
+
+            const answer =
+                answerMatch
+                    ? answerMatch[1].toUpperCase()
+                    : "";
+
+
+            const beforeAnswer =
+                answerMatch
+                    ? clean.substring(
+                        0,
+                        answerMatch.index
+                    )
+                    : clean;
+
+
+            const options =
+                [];
+
+
+            const optionRegex =
+                /([ABCD])\)\s*(.+)/gi;
+
+
+            let match;
+
+
+            while (
+                (match =
+                    optionRegex.exec(
+                        beforeAnswer
+                    )) !== null
+            ) {
+
+                options.push({
+
+                    letter:
+                        match[1].toUpperCase(),
+
+                    text:
+                        match[2].trim()
+
+                });
+
+            }
+
+
+            const questionText =
+                beforeAnswer
+                    .replace(
+                        /([ABCD])\)\s*(.+)/gi,
+                        ""
+                    )
+                    .trim();
+
+
+            if (
+                questionText &&
+                options.length >= 2
+            ) {
+
+                questions.push({
+
+                    question:
+                        questionText,
+
+                    options,
+
+                    answer
+
+                });
+
+            }
+
+        }
+    );
+
+
+    return questions;
+
+}
+
+
+/* =========================================================
+   RENDER TEST
+========================================================= */
+
+function renderTest(
+    questions
+) {
+
+    const container =
+        getElement(
+            "testContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    currentTestAnswers =
+        {};
+
+
+    container.innerHTML = "";
+
+
+    questions.forEach(
+        (
+            question,
+            index
+        ) => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "test-question";
+
+
+            let optionsHTML = "";
+
+
+            question.options.forEach(
+                option => {
+
+                    optionsHTML += `
+
+                        <label class="test-option">
+
+                            <input
+                                type="radio"
+                                name="question-${index}"
+                                value="${escapeHTML(
+                                    option.letter
+                                )}"
+                                data-question="${index}">
+
+                            <span>
+                                <strong>
+                                    ${escapeHTML(
+                                        option.letter
+                                    )})
+                                </strong>
+
+                                ${escapeHTML(
+                                    option.text
+                                )}
+
+                            </span>
+
+                        </label>
+
+                    `;
+
+                }
+            );
+
+
+            card.innerHTML = `
+
+                <div class="test-question-number">
+
+                    السؤال ${index + 1}
+
+                </div>
+
+                <h3>
+                    ${escapeHTML(
+                        question.question
+                    )}
+                </h3>
+
+                <div class="test-options">
+
+                    ${optionsHTML}
 
                 </div>
 
             `;
 
 
-            try {
-
-                const answer =
-                    await askAI(
-
-                        `أنشئ اختبارًا تعليميًا في مادة ${subject}.\n` +
-
-                        `عدد الأسئلة: ${count}.\n` +
-
-                        `اجعل الأسئلة مناسبة لطالب جامعي، ` +
-
-                        `واكتب الاختيارات والإجابة الصحيحة.`
-
-                    );
-
-
-                container.innerHTML = `
-
-                    <div class="test-result">
-
-                        <h2>
-                            📝 اختبار ${escapeHTML(subject)}
-                        </h2>
-
-                        <div class="test-content">
-                            ${escapeHTML(answer)}
-                        </div>
-
-                    </div>
-
-                `;
-
-            } catch (error) {
-
-                container.innerHTML = `
-
-                    <div class="test-error">
-
-                        ❌ ${escapeHTML(error.message)}
-
-                    </div>
-
-                `;
-
-            }
+            container.appendChild(
+                card
+            );
 
         }
     );
 
-}
 
-
-/* =========================================================
-   SETTINGS
-   ========================================================= */
-
-function setupSettings() {
-
-    const saveToggle =
-        $("saveChatsToggle");
-
-
-    if (saveToggle) {
-
-        saveToggle.checked =
-            state.saveChats;
-
-
-        saveToggle.addEventListener(
-            "change",
-            () => {
-
-                state.saveChats =
-                    saveToggle.checked;
-
-
-                localStorage.setItem(
-
-                    "ahmed_ai_save_chats",
-
-                    state.saveChats
-
-                );
-
-
-                showNotification(
-
-                    state.saveChats
-
-                        ? "تم تفعيل حفظ المحادثات"
-
-                        : "تم إيقاف حفظ المحادثات",
-
-                    "✓"
-
-                );
-
-            }
+    const submit =
+        document.createElement(
+            "button"
         );
 
-    }
+
+    submit.type =
+        "button";
 
 
-    const languageSelect =
-        $("languageSelect");
+    submit.className =
+        "primary-btn";
 
 
-    if (languageSelect) {
-
-        languageSelect.value =
-            state.selectedLanguage;
+    submit.textContent =
+        "تصحيح الاختبار";
 
 
-        languageSelect.addEventListener(
-            "change",
-            () => {
-
-                state.selectedLanguage =
-                    languageSelect.value;
-
-
-                localStorage.setItem(
-
-                    "ahmed_ai_language",
-
-                    state.selectedLanguage
-
-                );
-
-
-                showNotification(
-                    "تم حفظ اللغة",
-                    "✓"
-                );
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   NOTIFICATIONS
-   ========================================================= */
-
-function setupNotifications() {
-
-    const button =
-        $("notificationBtn");
-
-
-    if (button) {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                showNotification(
-
-                    "لا توجد إشعارات جديدة",
-
-                    "🔔"
-
-                );
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   WEB SEARCH
-   ========================================================= */
-
-function setupWebSearch() {
-
-    const button =
-        $("webSearchBtn");
-
-
-    if (!button) return;
-
-
-    button.addEventListener(
+    submit.addEventListener(
         "click",
         () => {
 
-            showNotification(
-
-                "البحث على الإنترنت سنفعّله في المرحلة التالية",
-
-                "🌐"
-
+            gradeTest(
+                questions
             );
 
         }
+    );
+
+
+    container.appendChild(
+        submit
     );
 
 }
 
 
 /* =========================================================
-   IMAGE INPUT
-   ========================================================= */
+   GRADE TEST
+========================================================= */
 
-function setupImages() {
+function gradeTest(
+    questions
+) {
 
-    const inputs = [
+    let score = 0;
 
-        $("homeImageInput"),
-
-        $("chatImageInput")
-
-    ];
+    let answered = 0;
 
 
-    inputs.forEach(
-        (input) => {
+    questions.forEach(
+        (
+            question,
+            index
+        ) => {
 
-            if (!input) return;
-
-
-            input.addEventListener(
-                "change",
-                async () => {
-
-                    const file =
-                        input.files?.[0];
-
-
-                    if (!file) return;
-
-
-                    /*
-                       التأكد أن الملف صورة
-                    */
-
-                    if (
-                        !file.type ||
-                        !file.type.startsWith(
-                            "image/"
-                        )
-                    ) {
-
-                        showNotification(
-
-                            "الملف المحدد ليس صورة",
-
-                            "!"
-
-                        );
-
-
-                        input.value =
-                            "";
-
-
-                        return;
-
-                    }
-
-
-                    /*
-                       تجهيز الصورة
-                    */
-
-                    await setSelectedImage(
-                        file
-                    );
-
-                }
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   KEYBOARD SHORTCUT
-   ========================================================= */
-
-function setupKeyboard() {
-
-    document.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (
-
-                (event.ctrlKey ||
-                 event.metaKey) &&
-
-                event.key.toLowerCase() ===
-                    "k"
-
-            ) {
-
-                event.preventDefault();
-
-
-                openSection(
-                    "chat"
+            const selected =
+                document.querySelector(
+                    `input[name="question-${index}"]:checked`
                 );
 
 
-                $("chatInput")?.focus();
+            if (!selected) {
+                return;
+            }
+
+
+            answered++;
+
+
+            if (
+                selected.value ===
+                question.answer
+            ) {
+
+                score++;
 
             }
 
         }
     );
 
-}
+
+    const percentage =
+        questions.length
+            ? Math.round(
+                (
+                    score /
+                    questions.length
+                ) * 100
+            )
+            : 0;
 
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
-
-function init() {
-
-    console.log(
-        "Ahmed AI initialized successfully."
-    );
+    const result =
+        document.createElement(
+            "div"
+        );
 
 
-    /*
-       تشغيل Firebase
-    */
-
-    initializeFirebaseForChat();
+    result.className =
+        "test-score";
 
 
-    setupNavigation();
+    result.innerHTML = `
 
-    setupTheme();
+        <h2>
+            النتيجة
+        </h2>
 
-    setupChat();
+        <p>
+            حصلت على
+            <strong>
+                ${score}
+            </strong>
+            من
+            <strong>
+                ${questions.length}
+            </strong>
+        </p>
 
-    setupGIS();
+        <p>
+            الإجابات التي تم حلها:
+            ${answered}
+        </p>
 
-    setupCoding();
+        <strong>
+            ${percentage}%
+        </strong>
 
-    setupStudy();
-
-    setupFiles();
-
-    setupTests();
-
-    setupSettings();
-
-    setupNotifications();
-
-    setupWebSearch();
-
-    setupImages();
-
-    setupKeyboard();
-
-    loadCurrentChat();
-
-    openSection(
-        "home"
-    );
-
-}
+    `;
 
 
-/* =========================================================
-   START
-   ========================================================= */
+    const container =
+        getElement(
+            "testContainer"
+        );
 
-if (
-    document.readyState ===
-    "loading"
-) {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        init
-    );
+    if (container) {
 
-} else {
+        container.appendChild(
+            result
+        );
 
-    init();
+    }
 
 }
 
 
 /* =========================================================
-   AHMED AI INTRODUCTION
-   ========================================================= */
+   FILES
+========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+function setupFiles() {
 
-        const introScreen =
-            document.getElementById(
-                "introScreen"
-            );
+    const mainFileInput =
+        getElement(
+            "mainFileInput"
+        );
 
 
-        const startAI =
-            document.getElementById(
-                "startAI"
-            );
+    if (mainFileInput) {
+
+        mainFileInput.addEventListener(
+            "change",
+            event => {
+
+                const file =
+                    event.target.files[0];
 
 
-        if (!introScreen) return;
+                currentMainFile =
+                    file || null;
 
 
-        /*
-           الدخول عند الضغط على الزر
-        */
+                if (file) {
 
-        if (startAI) {
-
-            startAI.addEventListener(
-                "click",
-                () => {
-
-                    introScreen.classList.add(
-                        "hide"
+                    saveLocalFileInfo(
+                        file
                     );
 
 
-                    setTimeout(
-                        () => {
+                    showNotification(
+                        "تمت إضافة الملف"
+                    );
 
-                            introScreen.remove();
 
-                        },
-                        800
+                    loadLocalFiles();
+
+                }
+
+            }
+        );
+
+    }
+
+}
+
+
+function saveLocalFileInfo(
+    file
+) {
+
+    const existing =
+        getLocalFiles();
+
+
+    existing.push({
+
+        name:
+            file.name,
+
+        size:
+            file.size,
+
+        type:
+            file.type,
+
+        date:
+            new Date().toISOString()
+
+    });
+
+
+    localStorage.setItem(
+        "geo_ai_files",
+        JSON.stringify(
+            existing
+        )
+    );
+
+}
+
+
+function getLocalFiles() {
+
+    try {
+
+        const value =
+            localStorage.getItem(
+                "geo_ai_files"
+            );
+
+
+        if (!value) {
+            return [];
+        }
+
+
+        const parsed =
+            JSON.parse(
+                value
+            );
+
+
+        return Array.isArray(
+            parsed
+        )
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        return [];
+
+    }
+
+}
+
+
+function loadLocalFiles() {
+
+    const container =
+        getElement(
+            "filesList"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const files =
+        getLocalFiles();
+
+
+    if (!files.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-files">
+
+                📂
+
+                <p>
+                    لا توجد ملفات حتى الآن
+                </p>
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        files.map(
+            (
+                file,
+                index
+            ) => `
+
+                <div class="file-item">
+
+                    <div class="file-icon">
+                        📄
+                    </div>
+
+                    <div class="file-info">
+
+                        <strong>
+                            ${escapeHTML(
+                                file.name
+                            )}
+                        </strong>
+
+                        <small>
+                            ${formatFileSize(
+                                file.size
+                            )}
+                            •
+                            ${formatDate(
+                                file.date
+                            )}
+                        </small>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="file-delete-btn"
+                        data-file-index="${index}">
+
+                        🗑️
+
+                    </button>
+
+                </div>
+
+            `
+        )
+        .join("");
+
+
+    const deleteButtons =
+        container.querySelectorAll(
+            ".file-delete-btn"
+        );
+
+
+    deleteButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const index =
+                        Number(
+                            button.dataset.fileIndex
+                        );
+
+
+                    deleteLocalFile(
+                        index
                     );
 
                 }
             );
 
         }
+    );
+
+}
 
 
-        /*
-           الانتقال تلقائياً بعد 3 ثوانٍ
-        */
+function deleteLocalFile(
+    index
+) {
+
+    const files =
+        getLocalFiles();
+
+
+    if (
+        index < 0 ||
+        index >= files.length
+    ) {
+
+        return;
+
+    }
+
+
+    files.splice(
+        index,
+        1
+    );
+
+
+    localStorage.setItem(
+        "geo_ai_files",
+        JSON.stringify(
+            files
+        )
+    );
+
+
+    loadLocalFiles();
+
+
+    showNotification(
+        "تم حذف الملف"
+    );
+
+}
+
+
+function formatFileSize(
+    bytes
+) {
+
+    if (!bytes) {
+        return "0 KB";
+    }
+
+
+    if (
+        bytes < 1024
+    ) {
+
+        return bytes +
+            " B";
+
+    }
+
+
+    if (
+        bytes < 1024 * 1024
+    ) {
+
+        return (
+            bytes /
+            1024
+        ).toFixed(1) +
+        " KB";
+
+    }
+
+
+    return (
+        bytes /
+        (
+            1024 *
+            1024
+        )
+    ).toFixed(1) +
+    " MB";
+
+}
+
+
+/* =========================================================
+   COURSES
+========================================================= */
+
+const COURSE_CATEGORIES = {
+
+    surveying: {
+        label: "المساحة",
+        icon: "📐"
+    },
+
+    gis: {
+        label: "GIS",
+        icon: "🗺️"
+    },
+
+    remote_sensing: {
+        label: "الاستشعار عن بعد",
+        icon: "🛰️"
+    },
+
+    programming: {
+        label: "البرمجة",
+        icon: "💻"
+    }
+
+};
+
+
+/* =========================================================
+   COURSE SETUP
+========================================================= */
+
+function setupCourses() {
+
+    const addCourseBtn =
+        getElement(
+            "addCourseBtn"
+        );
+
+
+    if (addCourseBtn) {
+
+        addCourseBtn.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    currentUserRole !==
+                    "admin"
+                ) {
+
+                    showNotification(
+                        "هذه العملية متاحة للمدير فقط",
+                        "error"
+                    );
+
+
+                    return;
+
+                }
+
+
+                openCourseModal();
+
+            }
+        );
+
+    }
+
+
+    const filters =
+        $$(".course-filter");
+
+
+    filters.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    selectedCourseCategory =
+                        button.dataset.category ||
+                        "all";
+
+
+                    filters.forEach(
+                        item => {
+
+                            item.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    renderCourses();
+
+                }
+            );
+
+        }
+    );
+
+
+    const closeButton =
+        getElement(
+            "courseModalClose"
+        );
+
+
+    const cancelButton =
+        getElement(
+            "courseFormCancel"
+        );
+
+
+    const overlay =
+        getElement(
+            "courseModalOverlay"
+        );
+
+
+    if (closeButton) {
+
+        closeButton.addEventListener(
+            "click",
+            closeCourseModal
+        );
+
+    }
+
+
+    if (cancelButton) {
+
+        cancelButton.addEventListener(
+            "click",
+            closeCourseModal
+        );
+
+    }
+
+
+    if (overlay) {
+
+        overlay.addEventListener(
+            "click",
+            closeCourseModal
+        );
+
+    }
+
+
+    const courseForm =
+        getElement(
+            "courseForm"
+        );
+
+
+    if (courseForm) {
+
+        courseForm.addEventListener(
+            "submit",
+            saveCourse
+        );
+
+    }
+
+
+    updateAdminCourseUI();
+
+}
+
+
+/* =========================================================
+   ADMIN UI
+========================================================= */
+
+function updateAdminCourseUI() {
+
+    const addCourseBtn =
+        getElement(
+            "addCourseBtn"
+        );
+
+
+    if (!addCourseBtn) {
+        return;
+    }
+
+
+    if (
+        currentUserRole ===
+        "admin"
+    ) {
+
+        addCourseBtn.style.display =
+            "inline-flex";
+
+    } else {
+
+        addCourseBtn.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD COURSES
+========================================================= */
+
+async function loadCourses() {
+
+    const loading =
+        getElement(
+            "coursesLoading"
+        );
+
+
+    if (loading) {
+
+        loading.style.display =
+            "block";
+
+    }
+
+
+    try {
+
+        if (
+            !firebaseDb ||
+            !firebaseModules
+        ) {
+
+            await initializeFirebase();
+
+        }
+
+
+        if (
+            !firebaseDb ||
+            !firebaseModules
+        ) {
+
+            throw new Error(
+                "Firebase unavailable"
+            );
+
+        }
+
+
+        const {
+            collection,
+            getDocs,
+            query,
+            orderBy
+        } =
+            firebaseModules;
+
+
+        let snapshot;
+
+
+        try {
+
+            const coursesQuery =
+                query(
+                    collection(
+                        firebaseDb,
+                        "courses"
+                    ),
+                    orderBy(
+                        "createdAt",
+                        "desc"
+                    )
+                );
+
+
+            snapshot =
+                await getDocs(
+                    coursesQuery
+                );
+
+        } catch (orderError) {
+
+            console.warn(
+                "Course order query failed. Loading without order:",
+                orderError
+            );
+
+
+            snapshot =
+                await getDocs(
+                    collection(
+                        firebaseDb,
+                        "courses"
+                    )
+                );
+
+        }
+
+
+        coursesCache =
+            snapshot.docs.map(
+                document => ({
+
+                    id:
+                        document.id,
+
+                    ...document.data()
+
+                })
+            );
+
+
+        renderCourses();
+
+
+    } catch (error) {
+
+        console.error(
+            "Load courses error:",
+            error
+        );
+
+
+        coursesCache =
+            [];
+
+
+        renderCourses();
+
+
+        if (
+            error &&
+            error.code ===
+                "permission-denied"
+        ) {
+
+            showNotification(
+                "ليس لديك صلاحية قراءة الكورسات",
+                "error"
+            );
+
+        }
+
+    } finally {
+
+        if (loading) {
+
+            loading.style.display =
+                "none";
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER COURSES
+========================================================= */
+
+function renderCourses() {
+
+    const grid =
+        getElement(
+            "coursesGrid"
+        );
+
+
+    const empty =
+        getElement(
+            "coursesEmpty"
+        );
+
+
+    if (!grid) {
+        return;
+    }
+
+
+    let filtered =
+        coursesCache.slice();
+
+
+    if (
+        selectedCourseCategory !==
+        "all"
+    ) {
+
+        filtered =
+            filtered.filter(
+                course =>
+                    course.category ===
+                    selectedCourseCategory
+            );
+
+    }
+
+
+    if (!filtered.length) {
+
+        grid.innerHTML =
+            "";
+
+
+        if (empty) {
+
+            empty.style.display =
+                "block";
+
+        }
+
+
+        return;
+
+    }
+
+
+    if (empty) {
+
+        empty.style.display =
+            "none";
+
+    }
+
+
+    grid.innerHTML =
+        filtered.map(
+            course =>
+                createCourseCard(
+                    course
+                )
+        )
+        .join("");
+
+
+    attachCourseCardEvents();
+
+}
+
+
+/* =========================================================
+   COURSE CARD
+========================================================= */
+
+function createCourseCard(
+    course
+) {
+
+    const category =
+        COURSE_CATEGORIES[
+            course.category
+        ] || {
+
+            label:
+                "دورة",
+
+            icon:
+                "🎓"
+
+        };
+
+
+    const image =
+        isValidHttpUrl(
+            course.imageUrl
+        )
+            ? course.imageUrl
+            : "";
+
+
+    const title =
+        escapeHTML(
+            course.title ||
+            "دورة بدون اسم"
+        );
+
+
+    const instructor =
+        escapeHTML(
+            course.instructor ||
+            "غير محدد"
+        );
+
+
+    const platform =
+        escapeHTML(
+            course.platform ||
+            "منصة تعليمية"
+        );
+
+
+    const description =
+        escapeHTML(
+            course.description ||
+            "لا يوجد وصف لهذه الدورة."
+        );
+
+
+    const type =
+        course.type ===
+        "paid"
+            ? "مدفوعة"
+            : "مجانية";
+
+
+    const typeClass =
+        course.type ===
+        "paid"
+            ? "paid"
+            : "free";
+
+
+    const date =
+        formatDate(
+            course.createdAt
+        );
+
+
+    const imageHTML =
+        image
+            ? `
+
+                <div class="course-image">
+
+                    <img
+                        src="${escapeHTML(
+                            image
+                        )}"
+                        alt="${title}"
+                        loading="lazy"
+                        onerror="this.parentElement.classList.add('course-image-fallback'); this.style.display='none';">
+
+                    <span class="course-image-icon">
+                        ${category.icon}
+                    </span>
+
+                </div>
+
+            `
+            : `
+
+                <div class="course-image course-image-fallback">
+
+                    <span class="course-image-icon">
+                        ${category.icon}
+                    </span>
+
+                </div>
+
+            `;
+
+
+    const adminActions =
+        currentUserRole ===
+        "admin"
+            ? `
+
+                <div class="course-admin-actions">
+
+                    <button
+                        type="button"
+                        class="course-edit-btn"
+                        data-course-action="edit"
+                        data-course-id="${escapeHTML(
+                            course.id
+                        )}">
+
+                        ✏️ تعديل
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="course-delete-btn"
+                        data-course-action="delete"
+                        data-course-id="${escapeHTML(
+                            course.id
+                        )}">
+
+                        🗑️ حذف
+
+                    </button>
+
+                </div>
+
+            `
+            : "";
+
+
+    return `
+
+        <article
+            class="course-card"
+            data-course-id="${escapeHTML(
+                course.id
+            )}">
+
+            ${imageHTML}
+
+
+            <div class="course-card-body">
+
+                <div class="course-card-top">
+
+                    <span class="course-category">
+
+                        ${category.icon}
+
+                        ${escapeHTML(
+                            category.label
+                        )}
+
+                    </span>
+
+                    <span class="course-type ${typeClass}">
+
+                        ${type}
+
+                    </span>
+
+                </div>
+
+
+                <h3 class="course-title">
+
+                    ${title}
+
+                </h3>
+
+
+                <p class="course-description">
+
+                    ${description}
+
+                </p>
+
+
+                <div class="course-meta">
+
+                    <span>
+                        👨‍🏫
+                        ${instructor}
+                    </span>
+
+                    <span>
+                        🌐
+                        ${platform}
+                    </span>
+
+                </div>
+
+
+                ${
+                    date
+                        ? `
+                            <div class="course-date">
+                                📅 ${date}
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <div class="course-card-bottom">
+
+                    <a
+                        class="course-open-btn"
+                        href="${escapeHTML(
+                            isValidHttpUrl(
+                                course.url
+                            )
+                                ? course.url
+                                : "#"
+                        )}"
+                        ${
+                            isValidHttpUrl(
+                                course.url
+                            )
+                                ? 'target="_blank" rel="noopener noreferrer"'
+                                : ""
+                        }>
+
+                        فتح الدورة
+
+                        <span>
+                            ↗
+                        </span>
+
+                    </a>
+
+                </div>
+
+
+                ${adminActions}
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+/* =========================================================
+   COURSE CARD EVENTS
+========================================================= */
+
+function attachCourseCardEvents() {
+
+    const editButtons =
+        $$(
+            '[data-course-action="edit"]'
+        );
+
+
+    editButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.courseId;
+
+
+                    editCourse(
+                        id
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    const deleteButtons =
+        $$(
+            '[data-course-action="delete"]'
+        );
+
+
+    deleteButtons.forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.courseId;
+
+
+                    deleteCourse(
+                        id
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   COURSE MODAL
+========================================================= */
+
+function openCourseModal(
+    course = null
+) {
+
+    if (
+        currentUserRole !==
+        "admin"
+    ) {
+
+        showNotification(
+            "هذه العملية متاحة للمدير فقط",
+            "error"
+        );
+
+
+        return;
+
+    }
+
+
+    const modal =
+        getElement(
+            "courseModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    editingCourseId =
+        course
+            ? course.id
+            : null;
+
+
+    const title =
+        getElement(
+            "courseModalTitle"
+        );
+
+
+    const form =
+        getElement(
+            "courseForm"
+        );
+
+
+    if (form) {
+
+        form.reset();
+
+    }
+
+
+    if (title) {
+
+        title.textContent =
+            course
+                ? "تعديل الدورة"
+                : "إضافة دورة جديدة";
+
+    }
+
+
+    if (course) {
+
+        setInputValue(
+            "courseTitleInput",
+            course.title
+        );
+
+
+        setInputValue(
+            "courseCategoryInput",
+            course.category ||
+            "surveying"
+        );
+
+
+        setInputValue(
+            "courseTypeInput",
+            course.type ||
+            "free"
+        );
+
+
+        setInputValue(
+            "courseInstructorInput",
+            course.instructor ||
+            ""
+        );
+
+
+        setInputValue(
+            "coursePlatformInput",
+            course.platform ||
+            ""
+        );
+
+
+        setInputValue(
+            "courseUrlInput",
+            course.url ||
+            ""
+        );
+
+
+        setInputValue(
+            "courseImageInput",
+            course.imageUrl ||
+            ""
+        );
+
+
+        setInputValue(
+            "courseDescriptionInput",
+            course.description ||
+            ""
+        );
+
+    }
+
+
+    modal.classList.remove(
+        "hidden"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
+    );
+
+
+    document.body.style.overflow =
+        "hidden";
+
+
+    const titleInput =
+        getElement(
+            "courseTitleInput"
+        );
+
+
+    if (titleInput) {
 
         setTimeout(
             () => {
 
-                if (
-                    !introScreen.classList.contains(
-                        "hide"
-                    )
-                ) {
-
-                    introScreen.classList.add(
-                        "hide"
-                    );
-
-
-                    setTimeout(
-                        () => {
-
-                            introScreen.remove();
-
-                        },
-                        800
-                    );
-
-                }
+                titleInput.focus();
 
             },
-            3000
+            100
         );
 
     }
-);
+
+}
+
+
+function closeCourseModal() {
+
+    const modal =
+        getElement(
+            "courseModal"
+        );
+
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.classList.add(
+        "hidden"
+    );
+
+
+    modal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+
+    document.body.style.overflow =
+        "";
+
+
+    editingCourseId =
+        null;
+
+
+    const form =
+        getElement(
+            "courseForm"
+        );
+
+
+    if (form) {
+
+        form.reset();
+
+    }
+
+
+   
