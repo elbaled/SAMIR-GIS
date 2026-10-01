@@ -3533,18 +3533,43 @@ function createCourseCard(course) {
             : "";
 
 
+    /* =====================================================
+       COURSE IMAGE
+       ===================================================== */
+
     const imageHTML =
         imageUrl
 
             ? `
 
-                <div class="course-card-image">
+                <div class="course-image-wrapper">
 
                     <img
+                        class="course-image"
                         src="${escapeHTML(imageUrl)}"
                         alt="${title}"
                         loading="lazy"
+                        onerror="
+                            this.style.display='none';
+                            this.parentElement.innerHTML='<div class=&quot;course-image-placeholder&quot;>🎓</div>';
+                        "
                     >
+
+                    <div class="course-badges">
+
+                        <span class="course-badge category">
+                            ${category}
+                        </span>
+
+                        <span class="course-badge ${
+                            course.type === "paid"
+                                ? "paid"
+                                : "free"
+                        }">
+                            ${type}
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -3552,16 +3577,70 @@ function createCourseCard(course) {
 
             : `
 
-                <div class="course-card-image course-placeholder">
+                <div class="course-image-wrapper">
 
-                    <span>
+                    <div class="course-image-placeholder">
                         🎓
-                    </span>
+                    </div>
+
+                    <div class="course-badges">
+
+                        <span class="course-badge category">
+                            ${category}
+                        </span>
+
+                        <span class="course-badge ${
+                            course.type === "paid"
+                                ? "paid"
+                                : "free"
+                        }">
+                            ${type}
+                        </span>
+
+                    </div>
 
                 </div>
 
             `;
 
+
+    /* =====================================================
+       COURSE OPEN BUTTON
+       ===================================================== */
+
+    const openButtonHTML =
+        courseUrl
+
+            ? `
+
+                <a
+                    class="course-open-btn"
+                    href="${escapeHTML(courseUrl)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    فتح الكورس
+                    <span>↗</span>
+                </a>
+
+            `
+
+            : `
+
+                <button
+                    type="button"
+                    class="course-open-btn disabled"
+                    disabled
+                >
+                    الرابط غير متاح
+                </button>
+
+            `;
+
+
+    /* =====================================================
+       ADMIN BUTTONS
+       ===================================================== */
 
     const adminHTML =
         currentUserIsAdmin
@@ -3593,35 +3672,9 @@ function createCourseCard(course) {
             : "";
 
 
-    const openButtonHTML =
-        courseUrl
-
-            ? `
-
-                <a
-                    class="course-open-btn"
-                    href="${escapeHTML(courseUrl)}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    فتح الكورس
-                    ↗
-                </a>
-
-            `
-
-            : `
-
-                <button
-                    type="button"
-                    class="course-open-btn disabled"
-                    disabled
-                >
-                    الرابط غير متاح
-                </button>
-
-            `;
-
+    /* =====================================================
+       COURSE CARD
+       ===================================================== */
 
     return `
 
@@ -3632,20 +3685,8 @@ function createCourseCard(course) {
 
             ${imageHTML}
 
-            <div class="course-card-body">
 
-                <div class="course-card-top">
-
-                    <span class="course-category">
-                        ${category}
-                    </span>
-
-                    <span class="course-type">
-                        ${type}
-                    </span>
-
-                </div>
-
+            <div class="course-content">
 
                 <h3 class="course-title">
                     ${title}
@@ -3657,26 +3698,37 @@ function createCourseCard(course) {
                 </p>
 
 
-                <div class="course-meta">
+                <div class="course-info">
 
-                    <div>
-                        👨‍🏫
-                        <span>
+                    <div class="course-info-item">
+
+                        <span class="course-info-icon">
+                            👨‍🏫
+                        </span>
+
+                        <span class="course-info-text">
                             ${instructor}
                         </span>
+
                     </div>
 
-                    <div>
-                        🌐
-                        <span>
+
+                    <div class="course-info-item">
+
+                        <span class="course-info-icon">
+                            🌐
+                        </span>
+
+                        <span class="course-info-text">
                             ${platform}
                         </span>
+
                     </div>
 
                 </div>
 
 
-                <div class="course-card-footer">
+                <div class="course-actions">
 
                     ${openButtonHTML}
 
